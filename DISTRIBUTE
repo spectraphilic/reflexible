@@ -1,0 +1,20 @@
+Some notes on building the modules / packages
+
+The file MANIFEST.in contains the files that should be explicitly
+INCLUDED or EXCLUDED from the distribution. Make sure to update:
+
+setup.py with the version number
+and
+MANIFEST.in
+
+as appropriate. Also, the tools for distribution:
+%python setup.py sdist --formats=zip,gztar #creates .zip and .tar.gz 
+
+%python setup.py bdist #creates binary distribution
+
+You can also run:
+%python setup.py sdist -formats=zip,gztar upload
+
+and the created distributions will be uploaded directly to the PyPi.
+
+LASTLY, seems this has to be run NOT via sshfs...

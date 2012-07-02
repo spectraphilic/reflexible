@@ -1,0 +1,84 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module FortFlex ! in 
+    interface  ! in :FortFlex
+        subroutine readgrid(filegrid,numxgrid,numygrid,numzgrid,numpointspec,nageclass,grid,wetgrid,drygrid,itime,scaledepo,scaleconc,decayconstant,npspec_int) ! in :FortFlex:FortFlex.f
+            character*500 :: filegrid
+            integer :: numxgrid
+            integer :: numygrid
+            integer :: numzgrid
+            integer :: numpointspec
+            integer :: nageclass
+            real dimension(numxgrid,numygrid,numzgrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numzgrid,numpointspec,nageclass) :: grid
+            real dimension(numxgrid,numygrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numpointspec,nageclass) :: wetgrid
+            real dimension(numxgrid,numygrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numpointspec,nageclass) :: drygrid
+            integer intent(out) :: itime
+            real :: scaledepo
+            real :: scaleconc
+            real :: decayconstant
+            real intent(in) :: npspec_int
+        end subroutine readgrid
+        subroutine sumgrid(zplot,grid,numxgrid,numygrid,numzgrid,numpoint,nageclass,area,heightnn) ! in :FortFlex:FortFlex.f
+            real dimension(numxgrid,numygrid,numzgrid,numpoint),intent(in,out) :: zplot
+            real dimension(numxgrid,numygrid,numzgrid,numpoint,nageclass),intent(in),depend(numxgrid,numygrid,numzgrid,numpoint) :: grid
+            integer, optional,check(shape(zplot,0)==numxgrid),depend(zplot) :: numxgrid=shape(zplot,0)
+            integer, optional,check(shape(zplot,1)==numygrid),depend(zplot) :: numygrid=shape(zplot,1)
+            integer, optional,check(shape(zplot,2)==numzgrid),depend(zplot) :: numzgrid=shape(zplot,2)
+            integer, optional,check(shape(zplot,3)==numpoint),depend(zplot) :: numpoint=shape(zplot,3)
+            integer, optional,check(shape(grid,4)==nageclass),depend(grid) :: nageclass=shape(grid,4)
+            real dimension(numxgrid,numygrid),depend(numxgrid,numygrid) :: area
+            real dimension(numxgrid,numygrid,numzgrid),intent(in),depend(numxgrid,numygrid,numzgrid) :: heightnn
+        end subroutine sumgrid
+        subroutine readgrid_v6(filegrid,numxgrid,numygrid,numzgrid,numpointspec,nageclass,grid,wetgrid,drygrid,itime,scaledepo,scaleconc,decayconstant) ! in :FortFlex:FortFlex.f
+            character*500 :: filegrid
+            integer :: numxgrid
+            integer :: numygrid
+            integer :: numzgrid
+            integer :: numpointspec
+            integer :: nageclass
+            real dimension(numxgrid,numygrid,numzgrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numzgrid,numpointspec,nageclass) :: grid
+            real dimension(numxgrid,numygrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numpointspec,nageclass) :: wetgrid
+            real dimension(numxgrid,numygrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numpointspec,nageclass) :: drygrid
+            integer intent(out) :: itime
+            real :: scaledepo
+            real :: scaleconc
+            real :: decayconstant
+        end subroutine readgrid_v6
+        subroutine readheader(filename,nxmax,numxgrid,nymax,numygrid,nzmax,numzgrid,outlon0,outlat0,dxout,dyout,outheight,ibdate,ibtime,loutstep,maxspec,nspec,maxageclass,nageclass,lage,ireleasestart,ireleaseend,maxpoint,numpoint,xpoint,ypoint,zpoint1,zpoint2,heightnn,area) ! in :FortFlex:FortFlex.f
+            character*150 intent(in) :: filename
+            integer :: nxmax
+            integer intent(out) :: numxgrid
+            integer :: nymax
+            integer intent(out) :: numygrid
+            integer :: nzmax
+            integer intent(out) :: numzgrid
+            real intent(out) :: outlon0
+            real intent(out) :: outlat0
+            real intent(out) :: dxout
+            real intent(out) :: dyout
+            real dimension(nzmax),intent(out),depend(nzmax) :: outheight
+            integer intent(out) :: ibdate
+            integer intent(out) :: ibtime
+            integer intent(out) :: loutstep
+            integer :: maxspec
+            integer intent(out) :: nspec
+            integer :: maxageclass
+            integer intent(out) :: nageclass
+            integer dimension(maxageclass + 1),intent(out),depend(maxageclass) :: lage
+            integer dimension(maxpoint),intent(out),depend(maxpoint) :: ireleasestart
+            integer dimension(maxpoint),intent(out),depend(maxpoint) :: ireleaseend
+            integer :: maxpoint
+            integer intent(out) :: numpoint
+            real dimension(maxpoint),intent(out),depend(maxpoint) :: xpoint
+            real dimension(maxpoint),intent(out),depend(maxpoint) :: ypoint
+            real dimension(maxpoint),intent(out),depend(maxpoint) :: zpoint1
+            real dimension(maxpoint),intent(out),depend(maxpoint) :: zpoint2
+            real dimension(nxmax,nymax,nzmax + 1),intent(out),depend(nxmax,nymax,nzmax) :: heightnn
+            real dimension(nxmax,nymax),intent(out),depend(nxmax,nymax) :: area
+        end subroutine readheader
+    end interface 
+end python module FortFlex
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

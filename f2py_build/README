@@ -1,0 +1,50 @@
+#MODULES INCLUDED HERE:
+
+===reademissions_f2py.f===
+# --> this compiles the full reademissions routine.
+#it was used to generate AST_EMISSIONS/merged_X.nc files
+
+===FortFlex.f===
+# The main module used in pflexpart for reading grids, has
+# readgrid and readheader functions. Also has a reademissions
+# function, but it is untested.
+
+
+
+helpful links:
+
+ Idea behind f2py and usage
+
+f2py takes a Fortran subroutine and some additional instructions, compiles the Fortran code and builds a module which can then be imported into Python and used there like a normal function. To make this possible a few things need to be told to f2py which are stored either in commented bits in the Fortran code or in the signature file or both. So the steps are:
+
+1. Changes to the code
+
+   1.
+         1. remove everything to do with allocation in the subroutine you want to turn into the Python module as this doesn't work too well
+         2. make the program into a subroutine
+         3. add command strings for f2py having the form !f2py ...: example 
+
+2. Automatically generate a signature file
+
+        f2py -m FortFlex -h FortFlex.pyf FortFlex.f
+
+3. Edit the signature file
+
+        in this case: emove/comment everything with the submodule. If this is not done, there will be an ImportError in python. This might be due to the dimension(:) statements, which don't always work in f2py. 
+
+4. Compile the Python module
+
+        f2py -c --fcompiler=gfortran FortFlex.pyf FortFlex.f 
+
+        Note the --fcompiler=gnu95 might be necessary if you compile Fortran 90 files and f2py can't find gfortran 
+
+5. Now copy the FortFlex.so into the same directory as the pflexpart.py file or somewhere on your PYTHONPATH.
+
+
+
+
+
+
+http://websrv.cs.umt.edu/isis/index.php/F2py_example
+
+
