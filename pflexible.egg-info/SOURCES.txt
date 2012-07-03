@@ -1,0 +1,10 @@
+README
+mapping.py
+pflexcy.c
+pflexible.py
+setup.cfg
+setup.py
+pflexible.egg-info/PKG-INFO
+pflexible.egg-info/SOURCES.txt
+pflexible.egg-info/dependency_links.txt
+pflexible.egg-info/top_level.txt

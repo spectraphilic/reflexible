@@ -17,4 +17,8 @@ You can also run:
 
 and the created distributions will be uploaded directly to the PyPi.
 
-LASTLY, seems this has to be run NOT via sshfs...
+LASTLY, if required, run:
+
+%python setup.py register
+
+if you have not yet done so.

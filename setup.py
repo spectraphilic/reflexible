@@ -16,8 +16,6 @@ setup(
   url = 'http://niflheim.nilu.no/~burkhart/pflexible',
   description = 'A Python interface to FLEXPART data.',
   license = 'Creative Commons',
-  #cmdclass = {'build_ext': build_ext},
-  #ext_modules = [Extension('pflexcy', ['pflexcy.pyx'])],
   ext_modules = [Extension('pflexcy', ['pflexcy.c'], include_dirs=[numpy.get_include()])],
   py_modules = ['pflexible','mapping'],
 )
