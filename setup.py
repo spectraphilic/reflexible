@@ -17,7 +17,7 @@ setup(
   license = 'Creative Commons',
   #cmdclass = {'build_ext': build_ext},
   #ext_modules = [Extension('pflexcy', ['pflexcy.pyx'])],
-  ext_modules = [Extension('pflexcy', ['pflexcy.c'])],
+  ext_modules = [Extension('pflexcy', ['pflexcy.c'], include_path=[numpy.get_include()])],
   py_modules = ['pflexible','mapping'],
 )
 
