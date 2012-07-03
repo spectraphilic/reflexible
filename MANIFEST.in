@@ -1,0 +1,15 @@
+include *.c
+include README
+include AUTHORS
+include LICENSE
+exclude jfb*
+exclude gen_releases*
+exclude FortFlex*
+exclude MANIFEST.in
+exclude DISTRIBUTE
+recursive-include f2py_build FortFlex.f build_FortFlex.sh README
+prune examples/
+prune doc/
+prune scripts/
+prune dist/
+prune useful/
