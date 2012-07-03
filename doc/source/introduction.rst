@@ -59,11 +59,9 @@ Installation and setting the PYTHONPATH
 ==========================================================
 
 If all is working correctly, and you have all the required dependencies, the it
-should simply be a matter of running setup.py.
+should simply be a matter of running setup.py::
 
-.. python::
-
-    python setup.py install
+    %python setup.py install
 
 
 Depending on where you checked out the pflexible module to, you need to make
