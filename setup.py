@@ -5,6 +5,7 @@
 from setuptools import setup
 from setuptools import Extension
 #from Cython.Distutils import build_ext
+import numpy
 
 
 setup(
