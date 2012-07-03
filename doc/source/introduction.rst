@@ -34,6 +34,7 @@ Make sure you also have the dependencies installed:
   - PIL
 
 ----
+
 .. _setting-pythonpath:
 
 Installation and setting the PYTHONPATH
@@ -58,6 +59,7 @@ also need to be available in the paths defined here.
 .. _building-FortFlex:
 
 ----
+
 Building FortFlex
 =================
 

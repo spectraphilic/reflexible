@@ -50,6 +50,7 @@ The data is 1 Gb, I suggest using wget to grab the data::
 
   
 ----
+
 .. _testing-pflexible:
 
 Testing pflexible
@@ -83,6 +84,7 @@ This should produce some output that looks familiar to your from your FLEXPART
 run setup.
 
 ----
+
 Reasonably, you should now want to read in some of the data from your run. This
 is accomplished easlier using the :func:`read_grid <pflexible.read_grid>`. For optimal
 performance, this function will use the FortFlex module. However, as a fall
@@ -124,6 +126,7 @@ of the directory (not header path) containing the FLEXPART run.::
   information.
 
 ----
+
 H is now an object in your workspace. Using Ipython you can explore the methods
 and attributes of H. We call the `fill_backward` method to populate the "D"
 attribute (a dictionary) with all the data from the run.::
@@ -141,6 +144,7 @@ metadata for the function to read the trajectories. This is a function that
 accepts simply the "H" instance or a path to a trajectories file.
 
 ----
+
 The following lines plot the data sets using the :func:`plot_totalcolumn`, :func:`plot_trajectory`, 
 and :func:`plot_footprint`.
 
@@ -168,6 +172,7 @@ in the :func:`plot_totalcolumn` function and for saving naming the figure.::
   >    TC = pf.plot_trajectory(H,T,k,FIGURE=TC)
 
 ----
+
 plot the total column and overlay the trajectories. The following lines::
 
   > filename = '%s_tc_%s.png' % (D.species,D.timestamp)
@@ -185,6 +190,7 @@ like this:
 
 
 ----
+
 The next step is the use the **source** and learn more about the functionality
 of the module. I highly recommend the `Ipython <http::/ipython.scipy.org>`_ 
 interpreter and use of the Tab key to explore the modules methods.
