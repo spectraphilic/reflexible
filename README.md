@@ -1,44 +1,37 @@
-# The pflexible module
-# This module is being created to work with FLEXPART model ouput.
-# For more information on FLEXPART visit:
-# http://transport.nilu.no/flexpart
-#
-# FLEXPART is a Lagrangian particle dispersion model
-# written by Andreas Stohl. It is in active development at NILU and by
-# Sabine Eckhardt, Harald Sodemann, John Burkhart and numerous research 
-# groups worldwide.
-#
-# This module is based partially on Matlab(c) routines developed
-# by Sabine Eckhardt and Harald Sodemann at NILU. Subsequent development
-# and the Python routines have been conducted by John Burkhart.
-#
+# pflexible #
 
+## About ##
+This module is being created to work with FLEXPART model ouput. FLEXPART is a 
+Lagrangian particle dispersion model written by Andreas Stohl. It is in 
+active development at NILU and by Sabine Eckhardt, John Burkhart and numerous 
+other research groups worldwide. For more information on FLEXPART visit the
+[homepage](http://transport.nilu.no/flexpart "FLEXPART")
+
+This module is based partially on Matlab(c) routines developed
+by Sabine Eckhardt and Harald Sodemann at NILU. Subsequent development
+and the Python routines have been conducted by John Burkhart.
+
+## Contact ##
 for further information contact:
 John F Burkhart, Norwegian Institute for Air Research
 john.burkhart@nilu.no
-2011.09.26
 
 
------------
-NOTES
------------
+## Web Resources ##
 
-Primary introduction to the module is here:
-http://niflheim.nilu.no/~burkhart/pflexible
-
-
-BitBucket
-=========
-
+### BitBucket ###
 
 Clone the bitbucket repository into a folder in your PYTHONPATH::
 
 	%hg clone https://bitbucket.org/jfburkhart/pflexible pflexible
 
+### Sphinx Documentation ###
 
-----------------------
-Working with pflexible
-----------------------
+The documentation is built and hosted at
+[readthedocs](http://pflexible.readthedocs.org)
+
+
+## Working with pflexible
 
 There are a few 'gotchas' when using the module. First, you will likely
 have to recompile (f2py) the FortFlex.f file and create a FortFlex.so module
@@ -49,7 +42,9 @@ An alternative 'BinaryFile' class has been created so one can work with pure
 Python. Alone, it is significantly slower than the FortFlex module, however,
 if you use the dumpgrid module, significant speedups can be achieved. For this
 run::
+
   python setup.py build_ext --inplace
+
 
 This will compile the pflexcy.pyx file into a pflexcy.so module that can be
 imported and used by the pf.readgrid function. A series of tests are run to try
@@ -61,8 +56,7 @@ function. I have tried to create a "Header" class that can be used for some
 typical analysis. See the examples directory, and don't forget to read the
 source code.
 
-Key Tools
-----------
+## Key Tools
 
 The primary workflow and usefulness of pflexible comes from the read_header and read_grid
 routines, which are designed to help ultimately with plotting and data analysis of
@@ -79,8 +73,8 @@ To get started, at least become familiar with:
 NOTE: the other plotting functions are mostly wrappers which
 ultimately make a call to plot_sensitivity.
 
-Disclaimer
-------------
+## Disclaimer
+
 About the mapping.py module, it is primarily designed as some convenience 
 routines for working with basemap.
         
