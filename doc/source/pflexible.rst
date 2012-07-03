@@ -1,23 +1,23 @@
-.. _pflexpart-overview:
+.. _pflexible-overview:
 
 
 ********************
-The pflexpart module
+The pflexible module
 ********************
 
 .. _module-description:
 
 A brief description of the module
-==================================
+=================================
 
-The pflexpart module is developed to work with output from the Lagrangian
+The pflexible module is developed to work with output from the Lagrangian
 Particle Dispersion Model, `FLEXPART <http://transport.nilu.no/flexpart>`_ .
 
 The module relies extensively on the users knowledge of FLEXPART data in
 general, and thus one is strongly encouraged to read the `users guide <http://zardoz.nilu.no/~andreas/flexpart/flexpart8.pdf>`_ which explains some basics regarding the model.
 
 *Note* If you are interested in contributing functionality for other FLEXPART
-versions, please contact me at `john.burkhart@nilu.no`
+versions, please contact me at `jfburkhart@gmail.com`
 
 
 
@@ -37,13 +37,13 @@ most comfortable.
 
 
 *****************
-The pflexpart API
+The pflexible API
 *****************
 
   :Release: |version|
   :Date: |today|
   :Author: John F. Burkhart
 
-.. automodule:: nilu.pflexpart.pflexpart
+.. automodule:: pflexible
    :members:
    :undoc-members:

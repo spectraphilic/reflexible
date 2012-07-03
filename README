@@ -43,7 +43,7 @@ Working with pflexible
 There are a few 'gotchas' when using the module. First, you will likely
 have to recompile (f2py) the FortFlex.f file and create a FortFlex.so module
 for whatever computer you're using. The one presently is compiled for 
-64bit Linux (Ubuntu 9.10). For more information see the f2py directory.
+64bit Linux (Ubuntu 12.04). For more information see the f2py directory.
 
 An alternative 'BinaryFile' class has been created so one can work with pure
 Python. Alone, it is significantly slower than the FortFlex module, however,
@@ -64,16 +64,28 @@ source code.
 Key Tools
 ----------
 
-        Header class
-        read_grid
-        readheader
-        fill_backward
+The primary workflow and usefulness of pflexible comes from the read_header and read_grid
+routines, which are designed to help ultimately with plotting and data analysis of
+the FLEXPART output.
 
-        plot_sensitivity
-        NOTE: the other plotting functions are mostly wrappers which
-        ultimately make a call to plot_sensitivity.
+To get started, at least become familiar with:
 
-        NOTE: About the mapping.py module, it is primarily designed as
-        some convenience routines for working with basemap. It probably
-        could use a rewrite!
+* Header class
+* read_header
+* read_grid
+* fill_backward
+* plot_sensitivity
+
+NOTE: the other plotting functions are mostly wrappers which
+ultimately make a call to plot_sensitivity.
+
+Disclaimer
+------------
+About the mapping.py module, it is primarily designed as some convenience 
+routines for working with basemap.
+        
+All these routines were written 'on the fly', without a design plan
+or test cases. Everything probably could use a rewrite!
+        
+        
 

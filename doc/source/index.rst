@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 pflexpart documentation overview
-=================================
+================================
 
 Contents:
 
@@ -13,7 +13,7 @@ Contents:
 
    getting_started.rst
 
-   pflexpart.rst
+   pflexible.rst
 
    mapping.rst
 

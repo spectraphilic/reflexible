@@ -2,16 +2,16 @@
 .. _mapping-overview:
 
 
-********************
+******************
 The mapping module
-********************
+******************
 
 .. _module-description:
 
 A brief description of the module
-==================================
+=================================
 
-The mapping module is a helper function to the :mod:`pflexpart` module.
+The mapping module is a helper function to the :mod:`pflexible` module.
 Primarily it is designed to perform a few tasks relating to using the 
 matplotlib `Basemap
 <http://matplotlib.sourceforge.net/basemap/doc/html/api/basemap_api.html#module-mpl_toolkits.basemap>`_ 
@@ -27,7 +27,7 @@ Purpose
 -------
 
 The purpose of this module is to ease create some basic mapping routines using
-the basemap module. These are called directly from the :mod:`pflexpart` for
+the basemap module. These are called directly from the :mod:`pflexible` for
 example in the :func:`plot_sensitivity` routine. The core idea is that a
 "FIGURE" object is created using the :func:`get_FIGURE` function which has some
 key attributes. In general, this is transparent to the user, just intialize
@@ -55,7 +55,7 @@ indices                 See the :func:`get_FIGURE` which
 
 Regions
 -------
-Another commonly used paradigm is the passing of a 'region' keyword to the
+Another commonly used paradigm is the passing of a 'map_region' keyword to the
 functions. Regions are defined manually at present. You'll have to edit the
 :file:`mapping.py` and specifically, the :func:`map_regions`. Following the
 instructions for the `Basemap
@@ -73,13 +73,13 @@ compatability. Constructive input is sought, but don't complain if something bre
 
 .. _api-index:
 
-*****************
+***************
 The mapping API
-*****************
+***************
 
   :Release: |version|
   :Date: |today|
 
-.. automodule:: nilu.pflexpart.mapping
+.. automodule:: pflexible.mapping
    :members:
    :undoc-members:

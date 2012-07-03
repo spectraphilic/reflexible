@@ -1,50 +1,50 @@
 #!/usr/bin/env python
-#"""
-#SYNOPSIS
-#========
-#
-#    pflexible [-h] [-v,--verbose] [--version]
-#
-#DESCRIPTION
-#===========
-#
-#    pflexible: A python module for working with FLEXPART Output.
-#
-#
-#EXAMPLES
-#========
-#
-#    #TODO:
-#
-#    A lot! This is just a starting point. See the doc strings
-#    for information about the various functions.
-#
-#
-#AUTHOR
-#======
-#
-#    JFB: John F Burkhart <john.burkhart@nilu.no>
-#
-#CONTRIBUTORS
-#============
-#
-#    HSO: Harald Sodemann
-#    SEC: Sabine Eckhardt
-#    AST: Andreas Stohl
-#
-#    Many functions are adaptations of Fortran / NCARG programs (AST)
-#    or Matlab functions (HSO/SEC).
-#
-#LICENSE
-#=======
-#
-#    This script follows creative commons usage.
-#
-#VERSION
-#=======
-#
-#    ID: $Id$: $Rev$ 
-#"""
+"""
+SYNOPSIS
+========
+
+    pflexible [-h] [-v,--verbose] [--version]
+
+DESCRIPTION
+===========
+
+    pflexible: A python module for working with FLEXPART Output.
+
+
+EXAMPLES
+========
+
+    #TODO:
+
+    A lot! This is just a starting point. See the doc strings
+    for information about the various functions.
+
+
+AUTHOR
+======
+
+    JFB: John F Burkhart <jfburkhart@gmail.com>
+
+CONTRIBUTORS
+============
+
+    HSO: Harald Sodemann
+    SEC: Sabine Eckhardt
+    AST: Andreas Stohl
+
+    Many functions are adaptations of Fortran / NCARG programs (AST)
+    or Matlab functions (HSO/SEC).
+
+LICENSE
+=======
+
+    This script follows creative commons usage.
+
+VERSION
+=======
+
+    ID: $Id$: $Rev$ 
+"""
 #builtin imports
 import pdb
 import sys
@@ -75,13 +75,12 @@ except ImportError:
     from matplotlib.toolkits.basemap import shiftgrid, addcyclic
 
 
-#Custom JFB imports
-#import utils.deprecated as deprecated
+#local imports
 import mapping as mp
-#from nilu.pflexpart import emissions as em
 
 __version__ = '0.8.8'
 __path__ = os.path.abspath(os.curdir)
+
 #### Functions for reading FLEXPART output ##### 
 
 
@@ -450,6 +449,7 @@ def read_trajectories(H, trajfile='trajectories.txt', \
         plt.savefig('trajectories.png')
     """
     return RelTraj
+
 
 def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_track=False):
     """

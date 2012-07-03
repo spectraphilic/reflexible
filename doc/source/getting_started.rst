@@ -8,7 +8,7 @@ Getting started
 .. _installing-docdir:
 
 A quick overview of FLEXPART data
-==================================
+=================================
 
 pflexible was originally developed for working with FLEXPART V8.x which has
 some fairly new features to how the output data is created. See the 
@@ -66,6 +66,7 @@ Make sure you also have the dependencies installed:
   - f2py (to build FortFlex)
   - Scientific (not for long)
   - netCDF4
+  - PIL
 
 ----
 .. _setting-pythonpath:
@@ -143,17 +144,16 @@ run setup.
 
 ----
 Reasonably, you should now want to read in some of the data from your run. This
-is accomplished easlier using the :func:`read_grid
-<nilu.pflexible.pflexible.read_grid>`. For optimal
+is accomplished easlier using the :func:`read_grid <pflexible.read_grid>`. For optimal
 performance, this function will use the FortFlex module. However, as a fall
 back there is a pure python method, but it is significantly slower. If you are
-having problems compiling :mod:`FortFlex <nilu.pflexible.FortFlex>`, see 
+having problems compiling :mod:`FortFlex <pflexible.FortFlex>`, see 
 the section above. Either way, the function call looks like::
 
     > FD = pf.read_grid(H,time_ret=0,nspec_ret=0)
 
 .. note::
-  See the :func:`read_grid <nilu.pflexible.pflexible.read_grid>` function 
+  See the :func:`read_grid <pflexible.read_grid>` function 
   for information on the keyword arguments.
 
 At this point you should now have a variable 'FD' which is again a dictionary of
@@ -162,18 +162,8 @@ is stored. The actual data is keyed by tuples: (nspec, datestr) where nspec is
 the species number and datestr is a YYYYMMDDHHMMSS string for the grid
 timestep.
 
-.. warning::
-        The following is out of date, I am working on creating some more
-        trivial examples.
 
 ----
-..  Once you have the dataset (and assuming you have the dependencies resolved)
-    you are ready to run the :file:`examples/backward_run.py`. First redefine the "
-    SOURCE_DIR" and "OUTPUT_DIR" as appropriate. Now, let's first take it for a test drive::
-    
-       > ./backward_run.py
-       
-    If all goes well, you can browse to your "OUTPUT_DIR" and you should see some .png files.
     
 Okay, let\'s take a look at the example code line by line. The first line imports the module, 
 giving it a namespace "pf". The next few lines simply define the paths for "SOURCE_DIR" and 
@@ -200,7 +190,7 @@ attribute (a dictionary) with all the data from the run.::
 
   > H.fill_backward(nspec=(0,1))
 
-H.D is now keyed by (s,k) where s is an integer for the species #, and k is an
+H.C is now keyed by (s,k) where s is an integer for the species #, and k is an
 integer for the release id. In the example, I use the :func:`read_trajectories` function
 to get the trajectories from the run output directory.::
 
@@ -220,6 +210,10 @@ and :func:`plot_footprint`.
   docstrings. Documentation of this module is presently incomplete but I
   am working on it.
 
+.. warning::
+        The following is out of date, I am working on creating some more
+        trivial examples.
+        
 First I create two "None" objects for passing the figure instances around and to
 reuse them (for efficiency). After that we loop over the keys (s=species, and
 k=rel_i) of the "D" attribute we created by calling `fill_backward`. Note, I named
