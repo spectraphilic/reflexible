@@ -4082,7 +4082,7 @@ def plot_sensitivity(H, data, \
         dat_min = data_range[0]
         dat_max = data_range[1]
     else:
-        dat_min, dat_max = _data_range(data)
+        dat_min, dat_max = data_range(data)
         
         
     if log:
@@ -4341,7 +4341,7 @@ def plot_curtain(H, data, \
         dat_min = data_range[0]
         dat_max = data_range[1]
     else:
-        dat_min, dat_max = _data_range(data)
+        dat_min, dat_max = data_range(data)
         
     if log:
         clevs = _log_clevs(dat_min, dat_max)
@@ -4870,7 +4870,7 @@ class Header(Structure):
 
         return closest(dateval, self['available_dates_dt'])
 
-def _data_range(data, min='median'):
+def data_range(data, min='median'):
     """
     return a data range for flexpart data
     
@@ -5008,6 +5008,7 @@ def _gen_daylabels(P, H=None, dt=86400):
         return [str(1 + int(abs(p)) / dt) for p in P]
 
 
+
 def _datarange(H, G, index=None):
     """ returns max and min for footprint and total column
         for a given range of releases [default is all] """
@@ -5025,6 +5026,7 @@ def _datarange(H, G, index=None):
         #print fpmax
     tcmax = np.max(G)
     return ((0, fpmax), (0, tfcmax))
+
 
 
 def _genEllipse(data, m, sizescale=20000,
