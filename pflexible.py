@@ -78,7 +78,7 @@ except ImportError:
 #local imports
 import mapping as mp
 
-__version__ = '0.8.8'
+__version__ = '0.9.0'
 __path__ = os.path.abspath(os.curdir)
 
 #### Functions for reading FLEXPART output ##### 
