@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """
+
 SYNOPSIS
 ========
 
@@ -100,75 +101,75 @@ def read_command(path, headerrows=7):
 
 
     Returns
-      a dictionary with the following keys
+    a dictionary with the following keys
 
-      ============      =================================================================
-      fields            description
-      ============      =================================================================
-      SIM_DIR           Simulation direction
-      SIM_START         Text str of YYYYMMDD HHMMSS
-      SIM_END           Text str of YYYYMMDD HHMMSS
-      AVG_CNC_INT       Average concentrations are calculated every SSSSS seconds
-      AVG_CNC_TAVG      The average concentrations are time averages of SSSSS sec
-      CNC_SAMP_TIME     The concentrations are sampled every SSSSS seconds to
+    ================    =================================================================
+    fields              description
+    ================    =================================================================
+    SIM_DIR             Simulation direction
+    SIM_START           Text str of YYYYMMDD HHMMSS
+    SIM_END             Text str of YYYYMMDD HHMMSS
+    AVG_CNC_INT         Average concentrations are calculated every SSSSS seconds
+    AVG_CNC_TAVG        The average concentrations are time averages of SSSSS sec
+    CNC_SAMP_TIME       The concentrations are sampled every SSSSS seconds to
                         calculate the time average concentration.
-      T_PARTSPLIT       Time constant for particle splitting.
-      SYNC              Alll processes are synchronized with this time interval
-      CTL
-      IFINE             IFINE=Reduction factor for time step used for vertical wind
-      IOUT              IOUT determines how the output shall be made: concentration
+    T_PARTSPLIT         Time constant for particle splitting.
+    SYNC                All processes are synchronized with this time interval
+    CTL                 --   
+    IFINE               IFINE=Reduction factor for time step used for vertical wind
+    IOUT                IOUT determines how the output shall be made: concentration
                         (ng/m3, Bq/m3), mixing ratio (pptv), or both, or plume
                         trajectory mode, or concentration + plume trajectory mode.
-      IPOUT             IPOUT determines whether particle positions are outputted
+    IPOUT               IPOUT determines whether particle positions are outputted
                         (in addition to the gridded concentrations or mixing ratios)
                         or not. 0=no output, 1 output every output interval, 2 only
                         at end of the simulation
-      LSUBGRID          Switch on/off subgridscale terrain parameterization
+    LSUBGRID            Switch on/off subgridscale terrain parameterization
                         (increase of mixing heights due to subgridscale orog. var
-      LCONVECTION       Switch on/off the convection parameterization
-      LAGESPECTRA       Switch on/off the calculation of age spectra: if yes, the
+    LCONVECTION         Switch on/off the convection parameterization
+    LAGESPECTRA         Switch on/off the calculation of age spectra: if yes, the
                         file AGECLASSES must be available
-      IPIN              If IPIN=1, a file "partposit_end" from a previous run must
+    IPIN                If IPIN=1, a file "partposit_end" from a previous run must
                         be available in the output directory. Particle positions
                         are read in and previous simulation is continued. If
                         IPIN=0, no particles from a previous run are used
-      OUTPUTFOREACHRELEASE Switch on/off writing out each release.
-      IFLUX             If IFLUX is set to 1, fluxes of each species through each
+    IOFR                 Switch on/off writing out each release.
+    IFLUX               If IFLUX is set to 1, fluxes of each species through each
                         of the output boxes are calculated. Six fluxes,
                         corresponding to northward, southward, eastward, westward,
                         upward and downward are calculated for each grid cell of
                         the output grid. The control surfaces are placed in the
                         middle of each output grid cell. If IFLUX is set to 0,
                         no fluxes are determined.
-      MDOMAINFILL       If MDOMAINFILL is set to 1, the first box specified in file
+    MDOMAINFILL         If MDOMAINFILL is set to 1, the first box specified in file
                         RELEASES is used as the domain where domain-filling
                         trajectory calculations are to be done. Particles are
                         initialized uniformly distributed (according to the air mass
                         distribution) in that domain at the beginning of the
                         simulation, and are created at the boundaries throughout
                         the simulation period
-      IND_SOURCE        IND_SOURCE switches between different units for
+    IND_SOURCE          IND_SOURCE switches between different units for
                         concentrations at the source. NOTE that in backward
                         simulations the release of computational particles takes
                         place at the "receptor" and the sampling of particles at
                         the "source".  1=mass units (for bwd-runs = concentration)
-                                       2=mass mixing ratio units'''],
+                        2=mass mixing ratio units'''],
 
-      IND_RECEPTOR      IND_RECEPTOR switches between different units for
+    IND_RECEPTOR        IND_RECEPTOR switches between different units for
                         concentrations at the receptor 1=mass units (concentrations)
-                                                       2=mass mixing ratio units
+                        2=mass mixing ratio units
 
-      MQUASILAG         MQUASILAG indicates whether particles shall be numbered
+    MQUASILAG           MQUASILAG indicates whether particles shall be numbered
                         consecutively (1) or with their release location number (0).
                         The first option allows tracking of individual particles
                         using the partposit output files
 
-      NESTED_OUTPUT     NESTED_OUTPUT decides whether model output shall be made
+    NESTED_OUTPUT       NESTED_OUTPUT decides whether model output shall be made
                         also for a nested output field (normally with higher resolution)
-      LINIT_COND        For Backward Runs, sets initial conditions:
+    LINIT_COND          For Backward Runs, sets initial conditions:
                         [0]=No, 1=Mass Unit, 2=Mass Mixing
 
-      ===============   =================================================================
+    ================    =================================================================
 
     """
     lines = file(path, 'r').readlines()
@@ -2471,21 +2472,21 @@ def fill_backward(H, nspec=0, FD=None, add_attributes=False):
         C & FD attributes on H
 
     Each element in the dictionary is a 3D array (x,y,z) for each species,k
+
     .. note::
         USE with *caution*, this is **MEMORY** intensive!
 
     Arguments
 
-      .. tabularcolumns::  |l|L|
 
-      ==============        ========================================
-      keyword               Description [default]
-      ==============        ========================================
-      nspec                 the specied ID or a tuple of species IDs
-      FD                    FD can be passed if it is already read
-      add_attributes        will add C and FD as attributes to H,
-                            rather than returning just C
-      ==============        ========================================
+    ==============        ========================================
+    keyword               Description [default]
+    ==============        ========================================
+    nspec                 the specied ID or a tuple of species IDs
+    FD                    FD can be passed if it is already read
+    add_attributes        will add C and FD as attributes to H,
+                          rather than returning just C
+    ==============        ========================================
 
     .. todo::
         There's a lot of redundancy in the storage of attributes, maybe there is a
@@ -4431,7 +4432,7 @@ def plot_curtain(H, data, \
 
 
 def plot_METDATA(METDATA, FIGURE, date=None, level=None):
-    """ plots met data returned from :module:`mp.get_OpenDAP`
+    """ plots met data returned from :module:`pflexible.mapping.get_OpenDAP`
 
     """
 
@@ -4517,8 +4518,9 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
 class BinaryFile(object):
 
     """
+    
     BinaryFile: A class for accessing data to/from large binary files
-    =================================================================
+   
 
     The data is meant to be read/write sequentially from/to a binary file.
     One can request to read a piece of data with a specific type and shape
@@ -4532,7 +4534,7 @@ class BinaryFile(object):
     :Contact:  faltet@pytables.org
     :Created:  2010-03-18
     :Acknowledgment: Funding for the development of this code is provided
-    through the Norwegian Research Council VAUUAV project #184724, 2010
+         through the Norwegian Research Council VAUUAV project #184724, 2010
 
     """
 
@@ -5032,19 +5034,23 @@ def _datarange(H, G, index=None):
 def _genEllipse(data, m, sizescale=20000,
                 altlim=None):
     """
-    Generates ellipses based on input array 'data'. Requires basemap instance, 'm'. NOTE:
 
-    data = [itime,x,y,z,[size]]
+    Generates ellipses based on input array 'data'. Requires basemap instance, 'm'. NOTE::
 
-    r,c = data.shape
-    if c == 5:
-        size function of data[:,4]
-    else:
-        size = 1*sizescale
+        data = [itime,x,y,z,[size]]
 
-    uses function:
-    _gen_altitude_color
-    _gen_daylabels
+        r,c = data.shape
+
+        if c == 5:
+            size function of data[:,4]
+        else:
+            size = 1*sizescale
+
+    uses functions:
+
+        * _gen_altitude_color
+        * _gen_daylabels
+    
     for labeling/color of ellipses
 
     """

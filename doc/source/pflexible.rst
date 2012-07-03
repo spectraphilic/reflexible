@@ -47,3 +47,4 @@ The pflexible API
 .. automodule:: pflexible
    :members:
    :undoc-members:
+   :private-members:
