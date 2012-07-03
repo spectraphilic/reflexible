@@ -18,27 +18,45 @@ Creative Commons.
 .. _getting-pflexible:
 
 Getting pflexible
-=================
+======================
 Please contact: `John F. Burkhart <jfburkhart@gmail.com>`_
 
-The code is available to the public, but it is presently maintained at bitbucket
-with restricted sharing. Upon request, we can bundle the latest release.
-
-Make sure you also have the dependencies installed:
+First, make sure you also have the dependencies installed:
   - numpy
   - matplotlib
   - basemap (matplotlib toolkit)
   - f2py (to build FortFlex)
-  - Scientific (not for long)
-  - netCDF4
+  - netCDF4 (*not* python-netcdf)
   - PIL
+
+Note the easiest way I've found to deal with the dependencies is to use one of
+'complete distributions' such as `Enthought <http://www.enthought.com>`_ or the
+`python(xy) <http://www.pythonxy.com>`_. For Ubuntu you can just use the
+packages. For the netcdf, we found it easiest to use the science-meteorology-dev
+meta package and use pip to install netcdf4.
+
+Once you've installed all the dependencies, you can get the code from either
+sources below.
+
+BitBucket
+-------------------
+
+The code is available to the public at `bitbucket
+<https://bitbucket.org/jfburkhart/pflexible>`_. 
+
+PyPi
+------------
+
+The `pflexible <http://pypi.python.org/pypi/pflexible>`_ code is also posted to
+pypi, but this is more likely to fall out of date.
+
 
 ----
 
 .. _setting-pythonpath:
 
 Installation and setting the PYTHONPATH
--------------------------------------------------
+==========================================================
 
 Depending on where you checked out the pflexible module to, you need to make
 sure it is accessbile in your PYTHONPATH environment variable. The dependencies
