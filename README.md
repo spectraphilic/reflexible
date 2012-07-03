@@ -19,7 +19,7 @@ the [pflexible_maillist](https://lists.sourceforge.net/lists/listinfo/pflexible-
 Direct inquiries may be sent to::
 
 	John F Burkhart, Norwegian Institute for Air Research
-	john.burkhart@nilu.no
+	[john.burkhart](mailto://john.burkhart@nilu.no)
 
 
 ## Web Resources ##
@@ -32,8 +32,12 @@ Clone the bitbucket repository into a folder in your PYTHONPATH::
 
 ### Sphinx Documentation ###
 
-The documentation is built and hosted at
-[readthedocs](http://pflexible.readthedocs.org)
+The documentation is hosted at my
+[homepage](http://niflheim.nilu.no/jfburkhart). You can get to it under the
+'Software' section.
+
+I am also trying to build it at readthedocs, but there are currently problems
+with the autodoc for the modules [readthedocs](http://pflexible.readthedocs.org)
 
 
 ## Working with pflexible
