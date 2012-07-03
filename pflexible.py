@@ -2047,6 +2047,7 @@ def readgridV8(H, **kwargs):
 
     units = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
     unit_i = units.index(unit)
+
     # Determine what module to read, try to use FortFlex, then dumpgrid, lastly pure Python
     # import the FortFlex / Fortran module
     try:
@@ -2067,19 +2068,10 @@ def readgridV8(H, **kwargs):
             print 'using nilu.pflexpart FortFlex'
         except:
             useFortFlex = False
-            raise ImportError('Cannot load FortFlex.so for FortFlex64.so. Is the module available?')
+            print('Cannot load FortFlex, reverting to BinaryFile.')
     if not useFortFlex:
         readgrid = _readgridBF
         OPS.BinaryFile = True
-
-    #cheat: use key2var function to get values from header dict, H
-    # need to change this to using H.xxxxx
-    #headervars = ['nested','nspec','numxgrid','numygrid','numzgrid','nageclass',\
-    #              'dates','pathname','decayconstant','numpoint','numpointspec',
-    #              'area','Heightnn','lage']
-    #for k in headervars:
-    #    key2var(H,k)
-
 
 
    # reserve output fields
@@ -2087,20 +2079,10 @@ def readgridV8(H, **kwargs):
 
     # -------------------------------------------------
 
-    #if forward:
-    #    numpointspec = 1
-    #else:
-    #    numpointspec = numpoint
-    #numpointspec = H['numpointspec']
-    #if unit_i == 4:
-        #grid=np.empty((numxgrid,numygrid,1,nspec_ret,pspec_ret,age_ret,len(get_dates)))
-    #else:
-        #grid=np.empty((numxgrid,numygrid,numzgrid[0],nspec_ret,pspec_ret,age_ret,len(get_dates)))
-    #zplot=np.empty((numxgrid,numygrid,numzgrid[0],numpointspec))
-
     ## add the requests to the fd object to be returned
     OPS.unit = unit
     fd.options.update(OPS)
+
     #--------------------------------------------------
     # Loop over all times, given in field H['available_dates']
     #--------------------------------------------------
@@ -2139,7 +2121,6 @@ def readgridV8(H, **kwargs):
 
 
                 if OPS.BinaryFile:
-                    print 'Using BinaryFile'
                     gridT, wetgrid, drygrid, itime = _readgridBF(H, filename)
                 else:
                     ## Quick fix for Sabine's Ship releases, added nspec_int so that only one
