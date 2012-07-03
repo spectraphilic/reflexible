@@ -12,9 +12,16 @@ by Sabine Eckhardt and Harald Sodemann at NILU. Subsequent development
 and the Python routines have been conducted by John Burkhart.
 
 ## Contact ##
-for further information contact:
-John F Burkhart, Norwegian Institute for Air Research
-john.burkhart@nilu.no
+
+A maillist has been set up for users at sourceforge. Please direct inquiries via
+the maillist::
+
+	https://lists.sourceforge.net/lists/listinfo/pflexible-users
+
+Direct inquiries may be sent to::
+
+	John F Burkhart, Norwegian Institute for Air Research
+	john.burkhart@nilu.no
 
 
 ## Web Resources ##

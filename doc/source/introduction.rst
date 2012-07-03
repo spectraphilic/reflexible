@@ -53,6 +53,18 @@ pypi, but this is more likely to fall out of date.
 
 ----
 
+.. _email-list:
+
+Mailing List
+====================
+
+There is a mailing list for the project set up at with sourceforge. You can subscribe to
+the `pflexible
+<https://lists.sourceforge.net/lists/listinfo/pflexible-users>`_ list for user
+discussions.
+
+
+
 .. _setting-pythonpath:
 
 Installation and setting the PYTHONPATH
