@@ -14,9 +14,7 @@ and the Python routines have been conducted by John Burkhart.
 ## Contact ##
 
 A maillist has been set up for users at sourceforge. Please direct inquiries via
-the maillist::
-
-	https://lists.sourceforge.net/lists/listinfo/pflexible-users
+the [pflexible_maillist](https://lists.sourceforge.net/lists/listinfo/pflexible-users)
 
 Direct inquiries may be sent to::
 
