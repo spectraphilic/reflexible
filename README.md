@@ -21,7 +21,7 @@ A maillist has been set up for users at sourceforge. Please direct inquiries via
 the [pflexible_maillist](https://lists.sourceforge.net/lists/listinfo/pflexible-users)
 
 As for Issues, please use the
-[tool](http://https://bitbucket.org/jfburkhart/pflexible/issues/new) at
+[tool](https://bitbucket.org/jfburkhart/pflexible/issues/new) at
 bitbucket.
 
 Direct inquiries may be sent to::
