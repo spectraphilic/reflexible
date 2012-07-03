@@ -4,17 +4,25 @@
 This module is being created to work with FLEXPART model ouput. FLEXPART is a 
 Lagrangian particle dispersion model written by Andreas Stohl. It is in 
 active development at NILU and by Sabine Eckhardt, John Burkhart and numerous 
-other research groups worldwide. For more information on FLEXPART visit the
-[homepage](http://transport.nilu.no/flexpart "FLEXPART")
+other research groups worldwide.
 
 This module is based partially on Matlab(c) routines developed
 by Sabine Eckhardt and Harald Sodemann at NILU. Subsequent development
 and the Python routines have been conducted by John Burkhart.
 
-## Contact ##
+This software was written for the purposes of conducting research and displaying
+model results for publications. More information can be found on my
+[homepage](http://niflheim.nilu.no/~burkhart) under the 'Software' and
+'Publications' sections.
+
+## Contact, Issues, and Discussion ##
 
 A maillist has been set up for users at sourceforge. Please direct inquiries via
 the [pflexible_maillist](https://lists.sourceforge.net/lists/listinfo/pflexible-users)
+
+As for Issues, please use the
+[tool](http://https://bitbucket.org/jfburkhart/pflexible/issues/new) at
+bitbucket.
 
 Direct inquiries may be sent to::
 
