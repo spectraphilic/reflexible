@@ -298,6 +298,135 @@ def read_releases(path, headerrows=11):
     return np.rec.fromrecords(blocks, names=names)
 
 
+def read_particlepositions(H, **kwargs):
+    """
+    Reads the partposit files when using FLEXPART with IOFR set to 1
+    """
+    from FortFlex import readparticles
+    
+    ## OPS is the options Structure, sets defaults, then update w/ kwargs
+    OPS = Structure()
+    OPS.unit = H.unit
+    OPS.getwet = False
+    OPS.getdry = False
+    OPS.nspec_ret = 0
+    OPS.npspec_int = False  # allows to select an index of npsec when calling readgrid
+    OPS.pspec_ret = 0
+    OPS.age_ret = 0
+    OPS.time_ret = 0
+    OPS.scaledepo = 1.0
+    OPS.scaleconc = 1.0
+    OPS.decayconstant = 9e6
+    OPS.date = None
+    OPS.calcfoot = False
+    OPS.verbose = False
+    OPS.BinaryFile = False
+    OPS.version = 'V8'
+    ## add keyword overides and options to header
+    OPS.update(kwargs)
+    
+    ## set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    FLEXDATA = {}
+    fd = Structure()
+    fd.options = Structure()
+
+    ## What direction is the run?
+    unit = OPS.unit
+    
+    if H['loutstep'] > 0:
+        forward = True
+        if unit == 'time':
+            ## default forward unit
+            unit = 'conc'
+            OPS.unit = unit
+    else:
+        forward = False
+
+    ## What species to return?
+    nspec_ret = OPS.nspec_ret
+    if isinstance(nspec_ret, int):
+        nspec_ret = [nspec_ret]
+    assert iter(nspec_ret), "nspec_ret must be iterable."
+
+    ## get times to return
+    get_dates = None
+    if OPS.time_ret is not None:
+        get_dates = []
+        time_ret = OPS.time_ret
+        if isinstance(time_ret, int) == True:
+            time_ret = [time_ret]
+
+        if time_ret[0] < 0:
+            if forward == False:
+                ## get all dates for calculating footprint.
+                time_ret = np.arange(len(H.available_dates))
+            else:
+                raise ValueError("Must enter a positive time_ret for forward runs")
+
+        for t in time_ret:
+            get_dates.append(H.available_dates[t])
+
+
+    ## define what dates to extract if user has explicitly defined a 'date'
+    if OPS.date != None:
+        date = OPS.date
+        if time_ret is not None:
+            Warning("overwriting time_ret variable, date was requested")
+        get_dates = []
+        if not isinstance(date, list):
+            date = date.strip().split(',')
+        for d in date:
+            try:
+                get_dates.append(H.available_dates[H.available_dates.index(d)])
+                time_ret = None
+            except:
+                _shout("Cannot find date: %s in H['available_dates']\n" % d)
+
+    if get_dates is None:
+        raise ValueError("Must provide either time_ret or date value.")
+    else:
+        ## assign grid dates for indexing fd
+        fd.grid_dates = get_dates[:]
+
+    print 'getting grid for: ', get_dates
+    # Some predifinitions
+    fail = 0
+    prefix = ['partposit_', 'partposit_nest_']
+    
+    for date_i in range(len(get_dates)):
+        datestring = get_dates[date_i]
+        print datestring
+        for s in nspec_ret: #range(OPS.nspec_ret,OPS.nspec_ret+1):A
+            
+            FLEXDATA[(s, datestring)] = Structure()
+            
+            if H.nested == 1:
+                filename = os.path.join(H['pathname'], \
+                            prefix[1] + datestring)
+                
+
+            else:
+                filename = os.path.join(H['pathname'], \
+                            prefix[0] + datestring)
+                
+            if os.path.exists(filename):
+
+                if OPS.BinaryFile:
+                    raise OptionError("BinaryFile not yet implemented")
+                    pp, xm = _readpartBF(H, filename)
+                else:
+                    readparticles(filename, H.npart[0], H.nspec, H.dxout, H.dyout, H.outlon0, H.outlat0)
+                
+            else:
+                print("Cannot find partposit file: {0}".format(filename))    
+            
+            FLEXDATA[(s, datestring)].partposit = pp
+            FLEXDATA[(s, datestring)].xmass = xm
+            
+    return FLEXDATA
+                    
+    
+
 def read_trajectories(H, trajfile='trajectories.txt', \
                      ncluster=5, \
                      ageclasses=20):
