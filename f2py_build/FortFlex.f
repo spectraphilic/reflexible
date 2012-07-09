@@ -573,17 +573,18 @@ C Determine area of each output grid box
 
 
       subroutine readparticles(filename,npart,nspec,dx,dy,xlon0, ylat0,
-     +                         partpositions,xmass)
+     +                         partpositions,xmass,ipoint)
 
       character filename*250
 Cf2py intent(in) filename
 
       integer :: i
       real, dimension(npart, nspec) :: xmass
-      real, dimension(npart, 12) :: partpositions
+      integer, dimension(npart) :: ipoint
+      real, dimension(npart, 11) :: partpositions
 Cf2py intent(out) partpositions
 Cf2py intent(out) xmass
-
+Cf2py intent(out) ipoint
       open(10,file=filename,
      +status='unknown',form='unformatted')
 
@@ -592,7 +593,10 @@ Cf2py intent(out) xmass
       i=0
 200   i=i+1
 
-      read(10) (partpositions(i,j),j=1,12),(xmass(i,j),j=1,nspec)
+      read(10) ipoint(i), (partpositions(i,j),j=1,11),
+     +                        (xmass(i,j),j=1,nspec)
+!     read(10) rnpoint,rxlonin,rylatin,rztraj,itramem,
+!     +topo,rpvi,rqvi,rhoi,rhmixi,tri,tti,(xmass(i,j),j=1,nspec)
 
       if (partpositions(i,2).eq.-9999.9) goto 100
 

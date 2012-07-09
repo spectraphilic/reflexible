@@ -77,6 +77,18 @@ python module FortFlex ! in
             real dimension(nxmax,nymax,nzmax + 1),intent(out),depend(nxmax,nymax,nzmax) :: heightnn
             real dimension(nxmax,nymax),intent(out),depend(nxmax,nymax) :: area
         end subroutine readheader
+        subroutine readparticles(filename,npart,nspec,dx,dy,xlon0,ylat0,partpositions,xmass,ipoint) ! in :FortFlex:FortFlex.f
+            character*250 intent(in) :: filename
+            integer :: npart
+            integer :: nspec
+            real :: dx
+            real :: dy
+            real :: xlon0
+            real :: ylat0
+            real dimension(npart,11),intent(out),depend(npart) :: partpositions
+            real dimension(npart,nspec),intent(out),depend(npart,nspec) :: xmass
+            integer dimension(npart),intent(out),depend(npart) :: ipoint
+        end subroutine readparticles
     end interface 
 end python module FortFlex
 
