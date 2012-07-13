@@ -58,8 +58,7 @@ import time
 import datetime
 import itertools
 from math import pi, sqrt, cos
-from collections import OrderedDict
-
+import traceback
 
 #Dependencies:
 # Numpy
@@ -872,10 +871,26 @@ def read_header(pathname, **kwargs):
         filename = os.path.join(pathname, OPS.headerfile);
 
     # Open header file in binary format
-    bf = BinaryFile(filename, order="fortran")
+    if not os.path.exists(filename):
+        raise IOError("No such file: {0}".format(filename))
+    
+    else:
+        try:
+            bf = BinaryFile(filename, order="fortran")
+        except:
+            raise IOError("Error opening: {0} with BinaryFile class".format(filename))
+    
     #Get available_dates from dates file in same directory as header
     datefile = os.path.join(pathname, 'dates')
-    fd = file(datefile, 'r').readlines()
+    
+    if not os.path.exists(datefile):
+        raise IOError("No such file: {0}".format(datefile))
+    else:
+        try:
+            fd = file(datefile, 'r').readlines()
+        except:
+            raise IOError("Could not read datefile: {0}".format(datefile))
+    
     #get rid of any duplicats (a fix for the forecast system)
     fd = sorted(list(set(fd)))
     h['available_dates'] = [d.strip('\n') for d in fd]
@@ -1345,7 +1360,7 @@ def readheaderV6(pathname, **kwargs):
 
     #############  A FEW ADDITIONS ###########
     # add a few default attributes
-
+    h.options = OPS
     h.path = pathname
 #    if OPS.readp_ff:
 #        h = _read_headerFF(filename,h,
@@ -1407,8 +1422,33 @@ def readheaderV6(pathname, **kwargs):
     else:
         h.direction = 'backward'
         h.unit = 'time'
-        h.plot_unit = 'ns / kg' #Not sure about this
-
+        h.plot_unit = 'ns / kg' #check
+        
+    # Units based on Table 1, ACP 2005
+    h['ind_source'] = 1 ## DANGER! This is specific to NILU Backward Runs.
+    h['ind_receptor'] = 1
+    if h.direction == 'forward':
+        if h.ind_source == 1:
+            if h.ind_receptor == 1:
+                h.output_unit = 'ng m-3'
+            if h.ind_receptor == 2:
+                h.output_unit = 'pptm'
+        if h.ind_source == 2:
+            if h.ind_receptor == 1:
+                h.output_unit = 'ng m-3'
+            if h.ind_receptor == 2:
+                h.output_unit = 'pptm'
+    if h.direction == 'backward':
+        if h.ind_source == 1:
+            if h.ind_receptor == 1:
+                h.output_unit = 's'
+            if h.ind_receptor == 2:
+                h.output_unit = 's m^3 kg-1'
+        if h.ind_source == 2:
+            if h.ind_receptor == 1:
+                h.output_unit = 's kg m-3'
+            if h.ind_receptor == 2:
+                h.output_unit = 's'
 
     print 'Header read: %s,\n%s' % (filename, warning)
 
@@ -3730,7 +3770,7 @@ def plot_totalcolumn(H, D=None, \
     if 'units' in kwargs:
         units = kwargs.pop('units')
     else:
-        units = H.output_unit
+        units = 'ns m kg-1'
 
     rel_i = D.rel_i
     species = D.species
@@ -4019,7 +4059,6 @@ def plot_sensitivity(H, data, \
         del FIGURE.ax.collections[FIGURE.indices.collections:]
         del FIGURE.ax.lines[FIGURE.indices.lines:]
 
-    print FIGURE
     if dropm != None:
         try:
             del m
@@ -4796,8 +4835,9 @@ class Header(Structure):
                 self.lonlat()
                 self.version = 'V6'
             except:
-                print path
-                raise IOError('Could not set header variables. Does the path exist?')
+                
+                traceback.print_exc()
+                raise IOError('Could not set header variables. Does the path exist?\n{0}'.format(path))
 
     def lonlat(self):
         """ Add longitude and latitude attributes using data from header """
@@ -4829,10 +4869,18 @@ class Header(Structure):
             # day = day[:8]
             firedata = em.MODIS_hotspot(day)
             daily = firedata.daily
-            if self.fires == None:
-                self.fires = daily
+            #pdb.set_trace()
+            if daily is None:
+                continue
             else:
-                self.fires = np.hstack((self.fires, daily)).view(np.recarray)
+                if self.fires == None:
+                    self.fires = daily
+                else:
+#                    print day
+#                    print self.fires.shape
+#                    print daily.shape
+
+                    self.fires = np.hstack((self.fires, daily)).view(np.recarray)
 
     def closest_dates(self, dateval, fmt=None, take_set=False):
         """ given an iterable of datetimes, finds the closest dates.

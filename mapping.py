@@ -1878,7 +1878,7 @@ def plot_track(lon,lat,
     ax.xaxis.set_major_formatter( nullfmt )
     ax.yaxis.set_major_formatter( nullfmt )
     plt.setp(ax, xticks=[],yticks=[])
-    ax.axesPatch.set_alpha(0.0)
+    #ax.axesPatch.set_alpha(0.0)
     if figname:
         plt.savefig(figname)
     FIGURE.fig = fig

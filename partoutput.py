@@ -6,6 +6,14 @@ Created on Jul 10, 2012
 partoutput module for working with FLEXPART partoutput data
 '''
 
+import os
+
+import numpy as np
+import datetime
+from collections import OrderedDict
+
+import pflexible as pf
+
 
 def read_particlepositions(H, **kwargs):
     """
@@ -61,7 +69,7 @@ def read_particlepositions(H, **kwargs):
     from FortFlex import readparticles
     
     ## OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = Structure()
+    OPS = pf.Structure()
     OPS.npspec_int = False  # allows to select an index of npsec when calling readgrid
     OPS.time_ret = 0
     OPS.date = None
@@ -96,7 +104,7 @@ def read_particlepositions(H, **kwargs):
                 get_dates.append(H.available_dates[H.available_dates.index(d)])
                 time_ret = None
             except:
-                _shout("Cannot find date: %s in H['available_dates']\n" % d)
+                raise IOError("Cannot find date: %s in H['available_dates']\n" % d)
 
     if get_dates is None:
         raise ValueError("Must provide either time_ret or date value.")
@@ -114,7 +122,7 @@ def read_particlepositions(H, **kwargs):
         print datestring
         dt_key = datetime.datetime.strptime(datestring, '%Y%m%d%H%M%S')
             
-        PP[dt_key] = Structure()
+        PP[dt_key] = pf.Structure()
         
         if H.nested == 1:
             filename = join(H['pathname'], \
@@ -170,4 +178,21 @@ def dictarrays_as_array(PARTS, array_key='partposit'):
     :func:`read_particlepositions` """
 
     return np.dstack((PARTS[k][array_key] for k in sorted(PARTS.keys())))
-   
+
+
+def eminusp(H, allparticles, qindx=6, per_hr=True):
+    """ returns E-P for all particles and for all output timesteps.
+    Needs the Header to determine which direction to take the difference.
+    """
+    
+    if H.direction == 'forward':
+        emp = np.diff(allparticles[:,qindx,:])
+    elif H.direction == 'backward':
+        emp = np.diff(allparticles[:,qindx,-1::-1]) #calculate starting from the end
+    
+    if per_hr:
+        emp = (emp / np.abs(H.loutstep) ) / 3600.
+        
+    return emp
+    
+    
