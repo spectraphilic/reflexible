@@ -19,6 +19,7 @@ import pdb
 #interactive(False)
 import matplotlib as mpl
 from matplotlib import colors, cm
+from matplotlib.collections import LineCollection
 #mpl.use('Agg')
 
 import matplotlib.pyplot as plt
@@ -568,10 +569,10 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
         md = 5
     elif map_region=='alaska':
         "Over alaska"
-        MapPar.llcrnrlat=40.
+        MapPar.llcrnrlat=30.
         MapPar.llcrnrlon=-185.
         MapPar.urcrnrlat=60.
-        MapPar.urcrnrlon=-50.
+        MapPar.urcrnrlon=-60.
         MapPar.area_thresh=1000.
         MapPar.resolution='i'
         MapPar.projection='lcc'
@@ -844,7 +845,8 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
         FigPar.figsize=(6,6)
         FigPar.axlocs=[0.1,0.05,0.7,.85]
         #FigPar.axlocs = [0.1,0.05,0.9,0.8]
-    
+        
+        
     elif map_region=='npolar_70':
         "Zoom on polar project 70N"
         MapPar.area_thresh=1000.
@@ -1827,47 +1829,72 @@ def plot_track(lon,lat,
     #PRINT CRUISE TRACK
     cx,cy = m(lon,lat)
     if zlevel!=None:
-        ## Set plotting kwargs
-        #if plotargs == None:
-        #    plotargs = {'zorder':10,
-        #                'alpha':0.35,
-        #                'edgecolor':None
-        #                }
-        plot_kwargs = set_plotkwargs(plotargs,plot_kwargs)
-        #from pylab import linspace, cm, colorbar,scatter, cla, axes
-        #m.scatter(cx,cy,25*linspace(0,1,(len(cx))),zlevel,cmap=cm.spectral,marker='o',faceted=False,zorder=10)        
-        cmap = plt.get_cmap('jet')
-        #c=m.scatter(cx,cy,zsize,zlevel,cmap=cmap,marker=marker,
-        #            **plot_kwargs)
-        c=m.scatter(cx,cy,zsize,zlevel,cmap=cmap,
-                    **plot_kwargs)
-        #pos = az.get_position()
-        #l, b, w, h = getattr(pos, 'bounds', pos)
-        #cax = axes([l+w+0.075, b, 0.05, h])
-        #c.set_alpha(0.01)
-        #m.scatter has no color bar, so create a ghost 'scatter' instance
-        pos = ax.get_position()
-        l, b, w, h = getattr(pos, 'bounds', pos)
-        jnkfig = plt.figure()
-        jnkax = jnkfig.add_axes([l,b,w,h],frameon=False)
-        jnkax.scatter(cx,cy,zsize,zlevel,cmap=cmap,marker=marker,
-                      **plot_kwargs)
-        plt.figure(fig.number)
-        if cbar2 is True:
-            cax = plt.axes([l+w+0.12, b, 0.02, h-0.035])
+        if scatter:
+            ## Set plotting kwargs
+            #if plotargs == None:
+            #    plotargs = {'zorder':10,
+            #                'alpha':0.35,
+            #                'edgecolor':None
+            #                }
+            plot_kwargs = set_plotkwargs(plotargs,plot_kwargs)
+            #from pylab import linspace, cm, colorbar,scatter, cla, axes
+            #m.scatter(cx,cy,25*linspace(0,1,(len(cx))),zlevel,cmap=cm.spectral,marker='o',faceted=False,zorder=10)        
+            cmap = plt.get_cmap('jet')
+            #c=m.scatter(cx,cy,zsize,zlevel,cmap=cmap,marker=marker,
+            #            **plot_kwargs)
+            c=m.scatter(cx,cy,zsize,zlevel,cmap=cmap,
+                        **plot_kwargs)
+            #pos = az.get_position()
+            #l, b, w, h = getattr(pos, 'bounds', pos)
+            #cax = axes([l+w+0.075, b, 0.05, h])
+            #c.set_alpha(0.01)
+            #m.scatter has no color bar, so create a ghost 'scatter' instance
+            pos = ax.get_position()
+            l, b, w, h = getattr(pos, 'bounds', pos)
+            jnkfig = plt.figure()
+            jnkax = jnkfig.add_axes([l,b,w,h],frameon=False)
+            jnkax.scatter(cx,cy,zsize,zlevel,cmap=cmap,marker=marker,
+                          **plot_kwargs)
+            plt.figure(fig.number)
+            if cbar2 is True:
+                cax = plt.axes([l+w+0.12, b, 0.02, h-0.035])
+            else:
+                cax = plt.axes([l+w+0.03, b, 0.025, h-0.035])
+            #cax = plt.axes([l+w+0.03, b, 0.02, h])
+            plt.colorbar(cax=cax) # draw colorbar
+            if TEX:
+                cax.set_title(r'textit{%s}' % units)
+            else:
+                cax.set_title('%s' % units,
+                              fontproperties=p_cax)
+    
+            #delete the ghost instance
+            plt.close(jnkfig.number)
+            plt.axes(ax)
         else:
-            cax = plt.axes([l+w+0.03, b, 0.025, h-0.035])
-        #cax = plt.axes([l+w+0.03, b, 0.02, h])
-        plt.colorbar(cax=cax) # draw colorbar
-        if TEX:
-            cax.set_title(r'textit{%s}' % units)
-        else:
-            cax.set_title('%s' % units,
-                          fontproperties=p_cax)
-
-        #delete the ghost instance
-        plt.close(jnkfig.number)
-        plt.axes(ax)
+            #raise IOError('Vidit is going to add this method')
+            print('trying now')
+            if np.rank(cx) == 1:
+                points = np.array([cx, cy]).T.reshape(-1, 1, 2)
+                segments = np.concatenate([points[:-1], points[1:]], axis=1)
+            
+                lc = LineCollection(segments, cmap=plt.get_cmap('jet'),norm=plt.Normalize(zlevel.min(),zlevel.max()))
+                lc.set_array(zlevel.flatten())
+                lc.set_linewidth(3)
+                plt.gca().add_collection(lc)
+            elif np.rank(cx) == 2:
+                for i in xrange(cx.shape[0]):
+                    points = np.array([cx[i,:],cy[i,:]]).T.reshape(-1, 1, 2)
+                    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+            
+                    lc = LineCollection(segments, cmap=plt.get_cmap('jet'),norm=plt.Normalize(zlevel.min(),zlevel.max()))
+                    lc.set_array(zlevel.flatten())
+                    lc.set_linewidth(3)
+                    plt.gca().add_collection(lc)
+            else:
+                raise ValueError("input array shape zlevel cannot be greater than rank-2")    
+            
+            
     else:
         if scatter:
             m.scatter(cx,cy,**plot_kwargs)
