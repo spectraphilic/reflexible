@@ -1892,7 +1892,7 @@ def plot_track(lon,lat,
                     lc.set_linewidth(3)
                     plt.gca().add_collection(lc)
             else:
-                raise ValueError("input array shape zlevel cannot be greater than rank-2")    
+                raise InputError("input array shape zlevel cannot be greater than rank-2")    
             
             
     else:

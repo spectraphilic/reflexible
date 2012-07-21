@@ -42,7 +42,7 @@ def read_particlepositions(H, **kwargs):
     topo          4            topography
     pvi           5            potential vorticity
     qvi           6            specific humidity
-    rhoi          7            density
+    rhoi          7            density, converted to pressure (TODO: check units)
     hmixi         8            PBL height
     tri           9           Tropopause height 
     tti           10           temperature [K]
@@ -147,6 +147,15 @@ def read_particlepositions(H, **kwargs):
         else:
             print("Cannot find partposit file: {0}".format(filename))    
         
+
+        
+        ## Some unit conversions
+        #pp[:,7] = (pp[:,7] /1200000.0+0.025) * 1000
+        #tconv = pp[:,10]/180.0 + 100.0 
+        #pp[:,7] = pp[:,7] / 10000.0 * 287.0 * tconv / 100.0 ## convert density to pressure, assuming dry air
+        pp[:,7] = pp[:,7]*287.058*pp[:,10] # method of vidit.
+        
+        
         ## Drop the -9999.99 values
         #itramem = pp[:,4]
         ppc = np.ma.masked_where(np.isnan(pp), pp, copy=False)
@@ -154,13 +163,7 @@ def read_particlepositions(H, **kwargs):
         #ppc[:,4] = itramem
         
         xmc = np.ma.masked_where(np.isnan(xm), xm, copy=False)
-        xm = np.ma.masked_where(xm <= -9999., xmc, copy=False)
-        
-        ## Some unit conversions
-        #pp[:,7] = (pp[:,7] /1200000.0+0.025) * 1000
-        tconv = pp[:,10]/180.0 + 100.0
-        pp[:,7] = pp[:,7] / 10000.0 * 287.0 * tconv / 100.0 ## convert density to pressure, assuming dry air
-        
+        xm = np.ma.masked_where(xm <= -9999., xmc, copy=False) 
         
         PP[dt_key].partposit = pp
         PP[dt_key].xmass = xm
