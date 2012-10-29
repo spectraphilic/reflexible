@@ -843,7 +843,6 @@ def read_header(pathname, **kwargs):
     OPS.readp = True
     OPS.readp_ff = False
     OPS.nested = False
-    OPS.nest = False
     OPS.ltopo = 1 # 1 for AGL, 0 for ASL
     OPS.version = 'V8'
     OPS.headerfile = None
@@ -1180,7 +1179,6 @@ def readheaderV6(pathname, **kwargs):
     OPS = Structure()
     OPS.readp = True
     OPS.readp_ff = False
-    OPS.nest = False
     OPS.nested = False
     OPS.ltopo = 1 # 1 for AGL, 0 for ASL
     OPS.version = 'V6'
@@ -1198,9 +1196,11 @@ def readheaderV6(pathname, **kwargs):
     h = Structure()
 
     if OPS.nested == False:
-        filename = os.path.join(pathname, 'header'); h['nested'] = 0;
+        filename = os.path.join(pathname, 'header')
+        h['nested'] = 0
     else:
-        filename = os.path.join(pathname, 'header_nest'); h['nested'] = 1;
+        filename = os.path.join(pathname, 'header_nest')
+        h['nested'] = 1
 
     # Open header file in binary format
     f2 = BinaryFile(filename, order="fortran")
@@ -1519,10 +1519,6 @@ def _readgrid_noFF(H, **kwargs):
     if 'age_ret' in kwargs.keys():
         age_ret = kwargs['age_ret']
     else: age_ret = 1
-
-    if 'nest' in kwargs.keys():
-        nested = kwargs['nest']
-    else: nested = 0
 
     if 'nested' in kwargs.keys():
         nested = kwargs['nested']
