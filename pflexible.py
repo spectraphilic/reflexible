@@ -822,7 +822,7 @@ def read_header(pathname, **kwargs):
       pathname            FLEXPART run output directory
       readp               read release points 0=no, [1]=y
       readp_ff            readp_ff (read releases using Fortran [False]
-      nest                nested output [0]=no, 1=yes
+      nested              nested output [0]=no, 1=yes
       version             version of FLEXPART, default = 'V8'
       =============       ========================================
 
@@ -842,6 +842,7 @@ def read_header(pathname, **kwargs):
     OPS = Structure()
     OPS.readp = True
     OPS.readp_ff = False
+    OPS.nested = False
     OPS.nest = False
     OPS.ltopo = 1 # 1 for AGL, 0 for ASL
     OPS.version = 'V8'
@@ -859,7 +860,7 @@ def read_header(pathname, **kwargs):
     #H={} #create dictionary for header
     h = Structure()
 
-    if OPS.nest is True:
+    if OPS.nested is True:
         filename = os.path.join(pathname, 'header_nest')
         h['nested'] = 1;
     else:
@@ -1180,6 +1181,7 @@ def readheaderV6(pathname, **kwargs):
     OPS.readp = True
     OPS.readp_ff = False
     OPS.nest = False
+    OPS.nested = False
     OPS.ltopo = 1 # 1 for AGL, 0 for ASL
     OPS.version = 'V6'
     OPS.update(kwargs)
@@ -1195,7 +1197,7 @@ def readheaderV6(pathname, **kwargs):
     #H={} #create dictionary for header
     h = Structure()
 
-    if OPS.nest == False:
+    if OPS.nested == False:
         filename = os.path.join(pathname, 'header'); h['nested'] = 0;
     else:
         filename = os.path.join(pathname, 'header_nest'); h['nested'] = 1;
@@ -1472,7 +1474,7 @@ def _readgrid_noFF(H, **kwargs):
     %   - pspec_ret: 
     %   - age_ret:
     %   - time_ret: 
-    %   - nest: nested = 1
+    %   - nested: nested = 1
     %
     % 
     % output
@@ -1519,8 +1521,12 @@ def _readgrid_noFF(H, **kwargs):
     else: age_ret = 1
 
     if 'nest' in kwargs.keys():
-        nest = kwargs['nest']
-    else: nest = 0
+        nested = kwargs['nest']
+    else: nested = 0
+
+    if 'nested' in kwargs.keys():
+        nested = kwargs['nested']
+    else: nested = 0
 
     if 'time_ret' in kwargs.keys():
         time_ret = kwargs['time_ret']
@@ -1635,10 +1641,10 @@ def _readgrid_noFF(H, **kwargs):
                 datestring = H['available_dates'][date_i]
                 #datestring = date
                 filename = os.path.join(H['pathname'], \
-                            prefix[(unit) + (nest * 4)] + datestring + specs)
+                            prefix[(unit) + (nested * 4)] + datestring + specs)
             else:
                 filename = os.path.join(H['pathname'], \
-                            prefix[(unit) + (nest * 4)])
+                            prefix[(unit) + (nested * 4)])
             
             #print 'reading: ' + filename
 
@@ -1956,7 +1962,7 @@ def read_grid(H, **kwargs):
       nspec_ret             numspecies
       pspec_ret             index to ???
       age_ret               index to ageclass
-      nest                  obtained from H['nested']
+      nested                obtained from H['nested']
       BinaryFile            Use BinaryFile vs. FortFlex [False]
       getwet                True, [False]
       getdry                True, [False]
@@ -4800,7 +4806,7 @@ class Header(Structure):
       pathname            FLEXPART run output directory
       readp               read release points 0=no, [1]=y
       readp_ff            readp_ff (read releases using Fortran [False]
-      nest                nested output [0]=no, 1=yes
+      nested              nested output [0]=no, 1=yes
       version             version of FLEXPART, default = 'V8'
       =============       ========================================
   
