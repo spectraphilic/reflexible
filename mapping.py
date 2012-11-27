@@ -1240,22 +1240,22 @@ def default_netcdf(nco_filename,
 
     Keyword arguments:
 
-        =========       ===========================
-        keyword         description
-        =========       ===========================
-        lon0            The division between lon
-        lat0            The division between lat
-        dx              lon spacing
-        dy              lat spacing
-        title           A data name title
-        institution     institute of data origin
-        source          source of data origin
-        author          author of data origin
-        contact         contact of data origin
-        comment         comment of data origin
-        references      references of data origin
-        history         history of data origin
-        =========       ===========================
+        =============       ===========================
+        keyword             description
+        =============       ===========================
+        lon0                The division between lon
+        lat0                The division between lat
+        dx                  lon spacing
+        dy                  lat spacing
+        title               A data name title
+        institution         institute of data origin
+        source              source of data origin
+        author              author of data origin
+        contact             contact of data origin
+        comment             comment of data origin
+        references          references of data origin
+        history             history of data origin
+        =============       ===========================
 
 
     """

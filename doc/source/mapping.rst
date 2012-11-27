@@ -80,6 +80,6 @@ The mapping API
   :Release: |version|
   :Date: |today|
 
-.. automodule:: pflexible.mapping
+.. automodule:: mapping
    :members:
    :undoc-members:
