@@ -1031,7 +1031,7 @@ def read_header(pathname, **kwargs):
         if h['loutstep'] < 0:
             h['nspec'] = h['numpoint']
 
-        bf.close
+        bf.close()
 
         # Calculate Height (outheight + topography)
         # There is an offset issue here related to the 0-indexing. Be careful.
