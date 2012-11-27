@@ -59,6 +59,7 @@ import datetime
 import itertools
 from math import pi, sqrt, cos
 import traceback
+import warnings
 
 #Dependencies:
 # Numpy
@@ -822,7 +823,7 @@ def read_header(pathname, **kwargs):
       pathname            FLEXPART run output directory
       readp               read release points 0=no, [1]=y
       readp_ff            readp_ff (read releases using Fortran [False]
-      nested              nested output [0]=no, 1=yes
+      nested              nested output [False] or True
       version             version of FLEXPART, default = 'V8'
       =============       ========================================
 
@@ -846,9 +847,28 @@ def read_header(pathname, **kwargs):
     OPS.ltopo = 1 # 1 for AGL, 0 for ASL
     OPS.version = 'V8'
     OPS.headerfile = None
+    
+    #BW compat fixes
+    if 'nest' in kwargs.keys():
+       raise IOError("nest is no longer a valid keyword, see docs. \n Now use nested=True or nested=False")
+
+   
+    if 'nested' in kwargs.keys():
+       if kwargs['nested'] is 1:
+           print("Warning, use of nested=1, deprecated converting to nested=True")
+           kwargs['nested'] = True
+    
+    if 'nested' in kwargs.keys():
+       if kwargs['nested'] is 0:
+           print("Warning, use of nested=0, deprecated converting to nested=False")
+           kwargs['nested'] = False
+       
     OPS.update(kwargs)
+    
+    
+#    print "Reading Header with:\n"
+#    
 #    for o in OPS:
-#        print "Reading Header with:"
 #        print "%s ==> %s" % (o, OPS[o])
 
 
@@ -861,10 +881,10 @@ def read_header(pathname, **kwargs):
 
     if OPS.nested is True:
         filename = os.path.join(pathname, 'header_nest')
-        h['nested'] = 1;
+        h['nested'] = True;
     else:
         filename = os.path.join(pathname, 'header')
-        h['nested'] = 0;
+        h['nested'] = False;
     
 
     if OPS.headerfile:
@@ -1197,10 +1217,10 @@ def readheaderV6(pathname, **kwargs):
 
     if OPS.nested == False:
         filename = os.path.join(pathname, 'header')
-        h['nested'] = 0
+        h['nested'] = False
     else:
         filename = os.path.join(pathname, 'header_nest')
-        h['nested'] = 1
+        h['nested'] = True
 
     # Open header file in binary format
     f2 = BinaryFile(filename, order="fortran")
@@ -1474,7 +1494,7 @@ def _readgrid_noFF(H, **kwargs):
     %   - pspec_ret: 
     %   - age_ret:
     %   - time_ret: 
-    %   - nested: nested = 1
+    %   - nested: nested = True
     %
     % 
     % output
@@ -1522,7 +1542,7 @@ def _readgrid_noFF(H, **kwargs):
 
     if 'nested' in kwargs.keys():
         nested = kwargs['nested']
-    else: nested = 0
+    else: nested = False
 
     if 'time_ret' in kwargs.keys():
         time_ret = kwargs['time_ret']
@@ -4802,7 +4822,7 @@ class Header(Structure):
       pathname            FLEXPART run output directory
       readp               read release points 0=no, [1]=y
       readp_ff            readp_ff (read releases using Fortran [False]
-      nested              nested output [0]=no, 1=yes
+      nested              nested output True or [False]
       version             version of FLEXPART, default = 'V8'
       =============       ========================================
   
@@ -4819,27 +4839,38 @@ class Header(Structure):
     """
 
 
-    def __init__(self, path=None, headerfile=None, **readheader_ops):
+    def __init__(self, path=None, headerfile=None, version='V8', **readheader_ops):
         """
 
         
         """
-
-        try:
-            h = readheader(path, **readheader_ops)
-            self.set_with_dict(h)
-            self.lonlat()
-            self.version = 'V8'
-        except:
+        if version == 'V6':
+        
+            print("Reading output as Version 6")
             try:
+                print("Trying to read header:\n{0}\n with readheaderV6".format(path))
                 h = readheaderV6(path, **readheader_ops)
                 self.set_with_dict(h)
                 self.lonlat()
                 self.version = 'V6'
             except:
-                
                 traceback.print_exc()
-                raise IOError('Could not set header variables. Does the path exist?\n{0}'.format(path))
+                raise IOError('Could not set header variables. Does the path exist?\n\n{0}\n'.format(path))
+            
+        elif version == 'V8':
+            try:
+                h = readheader(path, **readheader_ops)
+                self.set_with_dict(h)
+                self.lonlat()
+                self.version = 'V8'
+            except:
+                traceback.print_exc()
+                raise IOError('''
+                Could not set header variables.
+                Is the output version 8 and does the path exist?\n{0}'''.format(path))
+            
+        
+
 
     def lonlat(self):
         """ Add longitude and latitude attributes using data from header """

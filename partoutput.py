@@ -124,7 +124,7 @@ def read_particlepositions(H, **kwargs):
             
         PP[dt_key] = pf.Structure()
         
-        if H.nested == 1:
+        if H.nested is True:
             filename = join(H['pathname'], \
                         prefix[1] + datestring)
             
