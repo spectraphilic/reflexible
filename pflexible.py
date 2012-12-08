@@ -1853,8 +1853,8 @@ def _readgridBF(H, filename):
             skip()
             cnt_r = getbin('i')
             dmp_r = getdump(cnt_r)
-            if dmp_r:
-                print dmp_r, dmp_i
+            if dmp_r.any():
+                #print dmp_r, dmp_i
                 wetgrid = dumpdepogrid(dmp_i, cnt_r, dmp_r, wetgrid, ks, na, H.numxgrid, H.numygrid)
 
             #Read Dry Deposition
@@ -1864,8 +1864,8 @@ def _readgridBF(H, filename):
             skip()
             cnt_r = getbin('i')
             dmp_r = getdump(cnt_r)
-            if dmp_r:
-                print dmp_r, dmp_i
+            if dmp_r.any():
+                #print dmp_r, dmp_i
                 drygrid = dumpdepogrid(dmp_i, cnt_r, dmp_r, drygrid, ks, na, H.numxgrid, H.numygrid)
 
             #Read Concentrations
