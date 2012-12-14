@@ -807,7 +807,7 @@ def read_header(pathname, **kwargs):
 
     Usage::
 
-        > H = readheader(inputpath)
+        > H = read_header(pathname) #Don't include header filename
 
     Returns a dictionary
 
@@ -822,17 +822,16 @@ def read_header(pathname, **kwargs):
       =============       ========================================
       pathname            FLEXPART run output directory
       readp               read release points 0=no, [1]=y
-      readp_ff            readp_ff (read releases using Fortran [False]
       nested              nested output [False] or True
-      version             version of FLEXPART, default = 'V8'
+      headerfile          provide custom name for header file
+      datefile            provide a custom name for the date file
+      verbose             print information while loading header
       =============       ========================================
 
     .. note::
         **This function is in development**
 
-        This function is being developed so that there is no dependence on
-        using f2py to compile the FortFlex module. So far it seems to work, but is
-        notably slower than FortFlex. Please report any bugs found.
+        Please report any bugs found.
 
     .. todo::
 
@@ -840,60 +839,65 @@ def read_header(pathname, **kwargs):
 
     """
 
+
     OPS = Structure()
     OPS.readp = True
-    OPS.readp_ff = False
     OPS.nested = False
     OPS.ltopo = 1 # 1 for AGL, 0 for ASL
-    OPS.version = 'V8'
+    OPS.verbose = False
     OPS.headerfile = None
+    OPS.datefile = None
     
-    #BW compat fixes
+    ## add keyword overides and options to header
+    for k in kwargs.keys():
+        if k not in OPS.keys():
+            print("WARNING: {0} not a valid input option.".format(k))
+    
+    # BW compat fixes
     if 'nest' in kwargs.keys():
-       raise IOError("nest is no longer a valid keyword, see docs. \n Now use nested=True or nested=False")
+        raise IOError("nest is no longer a valid keyword, see docs. \n Now use nested=True or nested=False")
 
-   
-    if 'nested' in kwargs.keys():
-       if kwargs['nested'] is 1:
-           print("Warning, use of nested=1, deprecated converting to nested=True")
-           kwargs['nested'] = True
     
     if 'nested' in kwargs.keys():
-       if kwargs['nested'] is 0:
-           print("Warning, use of nested=0, deprecated converting to nested=False")
-           kwargs['nested'] = False
+        if kwargs['nested'] is 1:
+            print("WARNING, use of nested=1, deprecated converting to nested=True")
+            kwargs['nested'] = True
+    
+    if 'nested' in kwargs.keys():
+        if kwargs['nested'] is 0:
+            print("WARNING, use of nested=0, deprecated converting to nested=False")
+            kwargs['nested'] = False
        
     OPS.update(kwargs)
     
+    if OPS.verbose:
+        print "Reading Header with:\n"
+        
+        for o in OPS:
+            print "%s ==> %s" % (o, OPS[o])
     
-#    print "Reading Header with:\n"
-#    
-#    for o in OPS:
-#        print "%s ==> %s" % (o, OPS[o])
-
-
-    # Utility functions
+    #Define utility functions for reading binary file
     skip = lambda n = 8 : bf.seek(n, 1)
     getbin = lambda dtype, n = 1 : bf.read(dtype, (n,))
 
-    #H={} #create dictionary for header
-    h = Structure()
 
-    if OPS.nested is True:
+    h = Structure()
+    h['pathname'] = pathname
+    h['decayconstant'] = 0
+    
+    if OPS.headerfile:
+        filename = os.path.join(pathname, OPS.headerfile);
+    
+    elif OPS.nested is True:
         filename = os.path.join(pathname, 'header_nest')
         h['nested'] = True;
     else:
         filename = os.path.join(pathname, 'header')
         h['nested'] = False;
     
-
-    if OPS.headerfile:
-        filename = os.path.join(pathname, OPS.headerfile);
-
     # Open header file in binary format
     if not os.path.exists(filename):
         raise IOError("No such file: {0}".format(filename))
-    
     else:
         try:
             bf = BinaryFile(filename, order="fortran")
@@ -901,7 +905,10 @@ def read_header(pathname, **kwargs):
             raise IOError("Error opening: {0} with BinaryFile class".format(filename))
     
     #Get available_dates from dates file in same directory as header
-    datefile = os.path.join(pathname, 'dates')
+    if OPS.datefile:
+        datefile = os.path.join(pathname, OPS.datefile)
+    else:
+        datefile = os.path.join(pathname, 'dates')
     
     if not os.path.exists(datefile):
         raise IOError("No such file: {0}".format(datefile))
@@ -911,17 +918,19 @@ def read_header(pathname, **kwargs):
         except:
             raise IOError("Could not read datefile: {0}".format(datefile))
     
-    #get rid of any duplicats (a fix for the forecast system)
+    #get rid of any duplicate dates (a fix for the forecast system)
     fd = sorted(list(set(fd)))
     h['available_dates'] = [d.strip('\n') for d in fd]
 
     #Define Header format and create Dictionary Keys
-    I = {0:'rl0', 1:'ibdate', 2:'ibtime', 3:'version', \
-         4:'rl1', 5:'loutstep', 6:'loutaver', 7:'loutsample', \
-         8:'rl2', 9:'outlon0', 10:'outlat0', 11:'numxgrid', \
-         12:'numygrid', 13:'dxout', 14:'dyout', 15:'rl3', 16:'numzgrid', \
+    I = {0:'_0', 1:'ibdate', 2:'ibtime', 3:'flexpart', \
+         4:'_1', 5:'loutstep', 6:'loutaver', 7:'loutsample', \
+         8:'_2', 9:'outlon0', 10:'outlat0', 11:'numxgrid', \
+         12:'numygrid', 13:'dxout', 14:'dyout', 15:'_3', 16:'numzgrid', \
          }
     #format for binary reading first part of the header file
+    junk = [] #for catching unused output
+    
     Dfmt = ['i', 'i', 'i', '13S', '2i', 'i', 'i', 'i', '2i', 'f', 'f', 'i', 'i', 'f', 'f', '2i', 'i']
     if bf:
         a = [bf.read(fmt) for fmt in Dfmt]
@@ -932,31 +941,34 @@ def read_header(pathname, **kwargs):
                                            '%Y%m%d%H%M%S')
 
         h['simulationstart'] = ss_start
-        h['pathname'] = pathname
-        h['decayconstant'] = 0
+        
         h['outheight'] = np.array([getbin('f') for i in range(h['numzgrid'])])
-        skip()
-        h['jjjjmmdd'] = getbin('i')
-        h['hhmmss'] = getbin('i')
-        skip()
-        h['nspec'] = getbin('i') / 3
-        h['numpointspec'] = getbin('i')
-        skip()
+        
+        junk.append(bf.read('2i'))
+        h['jjjjmmdd'] = bf.read('i')
+        h['hhmmss'] = bf.read('i')
+        junk.append(bf.read('2i'))
+        h['nspec'] = bf.read('i') / 3
+        h['numpointspec'] = bf.read('i')
+        junk.append(bf.read('2i'))
+        
         #Read in the species names and levels for each nspec
+        #temp dictionaries
         h['numzgrid'] = []
         h['species'] = []
-        #temp dictionaries
+        h['wetdep'] = [] 
+        h['drydep'] = [] 
         for i in range(h['nspec']):
-            one = getbin('i'); # input skipped ??
-            wd = getbin('c', 10);  # input skipped ??
-            skip();
-            one = getbin('i'); # input skipped ??
-            dd = getbin('c', 10);  # input skipped ??
-            skip();
-            h['numzgrid'].append(getbin('i'))
-            h['species'].append(''.join([getbin('c') for i in range(10)]).strip())
-            skip();
-        h['numpoint'] = getbin('i')
+            junk.append(bf.read('i'))
+            h['wetdep'].append(''.join([bf.read('c') for i in range(10)]).strip())
+            junk.append(bf.read('2i'))
+            junk.append(bf.read('i'))
+            h['drydep'].append(''.join([bf.read('c') for i in range(10)]).strip())
+            junk.append(bf.read('2i'))
+            h['numzgrid'].append(bf.read('i'))
+            h['species'].append(''.join([bf.read('c') for i in range(10)]).strip())
+            junk.append(bf.read('2i'))
+        h['numpoint'] = bf.read('i')
 
         # read release info if requested
         # if OPS.readp pass has changed, we cycle through once,
@@ -973,44 +985,42 @@ def read_header(pathname, **kwargs):
             h[v] = np.zeros(h['numpoint']) #create zero-filled lists in H dict
         h['compoint'] = []
         h['xmass'] = np.zeros((h['numpoint'], h['nspec']))
-        r1 = getbin('i')
+        junk.append(bf.read('i'))
         for i in range(h['numpoint']):
-            r2 = getbin('i')
-            i1 = getbin('i')
-            i2 = getbin('i')
-            #h['ireleasestart'].append( ss_start + datetime.timedelta(seconds=float(i1)) )
-            #h['ireleaseend'].append( ss_start + datetime.timedelta(seconds=float(i2)) )
-            h['ireleasestart'].append(i1)
-            h['ireleaseend'].append(i2)
-            h['kindz'][i] = getbin('h') # This is an int16, might need to to change something
-            skip() #get xp, yp,...
+            junk.append(bf.read('i'))
 
-            h['xp1'][i] = getbin('f')
-            h['yp1'][i] = getbin('f')
-            h['xp2'][i] = getbin('f')
-            h['yp2'][i] = getbin('f')
-            h['zpoint1'][i] = getbin('f')
-            h['zpoint2'][i] = getbin('f')
+            h['ireleasestart'].append(bf.read('i'))
+            h['ireleaseend'].append(bf.read('i'))
+            h['kindz'][i] = bf.read('h') # This is an int16, might need to to change something
+            junk.append(bf.read('2i'))
 
-            skip() #get n/mpart
-            h['npart'][i] = getbin('i')
-            h['mpart'][i] = getbin('i')
+            h['xp1'][i] = bf.read('f')
+            h['yp1'][i] = bf.read('f')
+            h['xp2'][i] = bf.read('f')
+            h['yp2'][i] = bf.read('f')
+            h['zpoint1'][i] = bf.read('f')
+            h['zpoint2'][i] = bf.read('f')
 
-            r3 = getbin('i')
+            junk.append(bf.read('2i'))
+            h['npart'][i] = bf.read('i')
+            h['mpart'][i] = bf.read('i')
+
+            junk.append(bf.read('i'))
             # initialise release fields
 
-            l = getbin('i')#get compoint length?
+            l = bf.read('i')#get compoint length?
             gt = bf.tell() + l #create 'goto' point
             sp = ''
-            while re.search("\w", getbin('c')): #collect the characters for the compoint
+            while re.search("\w", bf.read('c')): #collect the characters for the compoint
                 bf.seek(-1, 1)
-                sp = sp + getbin('c')
+                sp = sp + bf.read('c')
 
             bf.seek(gt) #skip ahead to gt point
 
             h['compoint'].append(sp) #species names in dictionary for each nspec
-            #h['compoint'].append(''.join([getbin('c') for i in range(45)]))
-            r1 = getbin('i')
+            #h['compoint'].append(''.join([bf.read('c') for i in range(45)]))
+            
+            junk.append(bf.read('i'))
             #now loop for nspec to get xmass
             for v in range(h['nspec']):
                 Dfmt = ['i', 'f', '2i', 'f', '2i', 'f', 'i']
@@ -1026,27 +1036,28 @@ def read_header(pathname, **kwargs):
                 bf.seek(119 * h['numpoint'] + (h['nspec'] * 36) * h['numpoint'] + 4, 1)
                 break
 
-
-        rl = getbin('i')
-        jnk_method = getbin('i')
-        h['lsubgrid'] = getbin('i')
-        h['lconvection'] = getbin('i')
-        if rl == 20:
-            h['ind_source'] = getbin('i')
-            h['ind_receptor'] = getbin('i')
-        skip()
-        h['nageclass'] = getbin('i')
+        
+        
+        junk.append(bf.read('i'))
+        junk.append(bf.read('i'))
+        h['lsubgrid'] = bf.read('i')
+        h['lconvection'] = bf.read('i')
+        h['ind_source'] = bf.read('i')
+        h['ind_receptor'] = bf.read('i')
+        junk.append(bf.read('2i'))
+        
+        h['nageclass'] = bf.read('i')
         Lage_fmt = ['i'] * h.nageclass
-        jnk_lage = [bf.read(fmt) for fmt in Lage_fmt]
+        h['lage'] = [bf.read(fmt) for fmt in Lage_fmt]
+        
+        #Orography
         nx = h['numxgrid']
         ny = h['numygrid']
         Dfmt = ['f'] * nx
         h['oro'] = np.zeros((nx, ny), np.float)
         skip()
         for ix in range(nx):
-            #h['oro'][ix]=[getbin('f') for jx in range(ny)]
-            # The next is *much* faster!
-            h['oro'][ix] = getbin('f', ny)
+            h['oro'][ix] = bf.read('f', ny)
             skip()
         if h['loutstep'] < 0:
             h['nspec'] = h['numpoint']
@@ -1072,18 +1083,12 @@ def read_header(pathname, **kwargs):
 
         h['Area'] = gridarea(h)
         h['Heightnn'] = Heightnn
-
+        h['junk'] = junk
 
     #############  A FEW ADDITIONS ###########
-    # add a few default attributes
-    # optionally, use fortran routine to read
-    # release points (deprecated)
+    # add a few helpful attributes
+
     h.path = pathname
-    if OPS.readp_ff:
-        h = _read_headerFF(filename, h,
-                          nxmax=h.numxgrid, nymax=h.numygrid, nzmax=h.numzgrid,
-                          maxspec=h.nspec, maxageclass=h.nageclass,
-                          maxpoint=h.numpoint)
 
     # Convert ireleasestart and ireleaseend to datetimes
     if OPS.readp:
@@ -1114,8 +1119,10 @@ def read_header(pathname, **kwargs):
     h.nzmax = h.numzgrid
     h.maxspec = h.nspec
     h.maxpoint = h.numpoint
-    h.area = h.Area
+    h.maxageclass = h.numageclasses
 
+    h.area = h.Area #fix an annoyance
+    
     if OPS.readp:
         h.xpoint = h.xp1
         h.ypoint = h.yp1
@@ -1557,7 +1564,7 @@ def _readgrid_noFF(H, **kwargs):
     if 'scaleconc' in kwargs.keys():
         scaleconc = kwargs['scaleconc']
     else:
-        scaleconc = 1.e9
+        scaleconc = 1.0
 
     if 'decaycons' in kwargs.keys():
         decaycons = kwargs['decaycons']
@@ -1820,7 +1827,7 @@ def _readgridBF(H, filename):
     ## Import pflexcy.so (cython compiled version of dumpgrid)
     try:
         from pflexcy import dumpdatagrid, dumpdepogrid
-        #print 'using pflexcy'
+        print 'using pflexcy'
     except:
         print """WARNING: Using PURE Python to readgrid, execution will be slow.
          Try compiling the FortFlex module or the pflexcy module
@@ -1996,12 +2003,279 @@ def read_grid(H, **kwargs):
         most arguments are able to be extracted fro the header "H"
     
     """
+    
+    if H.version == 'V9':
+        return readgridV9(H, **kwargs)
     if H.version == 'V8':
         return readgridV8(H, **kwargs)
     if H.version == 'V6':
         return readgridV6(H, **kwargs)
     else:
         raise IOError("No version attribute defined for Header.")
+
+
+def readgrid(H, **kwargs):
+
+    """
+    Accepts a header object as input, and selects appropriate readgrid function
+    to use for reading in data from the flexpart binary Fortran files.
+
+    See the :func:`read_grid` for more information on keyword arguments
+    
+    This is the 'V9' version of the function.
+
+    """
+    ## OPS is the options Structure, sets defaults, then update w/ kwargs
+    OPS = Structure()
+    OPS.unit = H.unit
+    OPS.getwet = False
+    OPS.getdry = False
+    OPS.nspec_ret = 0
+    OPS.npspec_int = False  # allows to select an index of npsec when calling readgrid
+    OPS.pspec_ret = 0
+    OPS.age_ret = 0
+    OPS.time_ret = 0
+    OPS.scaledepo = 1.0
+    OPS.scaleconc = 1.0
+    OPS.decayconstant = 9e6
+    OPS.date = None
+    OPS.calcfoot = False
+    OPS.verbose = False
+    OPS.BinaryFile = False
+    OPS.version = 'V9'
+    ## add keyword overides and options to header
+    for k in kwargs.keys():
+        if k not in OPS.keys():
+            print("WARNING: {0} not a valid input option.".format(k))
+
+    OPS.update(kwargs)
+    
+
+    ## set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    FLEXDATA = {}
+    fd = Structure()
+    fd.options = Structure()
+
+    ## What direction is the run?
+    unit = OPS.unit
+    
+    if H['loutstep'] > 0:
+        forward = True
+        if unit == 'time':
+            ## default forward unit
+            unit = 'conc'
+            OPS.unit = unit
+    else:
+        forward = False
+
+    ## What species to return?
+    nspec_ret = OPS.nspec_ret
+    if isinstance(nspec_ret, int):
+        nspec_ret = [nspec_ret]
+    assert iter(nspec_ret), "nspec_ret must be iterable."
+
+    ## get times to return
+    get_dates = None
+    if OPS.time_ret is not None:
+        get_dates = []
+        time_ret = OPS.time_ret
+        if isinstance(time_ret, int) == True:
+            time_ret = [time_ret]
+
+        if time_ret[0] < 0:
+            if forward == False:
+                ## get all dates for calculating footprint.
+                time_ret = np.arange(len(H.available_dates))
+            else:
+                raise ValueError("Must enter a positive time_ret for forward runs")
+
+        for t in time_ret:
+            get_dates.append(H.available_dates[t])
+
+
+    ## define what dates to extract if user has explicitly defined a 'date'
+    if OPS.date != None:
+        date = OPS.date
+        if time_ret is not None:
+            Warning("overwriting time_ret variable, date was requested")
+        get_dates = []
+        if not isinstance(date, list):
+            date = date.strip().split(',')
+        for d in date:
+            try:
+                get_dates.append(H.available_dates[H.available_dates.index(d)])
+                time_ret = None
+            except:
+                _shout("Cannot find date: %s in H['available_dates']\n" % d)
+
+    if get_dates is None:
+        raise ValueError("Must provide either time_ret or date value.")
+    else:
+        ## assign grid dates for indexing fd
+        fd.grid_dates = get_dates[:]
+
+    print 'getting grid for: ', get_dates
+    # Some predifinitions
+    fail = 0
+    # set filename prefix
+    prefix = ['grid_conc_', 'grid_pptv_', \
+              'grid_time_', 'footprint_', 'footprint_total', \
+              'grid_conc_nest_', 'grid_pptv_nest_', \
+              'grid_time_nest_', 'footprint_nest_', 'footprint_total_nest'
+              ]
+
+    units = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
+    unit_i = units.index(unit)
+
+    # Determine what module to read, try to use FortFlex, then dumpgrid, lastly pure Python
+    # import the FortFlex / Fortran module
+    try:
+        from readgrid import readgrid
+        useFortFlex = True
+    except:
+        # get the original module (no memory allocation)
+        raise IOError("Cannot import readgrid for Version 9X")
+    
+    if not useFortFlex:
+        readgrid = _readgridBF
+        OPS.BinaryFile = True
+
+
+   # reserve output fields
+    print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
+
+    # -------------------------------------------------
+
+    ## add the requests to the fd object to be returned
+    OPS.unit = unit
+    fd.options.update(OPS)
+
+    #--------------------------------------------------
+    # Loop over all times, given in field H['available_dates']
+    #--------------------------------------------------
+
+    for date_i in range(len(get_dates)):
+        datestring = get_dates[date_i]
+        print datestring
+        for s in nspec_ret: #range(OPS.nspec_ret,OPS.nspec_ret+1):A
+            
+            FLEXDATA[(s, datestring)] = Structure()
+            spec_fid = '_' + str(s + 1).zfill(3)
+
+            if unit_i != 4:
+                filename = os.path.join(H['pathname'], \
+                            prefix[(unit_i) + (H.nested * 5)] + datestring + spec_fid)
+                H.zdims = H.numzgrid[0]
+
+            else:
+                #grid total footprint
+                print "Total footprint"
+                filename = os.path.join(H['pathname'], \
+                            prefix[(unit_i) + (H.nested * 5)] + spec_fid)
+                H.zdims = 1
+
+            if os.path.exists(filename):
+                H.filename = filename
+                #print 'reading: ' + filename
+                if OPS.verbose:
+                    print 'with values:'
+                    inputvars = ['filename', 'numxgrid', 'numygrid',
+                                 'zdims', 'numpoint', 'nageclass', \
+                                 'scaledepo', 'scaleconc',
+                                 'decayconstant', 'numpointspec']
+                    for v in inputvars:
+                        print v, " ==> ", H[v]
+
+
+                if OPS.BinaryFile:
+                    print("Reading {0} with BinaryFile".format(filename))
+                    gridT, wetgrid, drygrid, itime = _readgridBF(H, filename)
+                else:
+                    ## Quick fix for Sabine's Ship releases, added nspec_int so that only one
+                    ## field of the nspec dimension is actually read
+                    if OPS.npspec_int is not False:
+                        npspec_int = OPS.npspec_int 
+                        numpointspec = 1
+                    else:
+                        npspec_int = 0
+                        numpointspec = H.numpointspec
+                    
+                    gridT, wetgrid, drygrid, itime = readgrid(filename, \
+                                                  H.numxgrid, H.numygrid,
+                                                  H.zdims, numpointspec, H.nageclass, \
+                                                  OPS.scaledepo, OPS.scaleconc, H.decayconstant, npspec_int)
+                
+                if OPS.getwet:
+                    wet = wetgrid.squeeze()
+                if OPS.getdry:
+                    dry = drygrid.squeeze()
+                if forward:
+                    zplot = gridT[:, :, :, :, 0]
+                else:
+                    zplot = gridT[:, :, :, :, 0]
+
+                if OPS.calcfoot:
+                
+                    zplot = sumgrid(zplot, gridT, \
+                                    H.area, H.Heightnn)
+
+
+                ## get the total column and prep the grid
+                if H.direction == 'forward':
+                    #not trying to do anything here... must be done
+                    #after retrieving the grid
+                    #D = get_slabs(H,np.squeeze(zplot))
+                    rel_i = H.available_dates.index(datestring)
+                    D = zplot
+                    
+                else:
+                    D = zplot
+                    rel_i = 'k'
+
+                ## NOTE:
+                ## If you're changing things here, you might want to change
+                ## them in fill_backward as well, yes I know... something is
+                ## poorly designed ;(
+                
+                FLEXDATA[(s, datestring)]['grid'] = D #zplot
+                
+                FLEXDATA[(s, datestring)]['itime'] = itime
+                
+                FLEXDATA[(s, datestring)]['shape'] = zplot.shape
+                
+                FLEXDATA[(s, datestring)]['max'] = zplot.max()
+                
+                FLEXDATA[(s, datestring)]['min'] = zplot.min()
+                FLEXDATA[(s, datestring)]['timestamp'] = datetime.datetime.strptime(datestring, '%Y%m%d%H%M%S')
+                FLEXDATA[(s, datestring)]['species'] = H['species'][s]
+                FLEXDATA[(s, datestring)]['gridfile'] = filename
+                FLEXDATA[(s, datestring)]['rel_i'] = rel_i
+                FLEXDATA[(s, datestring)]['spec_i'] = s
+                if OPS.getwet:
+                    FLEXDATA[(s, datestring)]['wet'] = wet
+                else:
+                    FLEXDATA[(s, datestring)]['wet'] = None
+                
+                if OPS.getdry:  
+                    FLEXDATA[(s, datestring)]['dry'] = dry
+                else:
+                    FLEXDATA[(s, datestring)]['dry'] = None
+
+            else:
+                _shout('***ERROR: file %s not found! \n' % filename)
+                fail = 1
+        
+        fd.set_with_dict(FLEXDATA)
+        try:
+            # just for testing, set the first available grid as a shortcut
+            # this will be removed.
+            qind = (nspec_ret[0], fd.grid_dates[0])
+            fd.grid = fd[qind][fd[qind].keys()[0]].grid
+        except:
+            pass
+
+
+    return fd
 
 
 def readgridV8(H, **kwargs):
@@ -2186,6 +2460,7 @@ def readgridV8(H, **kwargs):
 
 
                 if OPS.BinaryFile:
+                    print("Reading {0} with BinaryFile".format(filename))
                     gridT, wetgrid, drygrid, itime = _readgridBF(H, filename)
                 else:
                     ## Quick fix for Sabine's Ship releases, added nspec_int so that only one
@@ -2203,9 +2478,9 @@ def readgridV8(H, **kwargs):
                                                   OPS.scaledepo, OPS.scaleconc, H.decayconstant, npspec_int)
                 
                 if OPS.getwet:
-                    return wetgrid
+                    wet = wetgrid.squeeze()
                 if OPS.getdry:
-                    return drygrid
+                    dry = drygrid.squeeze()
                 if forward:
                     zplot = gridT[:, :, :, :, 0]
                 else:
@@ -2248,7 +2523,15 @@ def readgridV8(H, **kwargs):
                 FLEXDATA[(s, datestring)]['gridfile'] = filename
                 FLEXDATA[(s, datestring)]['rel_i'] = rel_i
                 FLEXDATA[(s, datestring)]['spec_i'] = s
-
+                if OPS.getwet:
+                    FLEXDATA[(s, datestring)]['wet'] = wet
+                else:
+                    FLEXDATA[(s, datestring)]['wet'] = None
+                
+                if OPS.getdry:  
+                    FLEXDATA[(s, datestring)]['dry'] = dry
+                else:
+                    FLEXDATA[(s, datestring)]['dry'] = None
 
             else:
                 _shout('***ERROR: file %s not found! \n' % filename)
@@ -4758,7 +5041,7 @@ def closest(num, numlist):
 
 
 
-class Structure(dict):
+class Structure(dict,object):
     """ A 'fancy' dictionary that provides 'MatLab' structure-like
     referencing. 
 
