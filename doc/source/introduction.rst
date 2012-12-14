@@ -1,9 +1,9 @@
 .. _introduction:
 
 
-***************
+************
 Introduction
-***************
+************
 
 pflexible is an open source Python package to work with Lagrangian Particle
 Disperion Model output. Currently it is built for `FLEXPART
@@ -15,10 +15,14 @@ the documentation is hosted at readthedocs. pflexible was written by `John
 F. Burkhart <http://niflheim.nilu.no/jfburkhart>`_ and is licensed under
 Creative Commons.
 
+Current development activities are focused on improved generality and handling of
+FLEXPART output in all possible run configurations, with and without deposition,
+forward, backward, or otherwise.
+
 .. _getting-pflexible:
 
 Getting pflexible
-======================
+=================
 Please contact: `John F. Burkhart <jfburkhart@gmail.com>`_
 
 First, make sure you also have the dependencies installed:
@@ -39,13 +43,13 @@ Once you've installed all the dependencies, you can get the code from either
 sources below.
 
 BitBucket
--------------------
+---------
 
 The code is available to the public at `bitbucket
 <https://bitbucket.org/jfburkhart/pflexible>`_. 
 
 PyPi
-------------
+----
 
 The `pflexible <http://pypi.python.org/pypi/pflexible>`_ code is also posted to
 pypi, but this is more likely to fall out of date.
@@ -56,7 +60,7 @@ pypi, but this is more likely to fall out of date.
 .. _email-list:
 
 Mailing List
-====================
+============
 
 There is a mailing list for the project set up at with sourceforge. You can subscribe to
 the `pflexible
@@ -68,7 +72,7 @@ discussions.
 .. _setting-pythonpath:
 
 Installation and setting the PYTHONPATH
-==========================================================
+=======================================
 
 If all is working correctly, and you have all the required dependencies, the it
 should simply be a matter of running setup.py::
