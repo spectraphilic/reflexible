@@ -47,7 +47,7 @@ VERSION
     ID: $Id$: $Rev$ 
 """
 #builtin imports
-import pdb
+#import pdb
 import sys
 import os
 import struct
@@ -58,7 +58,7 @@ import datetime
 import itertools
 from math import pi, sqrt, cos
 import traceback
-import warnings
+
 
 #Dependencies:
 # Numpy
@@ -411,10 +411,10 @@ def read_trajectories(H, trajfile='trajectories.txt', \
 
     for i in range(3 + (numpoint * 2), len(alltraj)):
         raw = alltraj[i]
-        format = [0, 5, 8, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6] + ncluster * [8, 8, 7, 6, 8]
+        FMT = [0, 5, 8, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6] + ncluster * [8, 8, 7, 6, 8]
 
-        data = [raw[sum(format[:ii]):sum(format[:ii + 1])] for ii in range(1, len(format) - 1)] + \
-                     [raw[sum(format[:-1]):]]
+        data = [raw[sum(FMT[:ii]):sum(FMT[:ii + 1])] for ii in range(1, len(FMT) - 1)] + \
+                     [raw[sum(FMT[:-1]):]]
         ### FIX ###
         ### To get rid of '******' that is now in trajectories.txt
         data = [float(r.replace('********', 'NaN')) for r in data]
@@ -697,7 +697,7 @@ def save_spectrum(outf, H, agespectra, spectype='agespec',
     """ Save an ageclass or continents spectrum to an outfile. """
 
     if spectype == 'agespec':
-        ftype = 'AGECLASS'
+        #ftype = 'AGECLASS'
         try:
             T = H.releasetimes
             spectrum = agespectra
@@ -714,7 +714,7 @@ def save_spectrum(outf, H, agespectra, spectype='agespec',
                 spectrum = agespectra[:, 1:]
     elif spectype == 'contspec':
         #assume H is a list or None
-        ftype = 'SPECTRUM'
+        #ftype = 'SPECTRUM'
         try:
             T = H.releasetimes
             spectrum = agespectra
@@ -762,7 +762,7 @@ def gridarea(H):
     pih = pi / 180.
     r_earth = 6.371e6
     cosfunc = lambda y : cos(y * pih) * r_earth
-    nz = H['numzgrid']
+    
     nx = H['numxgrid']
     ny = H['numygrid']
     outlat0 = H['outlat0']
@@ -776,7 +776,7 @@ def gridarea(H):
         ylatm = ylata - 0.5 * dyout
         if (ylatm < 0 and ylatp > 0): hzone = dyout * r_earth * pih
         else:
-            cosfact = cosfunc(ylata)
+            #cosfact = cosfunc(ylata)
             cosfactp = cosfunc(ylatp)
             cosfactm = cosfunc(ylatm)
             if cosfactp < cosfactm:
@@ -827,8 +827,7 @@ def read_header(pathname, **kwargs):
 
     Returns a dictionary
 
-        H = dictionary like object with all the run metadata. TODO: Fill in keys.
-
+        H = dictionary like object with all the run metadata.
     Arguments
 
       .. tabularcolumns::  |l|L|
@@ -854,6 +853,13 @@ def read_header(pathname, **kwargs):
         probably a lot of things, among which ... 
         
        [] choose skip/getbin or direct seek/read 
+       [] define output keys in docstring
+       
+       
+    .. note::
+        The user is no longer required to indicate which version of FLEXPART
+        the header is from. Checks are made, and the header is read accordingly.
+        Please report any problems...
         
     """
 
@@ -1263,6 +1269,7 @@ def read_header(pathname, **kwargs):
 #BW Compatability
 readheader = read_header
 readheaderV8 = read_header
+readheaderV6 = read_header
 
 def _readV6(bf, h):
     """
@@ -1298,7 +1305,7 @@ def _readV6(bf, h):
             h['npart'][i] = getbin('i')
             h['mpart'][i] = getbin('i')
 
-            r3 = getbin('i')
+            getbin('i')
             # initialise release fields
 
             l = getbin('i')#get compoint length?
@@ -1306,7 +1313,7 @@ def _readV6(bf, h):
             sp = ''
             sp = sp.join(getbin('c', l))
             bf.seek(gt) #skip ahead to gt point
-            print sp
+            
             h['compoint'].append(sp) #species names in dictionary for each nspec
             #h['compoint'].append(''.join([getbin('c') for i in range(45)]))
             skip()
@@ -1322,301 +1329,7 @@ def _readV6(bf, h):
     return
 
 
-def _readheaderV6(pathname, **kwargs):
-    """
-    DEPRECATED
-    see :func:`read_header`
-    
-    This is the 'V6' function. It is less tested than the 'V8' version.
-
-    """
-    warning = """
-    This is in development, and many variables are not yet correctly registered.
-    USE WITH CAUTION.
-    """
-
-    fail = -1
-    OPS = Structure()
-    OPS.readp = True
-    OPS.readp_ff = False
-    OPS.nested = False
-    OPS.ltopo = 1 # 1 for AGL, 0 for ASL
-    OPS.version = 'V6'
-    OPS.update(kwargs)
-#    for o in OPS:
-#        print "Reading Header with:"
-#        print "%s ==> %s" % (o, OPS[o])
-
-
-    # Utility functions
-    skip = lambda n = 8 : f2.seek(n, 1)
-    getbin = lambda dtype, n = 1 : f2.read(dtype, (n,))
-
-    #H={} #create dictionary for header
-    h = Structure()
-
-    if OPS.nested == False:
-        filename = os.path.join(pathname, 'header')
-        h['nested'] = False
-    else:
-        filename = os.path.join(pathname, 'header_nest')
-        h['nested'] = True
-
-    # Open header file in binary format
-    f2 = BinaryFile(filename, order="fortran")
-    #Get available_dates from dates file in same directory as header
-    datefile = os.path.join(pathname, 'dates')
-    fd = file(datefile, 'r').readlines()
-    h['available_dates'] = [d.strip('\n') for d in fd]
-
-    #Define Header format and create Dictionary Keys
-    I = {0:'rl0', 1:'ibdate', 2:'ibtime', 3:'version', \
-         4:'rl1', 5:'loutstep', 6:'loutaver', 7:'loutsample', \
-         8:'rl2', 9:'outlon0', 10:'outlat0', 11:'numxgrid', \
-         12:'numygrid', 13:'dxout', 14:'dyout', 15:'rl3', 16:'numzgrid', \
-         }
-    #format for binary reading first part of the header file
-    Dfmt = ['i', 'i', 'i', '13S', '2i', 'i', 'i', 'i', '2i', 'f', 'f', 'i', 'i', 'f', 'f', '2i', 'i']
-    if f2:
-        a = [f2.read(fmt) for fmt in Dfmt]
-        for j in range(len(a)):
-            h[I[j]] = a[j]
-        #add items to the dictionary
-        ss_start = datetime.datetime.strptime(str(h['ibdate']) + str(h['ibtime']).zfill(6), \
-                                           '%Y%m%d%H%M%S')
-
-        h['simulationstart'] = ss_start
-        h['pathname'] = pathname
-        h['decayconstant'] = 0
-        h['outheight'] = [getbin('f') for i in range(h['numzgrid'])]
-        skip()
-        h['jjjjmmdd'] = getbin('i')
-        h['hhmmss'] = getbin('i')
-        skip()
-        h['nspec'] = getbin('i') / 3
-        print 'nspec:', h['nspec']
-        h['numpointspec'] = getbin('i')
-        skip()
-        #Read in the species names and levels for each nspec
-        h['numzgrid'] = []
-        h['species'] = []
-        #temp dictionaries
-        for i in range(h['nspec']):
-            #pdb.set_trace()
-            #one=getbin('i'); # input skipped ??
-            wd = getbin('c', 10);  # input skipped ??
-            skip();
-            one = getbin('i'); # input skipped ??
-            dd = getbin('c', 10);  # input skipped ??
-            #print wd,dd
-            skip();
-            h['numzgrid'].append(getbin('i'))
-            h['species'].append(''.join([getbin('c') for i in range(10)]).strip())
-            #skip();
-        skip()
-        #print f2.read('i')
-
-        h['numpoint'] = getbin('i')
-        skip()
-
-        # read release info if requested, this is deprecated. Use FortFlex routine.
-        if OPS.readp is True:
-            # initialise release fields
-            I = {2:'kindz', 3:'xp1', 4:'yp1', 5:'xp2', \
-               6:'yp2', 7:'zpoint1', 8:'zpoint2', 9:'npart', 10:'mpart'}
-            h['ireleasestart'] = []
-            h['ireleaseend'] = []
-            for k, v in I.iteritems(): h[v] = np.zeros(h['numpoint']) #create zero-filled lists in H dict
-            h['compoint'] = []
-            h['xmass'] = np.zeros((h['numpoint'], h['nspec']))
-            #r1=getbin('i')
-            for i in range(h['numpoint']):
-                #r2=getbin('i')
-                i1 = getbin('i')
-                i2 = getbin('i')
-                #h['ireleasestart'].append( ss_start + datetime.timedelta(seconds=float(i1)) )
-                #h['ireleaseend'].append( ss_start + datetime.timedelta(seconds=float(i2)) )
-                h['ireleasestart'].append(i1)
-                h['ireleaseend'].append(i2)
-                h['kindz'][i] = getbin('i') # This is an int16, might need to to change something
-                skip() #get xp, yp,...
-
-                h['xp1'][i] = getbin('f')
-                h['yp1'][i] = getbin('f')
-                h['xp2'][i] = getbin('f')
-                h['yp2'][i] = getbin('f')
-                h['zpoint1'][i] = getbin('f')
-                h['zpoint2'][i] = getbin('f')
-
-                skip() #get n/mpart
-                h['npart'][i] = getbin('i')
-                h['mpart'][i] = getbin('i')
-
-                r3 = getbin('i')
-                # initialise release fields
-
-                l = getbin('i')#get compoint length?
-                gt = f2.tell() + l #create 'goto' point
-                sp = ''
-                sp = sp.join(getbin('c', l))
-                f2.seek(gt) #skip ahead to gt point
-                print sp
-                h['compoint'].append(sp) #species names in dictionary for each nspec
-                #h['compoint'].append(''.join([getbin('c') for i in range(45)]))
-                skip()
-                #r1=getbin('i')
-
-                #now loop for nspec to get xmass
-                for v in range(h['nspec']):
-                    Dfmt = ['i', 'f', '2i', 'f', '2i', 'f', 'i']
-                    a = [f2.read(fmt) for fmt in Dfmt]
-                    h['xmass'][i, v] = a[1]
-
-        else:
-            #skip reading points, fill data structure with zeroes
-            # different for different species!!
-            #f2.seek(119*h['numpoint']+(h['nspec']*36)*h['numpoint']+4,1);
-            f2.seek(157 * h['numpoint'], 1);
-        #rl = getbin('i')
-        h['method'] = getbin('i')
-        h['lsubgrid'] = getbin('i')
-        h['lconvection'] = getbin('i')
-        skip()
-        #h['ind_source'] = getbin('i')
-        #h['ind_receptor'] = getbin('i')
-        h['nageclass'] = getbin('i')
-        Lage_fmt = ['i'] * h.nageclass
-        jnk_lage = [f2.read(fmt) for fmt in Lage_fmt]
-        nx = h['numxgrid']
-        ny = h['numygrid']
-        Dfmt = ['f'] * nx
-        h['oro'] = np.zeros((nx, ny), np.float)
-        skip()
-        for ix in range(nx):
-            #h['oro'][ix]=[getbin('f') for jx in range(ny)]
-            # The next is *much* faster!
-            h['oro'][ix] = getbin('f', ny)
-            skip()
-        if h['loutstep'] < 0:
-            h['nspec'] = h['numpoint']
-
-        f2.close
-        fail = 0
-
-        # Calculate Height (outheight + topography)
-        # There is an offset issue here related to the 0-indexing. Be careful.
-        Z = h['oro'] #z is a numpy array
-        nz = h['numzgrid'][0]
-        Heightnn = np.zeros((nx, ny, nz), np.float)
-        for ix in range(nx):
-            if OPS.ltopo == 1: Heightnn[ix, :, 0] = Z[ix, :]
-            else: Heightnn[ix, :, 0] = np.zeros(ny)
-
-            for iz in range(nz):
-                if OPS.ltopo == 1: Heightnn[ix, :, iz] = [h['outheight'][iz] + Z[ix, y] for y in range(ny)]
-                else: Heightnn[ix, :, iz] = h['outheight'][iz]
-
-        h['Area'] = gridarea(h)
-        h['Heightnn'] = Heightnn
-
-
-    #############  A FEW ADDITIONS ###########
-    # add a few default attributes
-    h.options = OPS
-    h.path = pathname
-#    if OPS.readp_ff:
-#        h = _read_headerFF(filename,h,
-#                          nxmax=h.numxgrid,nymax=h.numygrid,nzmax=h.numzgrid,
-#                          maxspec=h.nspec,maxageclass=h.nageclass,
-#                          maxpoint=h.numpoint)
-#
-    # Convert ireleasestart and ireleaseend to datetimes
-
-    releasestart, releaseend = [], []
-    h.numpointspec = h.numpoint
-    for i in range(h.numpointspec):
-        releasestart.append(h.simulationstart + \
-                             datetime.timedelta(seconds=int(h.ireleasestart[i])))
-        releaseend.append(h.simulationstart + \
-                           datetime.timedelta(seconds=int(h.ireleaseend[i])))
-    h.releasestart = releasestart
-    h.releaseend = releaseend[:h.numpointspec]
-    h.releasetimes = [b - ((b - a) / 2) for a, b in zip(h.releasestart, h.releaseend)]
-    # Add datetime objects for dates
-    available_dates_dt = []
-    for i in h.available_dates:
-        available_dates_dt.append(datetime.datetime(
-            int(i[:4]), int(i[4:6]), int(i[6:8]), int(i[8:10]), int(i[10:12]), int(i[12:])))
-    h.available_dates_dt = available_dates_dt
-    h.ageclasses = np.array([act - h.simulationstart for act in h.available_dates_dt])
-    h.numageclasses = len(h.ageclasses)
-
-    # Add other helpful attributes
-    h.xpoint = h.xp1
-    h.ypoint = h.yp1
-    h.nxmax = h.numxgrid
-    h.nymax = h.numygrid
-    h.nzmax = h.numzgrid
-    h.maxspec = h.nspec
-    h.maxpoint = h.numpoint
-    h.area = h.Area
-    if h.loutstep > 0:
-        h.direction = 'forward'
-        h.unit = 'conc' #could be pptv
-        h.plot_unit = 'ppb'
-    else:
-        h.direction = 'backward'
-        h.unit = 'time'
-        h.plot_unit = 'ns / kg' #Not sure about this
-
-    # Add release unit derived from kindz
-    if 3 in h.kindz:
-        h.alt_unit = 'hPa'
-    elif 2 in h.kindz:
-        h.alt_unit = 'masl'
-    else:
-        h.alt_unit = 'magl'
-
-    if h.loutstep > 0:
-        h.direction = 'forward'
-        h.unit = 'conc' #could be pptv
-        h.plot_unit = 'ppb'
-    else:
-        h.direction = 'backward'
-        h.unit = 'time'
-        h.plot_unit = 'ns / kg' #check
-        
-    # Units based on Table 1, ACP 2005
-    h['ind_source'] = 1 ## DANGER! This is specific to NILU Backward Runs.
-    h['ind_receptor'] = 1
-    if h.direction == 'forward':
-        if h.ind_source == 1:
-            if h.ind_receptor == 1:
-                h.output_unit = 'ng m-3'
-            if h.ind_receptor == 2:
-                h.output_unit = 'pptm'
-        if h.ind_source == 2:
-            if h.ind_receptor == 1:
-                h.output_unit = 'ng m-3'
-            if h.ind_receptor == 2:
-                h.output_unit = 'pptm'
-    if h.direction == 'backward':
-        if h.ind_source == 1:
-            if h.ind_receptor == 1:
-                h.output_unit = 's'
-            if h.ind_receptor == 2:
-                h.output_unit = 's m^3 kg-1'
-        if h.ind_source == 2:
-            if h.ind_receptor == 1:
-                h.output_unit = 's kg m-3'
-            if h.ind_receptor == 2:
-                h.output_unit = 's'
-
-    print 'Header read: %s,\n%s' % (filename, warning)
-
-    return h
-
-
+########### Grid Reading Routines ###############
 
 
 def _readgrid_noFF(H, **kwargs):
