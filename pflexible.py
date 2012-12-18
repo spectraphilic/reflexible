@@ -3205,7 +3205,7 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
     p_legend = mpl.font_manager.FontProperties(size='8')
 
     #extract only releases of interest according to rel_i
-    rel += 1  #account for zero indexing
+    rel = rel_i + 1  #account for zero indexing
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
     if FIGURE == None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
