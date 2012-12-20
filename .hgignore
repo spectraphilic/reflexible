@@ -12,6 +12,8 @@ doc/build/*
 build/*
 .project
 .pydev*
+f2py_build/f90/*
+FortFlex.so
 
 syntax: regexp
 .*\#.*\#$
