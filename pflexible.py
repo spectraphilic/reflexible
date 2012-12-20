@@ -4644,15 +4644,14 @@ class Structure(dict,object):
     def __setattr__(self, attr, value):
         self[attr] = value
 
-    def set_with_dict(self, D):
-        """ set attributes with a dict """
-        for k in D.keys():
-            self.__setattr__(k, D[k])
-            
     def __dir__(self):
         """ necessary for Ipython tab-completion """
         return self.keys()
 
+    def set_with_dict(self, D):
+        """ set attributes with a dict """
+        for k in D.keys():
+            self.__setattr__(k, D[k])
 
 
 class Header(Structure):

@@ -42,7 +42,7 @@ def dumpdepogrid( np.ndarray[int, ndim=1] dmp_i, int cnt_r, np.ndarray[float, nd
             ii=ii+1
             fact=fact*-1.
         else:
-            pos=pos+1
+            n=n+1
         jy=n/nx
         ix=n-nx*jy
         grd[ix,jy,k,nage]=abs(dmp_r[ir])

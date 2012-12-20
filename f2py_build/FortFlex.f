@@ -19,7 +19,7 @@ C     ################################################################
      +numxgrid,numygrid,numzgrid,numpointspec,nageclass,
      +grid,wetgrid,drygrid,itime,scaledepo,scaleconc,
      +decayconstant,npspec_int)
-      
+
       parameter(smallnum=1.e-38)
 
       real decayconstant
@@ -32,7 +32,7 @@ Cf2py intent(out) wetgrid
       real drygrid(numxgrid,numygrid,numpointspec,nageclass)
 Cf2py intent(out) drygrid
 c     creating a npspec option to read only one npspec
-Cf2py intent(in) npspec_int  
+Cf2py intent(in) npspec_int
       real npspec_int
 
 
@@ -57,7 +57,7 @@ c      write(*,*) 'allocation 2'
 c     print*,numxgrid,numygrid,numzgrid,nageclass,numpointspec
 
       open(10,file=filegrid,form='unformatted',status='old')
-      read(10,end=99) itime 
+      read(10,end=99) itime
 c     write(*,*) itime
 
 C Initialize age class fields
@@ -194,9 +194,9 @@ c        print*,fac
         fac = 1.0
         do 41 ix=1,numxgrid
            do 41 jy=1,numygrid
-             drygrid(ix,jy,npspec,nage)= 
+             drygrid(ix,jy,npspec,nage)=
      +             drygrid(ix,jy,npspec,nage)*scaledepo
-             wetgrid(ix,jy,npspec,nage)= 
+             wetgrid(ix,jy,npspec,nage)=
      +        wetgrid(ix,jy,npspec,nage)*scaledepo
              do 41 kz=1,numzgrid
               grid(ix,jy,kz,npspec,nage)=
@@ -220,9 +220,9 @@ C End species loop, end age class loop
       return
       end
 
-      
-      
-      
+
+
+
       subroutine sumgrid(zplot,grid,
      +numxgrid,numygrid,numzgrid,
      +numpoint,nageclass,

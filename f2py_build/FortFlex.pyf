@@ -3,21 +3,30 @@
 
 python module FortFlex ! in 
     interface  ! in :FortFlex
-        subroutine readgrid(filegrid,numxgrid,numygrid,numzgrid,numpointspec,nageclass,grid,wetgrid,drygrid,itime,scaledepo,scaleconc,decayconstant,npspec_int) ! in :FortFlex:FortFlex.f
-            character*500 :: filegrid
+        subroutine readgrid(filegrid,k,itime,numxgrid,numygrid,numzgrid,nspec,nspec2,nageclass,wetgrid,drygrid,grid,lage,scaledepo,scaleconc,decayconstant,nxmax,nymax,nzmax,maxpoint,maxspec,maxageclass,maxcon) ! in :FortFlex:FortFlex.f
+            character*250 :: filegrid
+            integer :: k
+            integer intent(out) :: itime
             integer :: numxgrid
             integer :: numygrid
             integer :: numzgrid
-            integer :: numpointspec
+            integer :: nspec
+            integer :: nspec2
             integer :: nageclass
-            real dimension(numxgrid,numygrid,numzgrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numzgrid,numpointspec,nageclass) :: grid
-            real dimension(numxgrid,numygrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numpointspec,nageclass) :: wetgrid
-            real dimension(numxgrid,numygrid,numpointspec,nageclass),intent(out),depend(numxgrid,numygrid,numpointspec,nageclass) :: drygrid
-            integer intent(out) :: itime
+            real dimension(nxmax,nymax,maxspec,maxageclass),intent(out),depend(nxmax,nymax,maxspec,maxageclass) :: wetgrid
+            real dimension(nxmax,nymax,maxspec,maxageclass),intent(out),depend(nxmax,nymax,maxspec,maxageclass) :: drygrid
+            real dimension(nxmax,nymax,nzmax,maxspec,maxageclass),intent(out),depend(nxmax,nymax,nzmax,maxspec,maxageclass) :: grid
+            integer dimension(maxageclass + 1) :: lage
             real :: scaledepo
             real :: scaleconc
             real :: decayconstant
-            real intent(in) :: npspec_int
+            integer :: nxmax
+            integer :: nymax
+            integer :: nzmax
+            integer :: maxpoint
+            integer :: maxspec
+            integer, optional,check((len(lage)-1)>=maxageclass),depend(lage) :: maxageclass=(len(lage)-1)
+            integer :: maxcon
         end subroutine readgrid
         subroutine sumgrid(zplot,grid,numxgrid,numygrid,numzgrid,numpoint,nageclass,area,heightnn) ! in :FortFlex:FortFlex.f
             real dimension(numxgrid,numygrid,numzgrid,numpoint),intent(in,out) :: zplot
