@@ -4648,6 +4648,10 @@ class Structure(dict,object):
         """ set attributes with a dict """
         for k in D.keys():
             self.__setattr__(k, D[k])
+            
+    def __dir__(self):
+        """ necessary for Ipython tab-completion """
+        return self.keys()
 
 
 
