@@ -1478,8 +1478,8 @@ def _readgrid_noFF(H, **kwargs):
         key2var(H, k)
 
     #create zero arrays for datagrid and zplot
-    datagrid = np.zeros((numxgrid, numygrid, numzgrid[0], numpoint), dtype=np.float32)
-    zplot = np.empty((numxgrid, numygrid, numzgrid[0], numpoint))
+    datagrid = np.zeros((numxgrid, numygrid, numzgrid, numpoint), dtype=np.float32)
+    zplot = np.empty((numxgrid, numygrid, numzgrid, numpoint))
 
     #--------------------------------------------------
     # Loop over all times, given in field H['dates']
@@ -1540,7 +1540,7 @@ def _readgrid_noFF(H, **kwargs):
                     ## RETURN: grid(numxgrid,numygrid,numzgrid,numpoint,nageclass)
                     #####################################################################################
 
-                    concgrid = readgrid(filename, numxgrid, numygrid, numzgrid[0], \
+                    concgrid = readgrid(filename, numxgrid, numygrid, numzgrid, \
                                     numpoint, nageclass, \
                                     scaleconc, decayconstant)
 
@@ -1558,7 +1558,7 @@ def _readgrid_noFF(H, **kwargs):
                     nage = 0
                     #read data:
                     ##datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],nspec,nageclass),np.float)
-                    datagrid = np.zeros((numxgrid, numygrid, numzgrid[0], 1, 1), np.float)
+                    datagrid = np.zeros((numxgrid, numygrid, numzgrid, 1, 1), np.float)
                     #f = file(filename, 'rb')
                     #print filename
                     f2 = BinaryFile(filename, order='fortran')
@@ -1688,7 +1688,7 @@ def _readgridBF(H, filename):
     ##datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],nspec,nageclass),np.float)
     wetgrid = np.zeros((H.numxgrid, H.numygrid, H.numpointspec, 1), np.float)
     drygrid = np.zeros((H.numxgrid, H.numygrid, H.numpointspec, 1), np.float)
-    datagrid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid[0], H.numpointspec, nage), np.float)
+    datagrid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid, H.numpointspec, nage), np.float)
     #f = file(filename,'rb')
     #print filename
     f2 = BinaryFile(filename, order='fortran')
@@ -2023,7 +2023,7 @@ def readgridV8(H, **kwargs):
             if unit_i != 4:
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit_i) + (H.nested * 5)] + datestring + spec_fid)
-                H.zdims = H.numzgrid[0]
+                H.zdims = H.numzgrid
 
             else:
                 #grid total footprint
@@ -2278,8 +2278,8 @@ def readgridV6(H, **kwargs):
     #if unit_i == 4:
         #grid=np.empty((numxgrid,numygrid,1,nspec_ret,pspec_ret,age_ret,len(get_dates)))
     #else:
-        #grid=np.empty((numxgrid,numygrid,numzgrid[0],nspec_ret,pspec_ret,age_ret,len(get_dates)))
-    #zplot=np.empty((numxgrid,numygrid,numzgrid[0],numpointspec))
+        #grid=np.empty((numxgrid,numygrid,numzgrid,nspec_ret,pspec_ret,age_ret,len(get_dates)))
+    #zplot=np.empty((numxgrid,numygrid,numzgrid,numpointspec))
 
     #--------------------------------------------------
     # Loop over all times, given in field H['available_dates']
@@ -2297,7 +2297,7 @@ def readgridV6(H, **kwargs):
             if unit_i != 4:
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit_i) + (H.nested * 5)] + datestring)
-                H.zdims = H.numzgrid[0]
+                H.zdims = H.numzgrid
 
             else:
                 #grid total footprint
@@ -2438,7 +2438,7 @@ def fill_backward(H, nspec=0, FD=None, add_attributes=False):
     C = Structure()
     for s, k in itertools.product(species, range(H.numpointspec)):
         C[(s, k)] = Structure()
-        C[(s, k)].grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid[0]))
+        C[(s, k)].grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
         C[(s, k)]['itime'] = None
         C[(s, k)]['timestamp'] = H.releasetimes[k]
         C[(s, k)]['species'] = H['species'][s]
