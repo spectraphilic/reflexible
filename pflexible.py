@@ -1162,7 +1162,7 @@ def read_header(pathname, **kwargs):
     h['ny'] = ny
     h['nz'] = nz
     
-    # Convert ireleasestart and ireleaseend to datetimes
+    # Convert ireleasestart and ireleaseend to datetimes, fix issue #10
     start_day = datetime.datetime.strptime(str(h['ibdate']), '%Y%m%d%')
     H, M, S , = [int(str(h['ibtime']).zfill(6)[i:i + 2]) for i in range(0, 6, 2)] 
     start_time = datetime.timedelta(hours=H, minutes=M, seconds=S)
