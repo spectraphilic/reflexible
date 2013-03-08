@@ -46,8 +46,8 @@ VERSION
 
     ID: $Id$: $Rev$ 
 """
-#builtin imports
-#import pdb
+# builtin imports
+# import pdb
 import sys
 import os
 import struct
@@ -60,12 +60,12 @@ from math import pi, sqrt, cos
 import traceback
 
 
-#Dependencies:
+# Dependencies:
 # Numpy
 import numpy as np
 # Matplotlib
 import matplotlib as mpl
-#mpl.use('Agg')
+# mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.dates import date2num
 import matplotlib.image as image
@@ -77,7 +77,7 @@ except ImportError:
     from matplotlib.toolkits.basemap import shiftgrid, addcyclic
 
 
-#local imports
+# local imports
 import mapping as mp
 
 __version__ = '0.9.5'
@@ -174,7 +174,7 @@ def read_command(path, headerrows=7):
 
     """
     lines = file(path, 'r').readlines()
-    command_vals = [i.strip() for i in lines[headerrows:]] #clean line ends
+    command_vals = [i.strip() for i in lines[headerrows:]]  # clean line ends
     COMMAND_KEYS = (
                'SIM_DIR',
                'SIM_START',
@@ -259,7 +259,7 @@ def read_releases(path, headerrows=11):
 
     """
     lines = _getfile_lines(path)
-    lines = [i.strip() for i in lines] #clean line ends
+    lines = [i.strip() for i in lines]  # clean line ends
 
     # we know nspec is at line 11
     nspec = int(lines[headerrows])
@@ -286,16 +286,16 @@ def read_releases(path, headerrows=11):
 
     names = ['start_time', 'end_time', 'lllon', 'lllat', 'urlon', 'urlat', \
                           'altunit', 'elv1', 'elv2', 'numpart']
-    #formats = [object, object, np.float, np.float, np.float, np.float,\
+    # formats = [object, object, np.float, np.float, np.float, np.float,\
     #                      int, np.float, np.float, int]
     for i in range(nspec):
             names.append('mass%s' % i)
-            #formats.append(np.float)
+            # formats.append(np.float)
     names.append('id')
-    #formats.append('S30')
+    # formats.append('S30')
 
-    #dtype = {'names':names, 'formats':formats}
-    #RELEASES = np.rec.array(blocks,dtype=dtype)
+    # dtype = {'names':names, 'formats':formats}
+    # RELEASES = np.rec.array(blocks,dtype=dtype)
     return np.rec.fromrecords(blocks, names=names)
  
 
@@ -416,7 +416,7 @@ def read_trajectories(H, trajfile='trajectories.txt', \
         data = [raw[sum(FMT[:ii]):sum(FMT[:ii + 1])] for ii in range(1, len(FMT) - 1)] + \
                      [raw[sum(FMT[:-1]):]]
         ### FIX ###
-        ### To get rid of '******' that is now in trajectories.txt
+        # ## To get rid of '******' that is now in trajectories.txt
         data = [float(r.replace('********', 'NaN')) for r in data]
 
         Trajectories.append(data)
@@ -478,7 +478,7 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
 
     """
 
-    #assert(isinstance(H, Header), 'ERROR: H Wrong Data Type')
+    # assert(isinstance(H, Header), 'ERROR: H Wrong Data Type')
     if H.direction == 'forward':
         if 'FD' in H.keys():
             pass
@@ -503,7 +503,7 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
     for i, (t, lon, lat, elv) in enumerate(flighttrack):
 
         
-        #loop over FD tuples using t to extract the right time.
+        # loop over FD tuples using t to extract the right time.
         # assuming t is a datetime
         idx = H.closest_date(t)
         datestring = H.available_dates[idx]
@@ -518,7 +518,7 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
         J = closest(lat, H.latitude)
         if get_track:
             K = closest(elv, H.outheight)
-        #print lon, I, H.longitude[I], '===========' , lat, J, H.latitude[J]
+        # print lon, I, H.longitude[I], '===========' , lat, J, H.latitude[J]
             curtain[i] = grid[I, J, K]
         else:
             curtain[i] = grid[I, J, :]
@@ -561,7 +561,7 @@ def curtain_for_line(grid, X, Y, coords, index=0):
         J = closest(y, Y)
         curtain[i] = grid[I, J, :]
         curtain = np.nan_to_num(curtain)
-        #curtain = np.ma.fix_invalid(np.array(curtain,dtype=float)) 
+        # curtain = np.ma.fix_invalid(np.array(curtain,dtype=float)) 
     return curtain.T
 
 
@@ -697,13 +697,13 @@ def save_spectrum(outf, H, agespectra, spectype='agespec',
     """ Save an ageclass or continents spectrum to an outfile. """
 
     if spectype == 'agespec':
-        #ftype = 'AGECLASS'
+        # ftype = 'AGECLASS'
         try:
             T = H.releasetimes
             spectrum = agespectra
             nClasses = spectrum.shape[1]
         except:
-            #assume H is a list or None
+            # assume H is a list or None
             if H:
                 nClasses = H[0]
                 T = H[1]
@@ -713,15 +713,15 @@ def save_spectrum(outf, H, agespectra, spectype='agespec',
                 nClasses = agespectra.shape[1] - 1
                 spectrum = agespectra[:, 1:]
     elif spectype == 'contspec':
-        #assume H is a list or None
-        #ftype = 'SPECTRUM'
+        # assume H is a list or None
+        # ftype = 'SPECTRUM'
         try:
             T = H.releasetimes
             spectrum = agespectra
             nClasses = spectrum.shape[1]
             header = '## Continental Spectrum File'
         except:
-            #assume H is a list or None
+            # assume H is a list or None
             if H:
                 nClasses = H[0]
                 T = H[1]
@@ -771,12 +771,12 @@ def gridarea(H):
     area = np.zeros((nx, ny))
 
     for iy in range(ny):
-        ylata = outlat0 + (float(iy) + 0.5) * dyout #NEED TO Check this, iy since arrays are 0-index
+        ylata = outlat0 + (float(iy) + 0.5) * dyout  # NEED TO Check this, iy since arrays are 0-index
         ylatp = ylata + 0.5 * dyout
         ylatm = ylata - 0.5 * dyout
         if (ylatm < 0 and ylatp > 0): hzone = dyout * r_earth * pih
         else:
-            #cosfact = cosfunc(ylata)
+            # cosfact = cosfunc(ylata)
             cosfactp = cosfunc(ylatp)
             cosfactm = cosfunc(ylatm)
             if cosfactp < cosfactm:
@@ -803,7 +803,7 @@ def _get_header_version(bf):
         bf = bf
     
     ret = bf.tell()
-    bf.seek(12) #start of version string
+    bf.seek(12)  # start of version string
     version = bf.read('13S')
     bf.seek(ret)
     
@@ -866,12 +866,12 @@ def read_header(pathname, **kwargs):
     OPS = Structure()
     OPS.readp = True
     OPS.nested = False
-    OPS.ltopo = 1 # 1 for AGL, 0 for ASL
+    OPS.ltopo = 1  # 1 for AGL, 0 for ASL
     OPS.verbose = False
     OPS.headerfile = None
     OPS.datefile = None
     
-    ## add keyword overides and options to header
+    # # add keyword overides and options to header
     for k in kwargs.keys():
         if k not in OPS.keys():
             print("WARNING: {0} not a valid input option.".format(k))
@@ -899,7 +899,7 @@ def read_header(pathname, **kwargs):
         for o in OPS:
             print "%s ==> %s" % (o, OPS[o])
     
-    #Define utility functions for reading binary file
+    # Define utility functions for reading binary file
     skip = lambda n = 8 : bf.seek(n, 1)
     getbin = lambda dtype, n = 1 : bf.read(dtype, (n,))
 
@@ -926,7 +926,7 @@ def read_header(pathname, **kwargs):
         except:
             raise IOError("Error opening: {0} with BinaryFile class".format(filename))
     
-    #Get available_dates from dates file in same directory as header
+    # Get available_dates from dates file in same directory as header
     if OPS.datefile:
         datefile = os.path.join(pathname, OPS.datefile)
     else:
@@ -940,17 +940,17 @@ def read_header(pathname, **kwargs):
         except:
             raise IOError("Could not read datefile: {0}".format(datefile))
     
-    #get rid of any duplicate dates (a fix for the forecast system)
+    # get rid of any duplicate dates (a fix for the forecast system)
     fd = sorted(list(set(fd)))
     h['available_dates'] = [d.strip('\n') for d in fd]
     
     
-    #which version format is header file:
+    # which version format is header file:
     version = _get_header_version(bf)
     
 
     # required containers
-    junk = [] #for catching unused output
+    junk = []  # for catching unused output
     h['nz_list'] = []
     h['species'] = []
     h['wetdep'] = [] 
@@ -959,13 +959,13 @@ def read_header(pathname, **kwargs):
     h['ireleaseend'] = []
     h['compoint'] = []
     
-    #Define Header format and create Dictionary Keys
+    # Define Header format and create Dictionary Keys
     I = {0:'_0', 1:'ibdate', 2:'ibtime', 3:'flexpart', \
          4:'_1', 5:'loutstep', 6:'loutaver', 7:'loutsample', \
          8:'_2', 9:'outlon0', 10:'outlat0', 11:'numxgrid', \
          12:'numygrid', 13:'dxout', 14:'dyout', 15:'_3', 16:'numzgrid', \
          }
-    #format for binary reading first part of the header file   
+    # format for binary reading first part of the header file   
     Dfmt = ['i', 'i', 'i', '13S', '2i', 'i', 'i', 'i', '2i', 'f', 'f', 'i', 'i', 'f', 'f', '2i', 'i']
     if bf:
         a = [bf.read(fmt) for fmt in Dfmt]
@@ -977,12 +977,12 @@ def read_header(pathname, **kwargs):
         h['jjjjmmdd'] = bf.read('i')
         h['hhmmss'] = bf.read('i')
         junk.append(bf.read('2i'))
-        h['nspec'] = bf.read('i') / 3 #why!?
+        h['nspec'] = bf.read('i') / 3  # why!?
         h['numpointspec'] = bf.read('i')
         junk.append(bf.read('2i'))
         
-        #Read in the species names and levels for each nspec
-        #temp dictionaries
+        # Read in the species names and levels for each nspec
+        # temp dictionaries
         for i in range(h['nspec']):
             if 'V6' in version:
 
@@ -1008,7 +1008,7 @@ def read_header(pathname, **kwargs):
 
         if 'V6' in version:
             bf.seek(8, 1)
-        #pdb.set_trace()
+        # pdb.set_trace()
         h['numpoint'] = bf.read('i')
         
         # read release info if requested
@@ -1022,7 +1022,7 @@ def read_header(pathname, **kwargs):
            6:'yp2', 7:'zpoint1', 8:'zpoint2', 9:'npart', 10:'mpart'}
 
         for k, v in I.iteritems():
-            h[v] = np.zeros(h['numpoint']) #create zero-filled lists in H dict
+            h[v] = np.zeros(h['numpoint'])  # create zero-filled lists in H dict
 
         h['xmass'] = np.zeros((h['numpoint'], h['nspec']))
 
@@ -1037,7 +1037,7 @@ def read_header(pathname, **kwargs):
     
                 h['ireleasestart'].append(bf.read('i'))
                 h['ireleaseend'].append(bf.read('i'))
-                h['kindz'][i] = bf.read('h') # This is an int16, might need to to change something
+                h['kindz'][i] = bf.read('h')  # This is an int16, might need to to change something
                 junk.append(bf.read('2i'))
     
                 h['xp1'][i] = bf.read('f')
@@ -1054,20 +1054,20 @@ def read_header(pathname, **kwargs):
                 junk.append(bf.read('i'))
                 # initialise release fields
     
-                l = bf.read('i')#get compoint length?
-                gt = bf.tell() + l #create 'goto' point
+                l = bf.read('i')  # get compoint length?
+                gt = bf.tell() + l  # create 'goto' point
                 sp = ''
-                while re.search("\w", bf.read('c')): #collect the characters for the compoint
+                while re.search("\w", bf.read('c')):  # collect the characters for the compoint
                     bf.seek(-1, 1)
                     sp = sp + bf.read('c')
     
-                bf.seek(gt) #skip ahead to gt point
+                bf.seek(gt)  # skip ahead to gt point
     
-                h['compoint'].append(sp) #species names in dictionary for each nspec
-                #h['compoint'].append(''.join([bf.read('c') for i in range(45)]))
+                h['compoint'].append(sp)  # species names in dictionary for each nspec
+                # h['compoint'].append(''.join([bf.read('c') for i in range(45)]))
                 
                 junk.append(bf.read('i'))
-                #now loop for nspec to get xmass
+                # now loop for nspec to get xmass
                 for v in range(h['nspec']):
                     Dfmt = ['i', 'f', '2i', 'f', '2i', 'f', 'i']
                     a = [bf.read(fmt) for fmt in Dfmt]
@@ -1109,7 +1109,7 @@ def read_header(pathname, **kwargs):
         Lage_fmt = ['i'] * h.nageclass
         h['lage'] = [bf.read(fmt) for fmt in Lage_fmt]
         
-        #Orography
+        # Orography
         nx = h['numxgrid']
         ny = h['numygrid']
         Dfmt = ['f'] * nx
@@ -1121,8 +1121,8 @@ def read_header(pathname, **kwargs):
             bf.seek(8, 1)
         
         # Why was this? / deprecated.
-        #if h['loutstep'] < 0:
-            #h['nspec'] = h['numpoint']
+        # if h['loutstep'] < 0:
+            # h['nspec'] = h['numpoint']
         
         bf.close()
 
@@ -1138,7 +1138,7 @@ def read_header(pathname, **kwargs):
 
     # Calculate Height (outheight + topography)
     # There is an offset issue here related to the 0-indexing. Be careful.
-    oro = h['oro'] #z is a numpy array
+    oro = h['oro']  # z is a numpy array
     nx = h['numxgrid']
     ny = h['numygrid']
     nz = h['numzgrid']
@@ -1163,10 +1163,10 @@ def read_header(pathname, **kwargs):
     h['nz'] = nz
     
     # Convert ireleasestart and ireleaseend to datetimes
-    
-    h['simulationstart'] = datetime.datetime.strptime(str(h['ibdate']) \
-                                                      + str(h['ibtime']).zfill(6), \
-                                                      '%Y%m%d%H%M%S')
+    start_day = datetime.datetime.strptime(str(h['ibdate']), '%Y%m%d%')
+    H, M, S , = [int(str(h['ibtime']).zfill(6)[i:i + 2]) for i in range(0, 6, 2)] 
+    start_time = datetime.timedelta(hours=H, minutes=M, seconds=S)
+    h['simulationstart'] = start_day + start_time
    
     if OPS.readp:
         releasestart, releaseend = [], []
@@ -1198,7 +1198,7 @@ def read_header(pathname, **kwargs):
     h.maxpoint = h.numpoint
     h.maxageclass = h.numageclasses
 
-    h.area = h.Area #fix an annoyance
+    h.area = h.Area  # fix an annoyance
     
     if OPS.readp:
         h.xpoint = h.xp1
@@ -1218,12 +1218,12 @@ def read_header(pathname, **kwargs):
     # 
     if h.loutstep > 0:
         h.direction = 'forward'
-        h.unit = 'conc' #could be pptv
+        h.unit = 'conc'  # could be pptv
         h.plot_unit = 'ppb'
     else:
         h.direction = 'backward'
         h.unit = 'time'
-        h.plot_unit = 'ns / kg' #Not sure about this
+        h.plot_unit = 'ns / kg'  # Not sure about this
 
     # Units based on Table 1, ACP 2005
     if h.direction == 'forward':
@@ -1259,14 +1259,14 @@ def read_header(pathname, **kwargs):
 
     h.options = OPS
     h.fp_version = h.flexpart
-    h.junk = junk #the extra bits that were read... more for debugging
+    h.junk = junk  # the extra bits that were read... more for debugging
 
 
     print('Read {0} Header: {1}'.format(h.fp_version, filename))
 
     return h
 
-#BW Compatability
+# BW Compatability
 readheader = read_header
 readheaderV8 = read_header
 readheaderV6 = read_header
@@ -1281,18 +1281,18 @@ def _readV6(bf, h):
     getbin = lambda dtype, n = 1 : bf.read(dtype, (n,))
 
     if bf:
-        #bf.read('i')
+        # bf.read('i')
         print h['numpoint']
         for i in range(h['numpoint']):
-            #r2=getbin('i')
+            # r2=getbin('i')
             i1 = getbin('i')
             i2 = getbin('i')
-            #h['ireleasestart'].append( ss_start + datetime.timedelta(seconds=float(i1)) )
-            #h['ireleaseend'].append( ss_start + datetime.timedelta(seconds=float(i2)) )
+            # h['ireleasestart'].append( ss_start + datetime.timedelta(seconds=float(i1)) )
+            # h['ireleaseend'].append( ss_start + datetime.timedelta(seconds=float(i2)) )
             h['ireleasestart'].append(i1)
             h['ireleaseend'].append(i2)
-            h['kindz'][i] = getbin('i') # This is an int16, might need to to change something
-            skip() #get xp, yp,...
+            h['kindz'][i] = getbin('i')  # This is an int16, might need to to change something
+            skip()  # get xp, yp,...
 
             h['xp1'][i] = getbin('f')
             h['yp1'][i] = getbin('f')
@@ -1301,25 +1301,25 @@ def _readV6(bf, h):
             h['zpoint1'][i] = getbin('f')
             h['zpoint2'][i] = getbin('f')
 
-            skip() #get n/mpart
+            skip()  # get n/mpart
             h['npart'][i] = getbin('i')
             h['mpart'][i] = getbin('i')
 
             getbin('i')
             # initialise release fields
 
-            l = getbin('i')#get compoint length?
-            gt = bf.tell() + l #create 'goto' point
+            l = getbin('i')  # get compoint length?
+            gt = bf.tell() + l  # create 'goto' point
             sp = ''
             sp = sp.join(getbin('c', l))
-            bf.seek(gt) #skip ahead to gt point
+            bf.seek(gt)  # skip ahead to gt point
             
-            h['compoint'].append(sp) #species names in dictionary for each nspec
-            #h['compoint'].append(''.join([getbin('c') for i in range(45)]))
+            h['compoint'].append(sp)  # species names in dictionary for each nspec
+            # h['compoint'].append(''.join([getbin('c') for i in range(45)]))
             skip()
-            #r1=getbin('i')
+            # r1=getbin('i')
 
-            #now loop for nspec to get xmass
+            # now loop for nspec to get xmass
             for v in range(h['nspec']):
                 Dfmt = ['i', 'f', '2i', 'f', '2i', 'f', 'i']
                 a = [bf.read(fmt) for fmt in Dfmt]
@@ -1359,7 +1359,7 @@ def _readgrid_noFF(H, **kwargs):
     % last changes: JFB, 10.10.2008
     %===========================================
     """
-    #if os.sys.platform != 'win32':
+    # if os.sys.platform != 'win32':
     #    try:
     #        from FortFlex import readgrid, sumgrid
     #        useFortFlex = 1
@@ -1371,7 +1371,7 @@ def _readgrid_noFF(H, **kwargs):
 
     if 'date' in kwargs.keys():
         date = kwargs['date']
-    #else: date = H['ibtime']        
+    # else: date = H['ibtime']        
     else: date = None
 
     if 'unit' in kwargs.keys():
@@ -1418,7 +1418,7 @@ def _readgrid_noFF(H, **kwargs):
         decaycons = 99999999990
     fail = -1
 
-    #set filenames
+    # set filenames
     prefix = ['grid_conc_', 'grid_pptv_', \
               'grid_time_', 'footprint_total', \
               'grid_conc_nest_', 'grid_pptv_nest_', \
@@ -1435,14 +1435,14 @@ def _readgrid_noFF(H, **kwargs):
 
     def getdump(n, fmt='f'):
         """ function to get the dump values for the sparse format """
-        #print n
+        # print n
         skip()
-        #Dfmt=[fmt]*n
+        # Dfmt=[fmt]*n
 #        a=[struct.unpack(ft,f.read(struct.calcsize(ft))) for ft in Dfmt]
         a = f2.read(fmt, n)
 #        dumplist=[a[j][0] for j in range(len(a))]
-        #dumplist=[a[j] for j in range(len(a))]
-        return a #dumplist
+        # dumplist=[a[j] for j in range(len(a))]
+        return a  # dumplist
 
     def key2var(D, key):
         cmd = "global %s; %s = D['%s'];" % (key, key, key)
@@ -1461,15 +1461,15 @@ def _readgrid_noFF(H, **kwargs):
             kz = n / (numxgrid * numygrid)
             jy = (n - kz * numxgrid * numygrid) / numxgrid
             ix = n - numxgrid * numygrid * kz - numxgrid * jy
-            #print "n  ==> ix,jy,kz,k,nage"
-            #print "%s ==> %s,%s,%s,%s,%s" % (n,ix,jy,kz,k,nage)
-            #print grd.shape
-            #print grd[0,0,0,0,0]
+            # print "n  ==> ix,jy,kz,k,nage"
+            # print "%s ==> %s,%s,%s,%s,%s" % (n,ix,jy,kz,k,nage)
+            # print grd.shape
+            # print grd[0,0,0,0,0]
             grd[ix, jy, kz - 1, k, nage] = abs(dmp_r[ir])
-        return grd #flipud(grd.transpose())
+        return grd  # flipud(grd.transpose())
 
     G = {}
-    #get values from header file
+    # get values from header file
     H['nageclass'] = H['numageclasses']
     headervars = ['nested', 'nspec', 'numxgrid', 'numygrid', 'numzgrid', 'nageclass', \
                   'available_dates', 'pathname', 'decayconstant', 'numpoint', 'Area', 'Heightnn']
@@ -1477,7 +1477,7 @@ def _readgrid_noFF(H, **kwargs):
     for k in headervars:
         key2var(H, k)
 
-    #create zero arrays for datagrid and zplot
+    # create zero arrays for datagrid and zplot
     datagrid = np.zeros((numxgrid, numygrid, numzgrid, numpoint), dtype=np.float32)
     zplot = np.empty((numxgrid, numygrid, numzgrid, numpoint))
 
@@ -1485,7 +1485,7 @@ def _readgrid_noFF(H, **kwargs):
     # Loop over all times, given in field H['dates']
     #--------------------------------------------------
     for ks in range(nspec_ret, nspec_ret + 1):
-            #print 'processing: ' + str(H['dates'][date_i]) + '   ' + str(ks)
+            # print 'processing: ' + str(H['dates'][date_i]) + '   ' + str(ks)
             # print 'processing: ' + str(date) + '   ' + str(ks)
         specs = '_' + str(ks).zfill(3)
         fpmax = -999.
@@ -1508,47 +1508,47 @@ def _readgrid_noFF(H, **kwargs):
 
             if unit != 4:
                 datestring = H['available_dates'][date_i]
-                #datestring = date
+                # datestring = date
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit) + (nested * 4)] + datestring + specs)
             else:
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit) + (nested * 4)])
             
-            #print 'reading: ' + filename
+            # print 'reading: ' + filename
 
             if os.path.exists(filename):
-                #print nspec,numxgrid,numygrid,numzgrid,nageclass,scaledepo,scaleconc,decaycons
-                #print ks
-                #print date
+                # print nspec,numxgrid,numygrid,numzgrid,nageclass,scaledepo,scaleconc,decaycons
+                # print ks
+                # print date
 
                 if useFortFlex == 1:
-                    #print 'Using FortFLEX'
+                    # print 'Using FortFLEX'
                     #####################################################################################
-                    ## FORTRAN WRAPPER CODE - only works on linux
-                    ##
-                    ## USAGE: grid = readgrid(filegrid,numxgrid,numygrid,numzgrid,\
-                    ##                        nspec,nageclass,scaleconc,decayconstant)
-                    ##
-                    ##        zplot = sumgrid(zplot,grid,\
-                    ##                        area,heightnn,\
-                    ##                        [numxgrid,numygrid,numzgrid,numpoint,nageclass])
-                    ##
-                    ##
-                    ## NOTE: numpoint = number of releases, ageclass always 1 for backward
-                    ##
-                    ## RETURN: grid(numxgrid,numygrid,numzgrid,numpoint,nageclass)
+                    # # FORTRAN WRAPPER CODE - only works on linux
+                    # #
+                    # # USAGE: grid = readgrid(filegrid,numxgrid,numygrid,numzgrid,\
+                    # #                        nspec,nageclass,scaleconc,decayconstant)
+                    # #
+                    # #        zplot = sumgrid(zplot,grid,\
+                    # #                        area,heightnn,\
+                    # #                        [numxgrid,numygrid,numzgrid,numpoint,nageclass])
+                    # #
+                    # #
+                    # # NOTE: numpoint = number of releases, ageclass always 1 for backward
+                    # #
+                    # # RETURN: grid(numxgrid,numygrid,numzgrid,numpoint,nageclass)
                     #####################################################################################
 
                     concgrid = readgrid(filename, numxgrid, numygrid, numzgrid, \
                                     numpoint, nageclass, \
                                     scaleconc, decayconstant)
 
-                    #contribution[:,:,:] = concgrid[:,:,:,:,0]
+                    # contribution[:,:,:] = concgrid[:,:,:,:,0]
                     print np.min(concgrid)
                     print np.max(concgrid)
 
-                    #altitude = 50000
+                    # altitude = 50000
                     zplot = sumgrid(zplot, concgrid, \
                                     H.area, H.Heightnn)
 
@@ -1556,34 +1556,34 @@ def _readgrid_noFF(H, **kwargs):
                 else:
                     dat_cnt = 0
                     nage = 0
-                    #read data:
-                    ##datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],nspec,nageclass),np.float)
+                    # read data:
+                    # #datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],nspec,nageclass),np.float)
                     datagrid = np.zeros((numxgrid, numygrid, numzgrid, 1, 1), np.float)
-                    #f = file(filename, 'rb')
-                    #print filename
+                    # f = file(filename, 'rb')
+                    # print filename
                     f2 = BinaryFile(filename, order='fortran')
                     skip(4)
                     G['itime'] = getbin('i');
                     print H['available_dates'][date_i]
 
-                    #Read Wet Depostion
+                    # Read Wet Depostion
                     skip()
                     cnt_i = getbin('i')
                     dmp_i = getdump(cnt_i, 'i')
                     skip()
                     cnt_r = getbin('i')
                     dmp_r = getdump(cnt_r)
-                    #wet=dumpgrid(dmp_i, cnt_r, dmp_r, datagrid, ks-1, nage)
-                    #Read Dry Deposition
+                    # wet=dumpgrid(dmp_i, cnt_r, dmp_r, datagrid, ks-1, nage)
+                    # Read Dry Deposition
                     skip()
                     cnt_i = getbin('i')
                     dmp_i = getdump(cnt_i, 'i')
                     skip()
                     cnt_r = getbin('i')
                     dmp_r = getdump(cnt_r)
-                    #dry=dumpgrid(dmp_i, cnt_r, dmp_r, datagrid, ks-1, nage)
+                    # dry=dumpgrid(dmp_i, cnt_r, dmp_r, datagrid, ks-1, nage)
 
-                    #Read Concentrations
+                    # Read Concentrations
                     skip()
                     cnt_i = getbin('i')
                     dmp_i = getdump(cnt_i, 'i')
@@ -1593,7 +1593,7 @@ def _readgrid_noFF(H, **kwargs):
             #        print dmp_i, cnt_r, dmp_r, datagrid, ks-1, nage
                     concgrid = dumpgrid(dmp_i, cnt_r, dmp_r, datagrid, ks - 1, nage)
 
-                    #G[H['ibtime']].append(concgrid)
+                    # G[H['ibtime']].append(concgrid)
                     G[H['ibtime']] = concgrid
                     f2.close()
                 fail = 0
@@ -1616,12 +1616,12 @@ def _readgridBF(H, filename):
     def getdump(n, fmt='f'):
         """ function to get the dump values for the sparse format """
         skip()
-        #Dfmt=[fmt]*n
+        # Dfmt=[fmt]*n
 #        a=[struct.unpack(ft,f.read(struct.calcsize(ft))) for ft in Dfmt]
         a = f2.read(fmt, n)
 #        dumplist=[a[j][0] for j in range(len(a))]
-        #dumplist=[a[j] for j in range(len(a))]
-        return a #dumplist
+        # dumplist=[a[j] for j in range(len(a))]
+        return a  # dumplist
 
     def key2var(D, key):
         cmd = "global %s; %s = D['%s'];" % (key, key, key)
@@ -1668,9 +1668,9 @@ def _readgridBF(H, filename):
                 ix = n - H.numxgrid * jy
                 grd[ix, jy, k, nage] = abs(dmp_r[ir])
 
-        return grd #flipud(grd.transpose())
+        return grd  # flipud(grd.transpose())
 
-    ## Import pflexcy.so (cython compiled version of dumpgrid)
+    # # Import pflexcy.so (cython compiled version of dumpgrid)
     try:
         from pflexcy import dumpdatagrid, dumpdepogrid
         print 'using pflexcy'
@@ -1685,21 +1685,21 @@ def _readgridBF(H, filename):
 
     dat_cnt = 0
     nage = 1
-    ##datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],nspec,nageclass),np.float)
+    # #datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],nspec,nageclass),np.float)
     wetgrid = np.zeros((H.numxgrid, H.numygrid, H.numpointspec, 1), np.float)
     drygrid = np.zeros((H.numxgrid, H.numygrid, H.numpointspec, 1), np.float)
     datagrid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid, H.numpointspec, nage), np.float)
-    #f = file(filename,'rb')
-    #print filename
+    # f = file(filename,'rb')
+    # print filename
     f2 = BinaryFile(filename, order='fortran')
-    #read data:
+    # read data:
     skip(4)
     itime = getbin('i')
 
     for na in range(nage):
 
         for ks in range(H.numpointspec):
-            #Read Wet Depostion
+            # Read Wet Depostion
             skip()
             cnt_i = getbin('i')
             dmp_i = getdump(cnt_i, 'i')
@@ -1707,10 +1707,10 @@ def _readgridBF(H, filename):
             cnt_r = getbin('i')
             dmp_r = getdump(cnt_r)
             if dmp_r.any():
-                #print dmp_r, dmp_i
+                # print dmp_r, dmp_i
                 wetgrid = dumpdepogrid(dmp_i, cnt_r, dmp_r, wetgrid, ks, na, H.numxgrid, H.numygrid)
 
-            #Read Dry Deposition
+            # Read Dry Deposition
             skip()
             cnt_i = getbin('i')
             dmp_i = getdump(cnt_i, 'i')
@@ -1718,24 +1718,24 @@ def _readgridBF(H, filename):
             cnt_r = getbin('i')
             dmp_r = getdump(cnt_r)
             if dmp_r.any():
-                #print dmp_r, dmp_i
+                # print dmp_r, dmp_i
                 drygrid = dumpdepogrid(dmp_i, cnt_r, dmp_r, drygrid, ks, na, H.numxgrid, H.numygrid)
 
-            #Read Concentrations
+            # Read Concentrations
             skip()
             cnt_i = getbin('i')
             dmp_i = getdump(cnt_i, 'i')
             skip()
             cnt_r = getbin('i')
             dmp_r = getdump(cnt_r)
-            #print len(dmp_r),len(dmp_i)
-            #print cnt_r,cnt_i
-            #print dmp_i
-            #print type(dmp_i),type(cnt_r),type(dmp_r),type(datagrid),type(ks),type(na)
-            #print type(H.numxgrid),type(H.numygrid)
+            # print len(dmp_r),len(dmp_i)
+            # print cnt_r,cnt_i
+            # print dmp_i
+            # print type(dmp_i),type(cnt_r),type(dmp_r),type(datagrid),type(ks),type(na)
+            # print type(H.numxgrid),type(H.numygrid)
             datagrid = dumpdatagrid(dmp_i, cnt_r, dmp_r, datagrid, ks, na, H.numxgrid, H.numygrid)
 
-    #G[H['ibtime']].append(concgrid)
+    # G[H['ibtime']].append(concgrid)
     f2.close()
 
     return  datagrid, wetgrid, drygrid, itime
@@ -1875,7 +1875,7 @@ def readgridV8(H, **kwargs):
     This is the 'V8' version of the function.
 
     """
-    ## OPS is the options Structure, sets defaults, then update w/ kwargs
+    # # OPS is the options Structure, sets defaults, then update w/ kwargs
     OPS = Structure()
     OPS.unit = H.unit
     OPS.getwet = False
@@ -1893,34 +1893,34 @@ def readgridV8(H, **kwargs):
     OPS.verbose = False
     OPS.BinaryFile = False
     OPS.version = 'V8'
-    ## add keyword overides and options to header
+    # # add keyword overides and options to header
     OPS.update(kwargs)
-    #H.update(OPS)
+    # H.update(OPS)
 
-    ## set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    # # set up the return dictionary (FLEXDATA updates fd, fd is returned)
     FLEXDATA = {}
     fd = Structure()
     fd.options = Structure()
 
-    ## What direction is the run?
+    # # What direction is the run?
     unit = OPS.unit
     
     if H['loutstep'] > 0:
         forward = True
         if unit == 'time':
-            ## default forward unit
+            # # default forward unit
             unit = 'conc'
             OPS.unit = unit
     else:
         forward = False
 
-    ## What species to return?
+    # # What species to return?
     nspec_ret = OPS.nspec_ret
     if isinstance(nspec_ret, int):
         nspec_ret = [nspec_ret]
     assert iter(nspec_ret), "nspec_ret must be iterable."
 
-    ## get times to return
+    # # get times to return
     get_dates = None
     if OPS.time_ret is not None:
         get_dates = []
@@ -1930,7 +1930,7 @@ def readgridV8(H, **kwargs):
 
         if time_ret[0] < 0:
             if forward == False:
-                ## get all dates for calculating footprint.
+                # # get all dates for calculating footprint.
                 time_ret = np.arange(len(H.available_dates))
             else:
                 raise ValueError("Must enter a positive time_ret for forward runs")
@@ -1939,7 +1939,7 @@ def readgridV8(H, **kwargs):
             get_dates.append(H.available_dates[t])
 
 
-    ## define what dates to extract if user has explicitly defined a 'date'
+    # # define what dates to extract if user has explicitly defined a 'date'
     if OPS.date != None:
         date = OPS.date
         if time_ret is not None:
@@ -1957,7 +1957,7 @@ def readgridV8(H, **kwargs):
     if get_dates is None:
         raise ValueError("Must provide either time_ret or date value.")
     else:
-        ## assign grid dates for indexing fd
+        # # assign grid dates for indexing fd
         fd.grid_dates = get_dates[:]
 
     print 'getting grid for: ', get_dates
@@ -2004,7 +2004,7 @@ def readgridV8(H, **kwargs):
 
     # -------------------------------------------------
 
-    ## add the requests to the fd object to be returned
+    # # add the requests to the fd object to be returned
     OPS.unit = unit
     fd.options.update(OPS)
 
@@ -2015,7 +2015,7 @@ def readgridV8(H, **kwargs):
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
         print datestring
-        for s in nspec_ret: #range(OPS.nspec_ret,OPS.nspec_ret+1):A
+        for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
             
             FLEXDATA[(s, datestring)] = Structure()
             spec_fid = '_' + str(s + 1).zfill(3)
@@ -2026,7 +2026,7 @@ def readgridV8(H, **kwargs):
                 H.zdims = H.numzgrid
 
             else:
-                #grid total footprint
+                # grid total footprint
                 print "Total footprint"
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit_i) + (H.nested * 5)] + spec_fid)
@@ -2034,7 +2034,7 @@ def readgridV8(H, **kwargs):
 
             if os.path.exists(filename):
                 H.filename = filename
-                #print 'reading: ' + filename
+                # print 'reading: ' + filename
                 if OPS.verbose:
                     print 'with values:'
                     inputvars = ['filename', 'numxgrid', 'numygrid',
@@ -2049,8 +2049,8 @@ def readgridV8(H, **kwargs):
                     print("Reading {0} with BinaryFile".format(filename))
                     gridT, wetgrid, drygrid, itime = _readgridBF(H, filename)
                 else:
-                    ## Quick fix for Sabine's Ship releases, added nspec_int so that only one
-                    ## field of the nspec dimension is actually read
+                    # # Quick fix for Sabine's Ship releases, added nspec_int so that only one
+                    # # field of the nspec dimension is actually read
                     if OPS.npspec_int is not False:
                         npspec_int = OPS.npspec_int 
                         numpointspec = 1
@@ -2078,11 +2078,11 @@ def readgridV8(H, **kwargs):
                                     H.area, H.Heightnn)
 
 
-                ## get the total column and prep the grid
+                # # get the total column and prep the grid
                 if H.direction == 'forward':
-                    #not trying to do anything here... must be done
-                    #after retrieving the grid
-                    #D = get_slabs(H,np.squeeze(zplot))
+                    # not trying to do anything here... must be done
+                    # after retrieving the grid
+                    # D = get_slabs(H,np.squeeze(zplot))
                     rel_i = H.available_dates.index(datestring)
                     D = zplot
                     
@@ -2090,12 +2090,12 @@ def readgridV8(H, **kwargs):
                     D = zplot
                     rel_i = 'k'
 
-                ## NOTE:
-                ## If you're changing things here, you might want to change
-                ## them in fill_backward as well, yes I know... something is
-                ## poorly designed ;(
+                # # NOTE:
+                # # If you're changing things here, you might want to change
+                # # them in fill_backward as well, yes I know... something is
+                # # poorly designed ;(
                 
-                FLEXDATA[(s, datestring)]['grid'] = D #zplot
+                FLEXDATA[(s, datestring)]['grid'] = D  # zplot
                 
                 FLEXDATA[(s, datestring)]['itime'] = itime
                 
@@ -2146,7 +2146,7 @@ def readgridV6(H, **kwargs):
     This is the 'V6' version of the function.
 
     """
-    ## OPS is the options Structure, sets defaults, then update w/ kwargs
+    # # OPS is the options Structure, sets defaults, then update w/ kwargs
     OPS = Structure()
     OPS.unit = 'time'
     OPS.nspec_ret = 0
@@ -2160,34 +2160,34 @@ def readgridV6(H, **kwargs):
     OPS.calcfoot = False
     OPS.verbose = False
     OPS.BinaryFile = False
-    ## add keyword overides and options to header
+    # # add keyword overides and options to header
     OPS.update(kwargs)
-    #H.update(OPS)
+    # H.update(OPS)
 
-    ## set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    # # set up the return dictionary (FLEXDATA updates fd, fd is returned)
     FLEXDATA = {}
     fd = Structure()
     fd.options = Structure()
-    ## add the requests to the fd object to be returned
+    # # add the requests to the fd object to be returned
     fd.options.update(OPS)
 
-    ## What direction is the run?
+    # # What direction is the run?
     unit = OPS.unit
     if H['loutstep'] > 0:
         forward = True
         if unit == 'time':
-            ## default forward unit
+            # # default forward unit
             unit = 'conc'
     else:
         forward = False
 
-    ## What species to return?
+    # # What species to return?
     nspec_ret = OPS.nspec_ret
     if isinstance(nspec_ret, int):
         nspec_ret = [nspec_ret]
     assert iter(nspec_ret), "nspec_ret must be iterable."
 
-    ## get times to return
+    # # get times to return
     get_dates = None
     if OPS.time_ret is not None:
         get_dates = []
@@ -2197,7 +2197,7 @@ def readgridV6(H, **kwargs):
 
         if time_ret[0] < 0:
             if forward == False:
-                ## get all dates for calculating footprint.
+                # # get all dates for calculating footprint.
                 time_ret = np.arange(len(H.available_dates))
             else:
                 raise ValueError("Must enter a positive time_ret for forward runs")
@@ -2206,7 +2206,7 @@ def readgridV6(H, **kwargs):
             get_dates.append(H.available_dates[t])
 
 
-    ## define what dates to extract if user has explicitly defined a 'date'
+    # # define what dates to extract if user has explicitly defined a 'date'
     if OPS.date != None:
         date = OPS.date
         if time_ret is not None:
@@ -2224,7 +2224,7 @@ def readgridV6(H, **kwargs):
     if get_dates is None:
         raise ValueError("Must provide either time_ret or date value.")
     else:
-        ## assign grid dates for indexing fd
+        # # assign grid dates for indexing fd
         fd.grid_dates = get_dates[:]
 
     print 'getting grid for: ', get_dates
@@ -2255,12 +2255,12 @@ def readgridV6(H, **kwargs):
         readgrid = _readgridBF
         OPS.BinaryFile = True
 
-    #cheat: use key2var function to get values from header dict, H
+    # cheat: use key2var function to get values from header dict, H
     # need to change this to using H.xxxxx
-    #headervars = ['nested','nspec','numxgrid','numygrid','numzgrid','nageclass',\
+    # headervars = ['nested','nspec','numxgrid','numygrid','numzgrid','nageclass',\
     #              'dates','pathname','decayconstant','numpoint','numpointspec',
     #              'area','Heightnn','lage']
-    #for k in headervars:
+    # for k in headervars:
     #    key2var(H,k)
 
 
@@ -2270,16 +2270,16 @@ def readgridV6(H, **kwargs):
 
     # -------------------------------------------------
 
-    #if forward:
+    # if forward:
     #    numpointspec = 1
-    #else:
+    # else:
     #    numpointspec = numpoint
-    #numpointspec = H['numpointspec']
-    #if unit_i == 4:
-        #grid=np.empty((numxgrid,numygrid,1,nspec_ret,pspec_ret,age_ret,len(get_dates)))
-    #else:
-        #grid=np.empty((numxgrid,numygrid,numzgrid,nspec_ret,pspec_ret,age_ret,len(get_dates)))
-    #zplot=np.empty((numxgrid,numygrid,numzgrid,numpointspec))
+    # numpointspec = H['numpointspec']
+    # if unit_i == 4:
+        # grid=np.empty((numxgrid,numygrid,1,nspec_ret,pspec_ret,age_ret,len(get_dates)))
+    # else:
+        # grid=np.empty((numxgrid,numygrid,numzgrid,nspec_ret,pspec_ret,age_ret,len(get_dates)))
+    # zplot=np.empty((numxgrid,numygrid,numzgrid,numpointspec))
 
     #--------------------------------------------------
     # Loop over all times, given in field H['available_dates']
@@ -2289,10 +2289,10 @@ def readgridV6(H, **kwargs):
         datestring = get_dates[date_i]
         print datestring
         FLEXDATA[datestring] = {}
-        for s in nspec_ret: #range(OPS.nspec_ret,OPS.nspec_ret+1):
+        for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
             total_footprint = False
             FLEXDATA[(s, datestring)] = Structure()
-            #spec_fid = '_'+str(s+1).zfill(3)
+            # spec_fid = '_'+str(s+1).zfill(3)
 
             if unit_i != 4:
                 filename = os.path.join(H['pathname'], \
@@ -2300,7 +2300,7 @@ def readgridV6(H, **kwargs):
                 H.zdims = H.numzgrid
 
             else:
-                #grid total footprint
+                # grid total footprint
                 print "Total footprint"
                 total_footprint = True
                 filename = os.path.join(H['pathname'], \
@@ -2309,7 +2309,7 @@ def readgridV6(H, **kwargs):
 
             if os.path.exists(filename):
                 H.filename = filename
-                #print 'reading: ' + filename
+                # print 'reading: ' + filename
                 if OPS.verbose:
                     print 'with values:'
                     inputvars = ['filename', 'numxgrid', 'numygrid',
@@ -2321,7 +2321,7 @@ def readgridV6(H, **kwargs):
 
 
                 if OPS.BinaryFile:
-                    #print 'Using BinaryFile'
+                    # print 'Using BinaryFile'
                     gridT, wetgrid, drygrid, itime = _readgridBF(H, filename)
                 else:
                     gridT, wetgrid, drygrid, itime = readgrid(filename, \
@@ -2335,7 +2335,7 @@ def readgridV6(H, **kwargs):
                 else:
                     zplot = gridT[:, :, :, :, 0]
 
-                #if total_footprint:
+                # if total_footprint:
                 #    zplot = np.squeeze(gridT)
 
                 if OPS.calcfoot:
@@ -2343,23 +2343,23 @@ def readgridV6(H, **kwargs):
                                     H.area, H.Heightnn)
 
 
-                ## get the total column and prep the grid
+                # # get the total column and prep the grid
                 if H.direction == 'forward':
-                    #not trying to do anything here... must be done
-                    #after retrieving the grid
-                    #D = get_slabs(H,np.squeeze(zplot))
-                    #rel_i = H.available_dates.index(datestring)
+                    # not trying to do anything here... must be done
+                    # after retrieving the grid
+                    # D = get_slabs(H,np.squeeze(zplot))
+                    # rel_i = H.available_dates.index(datestring)
                     D = zplot
                     rel_i = 'k'
                 else:
                     D = zplot
                     rel_i = 'k'
 
-                ## NOTE:
-                ## If you're changing things here, you might want to change
-                ## them in fill_backward as well, yes I know... something is
-                ## poorly designed ;(
-                FLEXDATA[(s, datestring)]['grid'] = D #zplot
+                # # NOTE:
+                # # If you're changing things here, you might want to change
+                # # them in fill_backward as well, yes I know... something is
+                # # poorly designed ;(
+                FLEXDATA[(s, datestring)]['grid'] = D  # zplot
                 FLEXDATA[(s, datestring)]['itime'] = itime
                 FLEXDATA[(s, datestring)]['shape'] = zplot.shape
                 FLEXDATA[(s, datestring)]['max'] = zplot.max()
@@ -2428,13 +2428,13 @@ def fill_backward(H, nspec=0, FD=None, add_attributes=False):
     """
 
     assert H.direction == 'backward', "fill_backward is only valid for backward runs"
-    ## make sure npsec is iterable
+    # # make sure npsec is iterable
     if isinstance(nspec, int):
         species = [nspec]
     else:
         species = nspec
     assert iter(species), 'nspec must be iterable, or you can pass an int'
-    ## initialize variables
+    # # initialize variables
     C = Structure()
     for s, k in itertools.product(species, range(H.numpointspec)):
         C[(s, k)] = Structure()
@@ -2447,23 +2447,23 @@ def fill_backward(H, nspec=0, FD=None, add_attributes=False):
         C[(s, k)]['spec_i'] = s
 
     if FD is None:
-        ## then we need to read the grids
+        # # then we need to read the grids
         FD = read_grid(H, time_ret= -1, nspec_ret=species)
 
-    ## read data grids and attribute/sum sensitivity
+    # # read data grids and attribute/sum sensitivity
     print species
     for s in species:
-        ## cycle through all the date grids (20days back)
+        # # cycle through all the date grids (20days back)
         for d in FD.grid_dates:
-            ## cycle through each release point
+            # # cycle through each release point
             for k in range(H.numpointspec):
                 contribution = FD[(s, d)].grid[:, :, :, k]
                 C[(s, k)].grid = C[(s, k)].grid + contribution
 
     for s, k in C:
-        ## add total column
+        # # add total column
         C[(s, k)].slabs = get_slabs(H, C[(s, k)].grid)
-        ## shape, min, max based on total column
+        # # shape, min, max based on total column
         C[(s, k)]['shape'] = C[(s, k)].grid[0].shape
         C[(s, k)]['max'] = C[(s, k)].grid[0].max()
         C[(s, k)]['min'] = C[(s, k)].grid[0].min()
@@ -2660,11 +2660,11 @@ def plot_releases(R, FIGURE=None, threedim=False,
 
         return fig
     else:
-        ## Set up the FIGURE
+        # # Set up the FIGURE
         if FIGURE == None:
             FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
-        ##Get fig info and make active
+        # #Get fig info and make active
         fig = FIGURE.fig
         m = FIGURE.m
         ax = FIGURE.ax
@@ -2672,7 +2672,7 @@ def plot_releases(R, FIGURE=None, threedim=False,
         plt.axes(ax)
 
 
-        ## prepare the data
+        # # prepare the data
         lon = R.lllon
         lat = R.lllat
         zlevel = R.elv1
@@ -2680,22 +2680,22 @@ def plot_releases(R, FIGURE=None, threedim=False,
         marker = 'o'
 
 
-        ## clear the previous track
+        # # clear the previous track
         if 'circles' in FIGURE.keys():
             del FIGURE['circles']
         if overlay is False:
             del ax.collections[FIGURE.indices.collections:]
             del ax.texts[FIGURE.indices.texts:]
 
-        ## plot the track
+        # # plot the track
         cx, cy = m(lon, lat)
         if draw_circles:
             cmap = plt.get_cmap('gist_gray')
             circles = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
                               marker=marker, edgecolor=None,
                               zorder=10, alpha=0.85)
-            ## m.scatter has no color bar,
-            ## so create a ghost 'scatter' instance:
+            # # m.scatter has no color bar,
+            # # so create a ghost 'scatter' instance:
             pos = ax.get_position()
             l, b, w, h = getattr(pos, 'bounds', pos)
             jnkfig = plt.figure()
@@ -2708,20 +2708,20 @@ def plot_releases(R, FIGURE=None, threedim=False,
                 FIGURE.circles = circles
             except:
                 pass
-            ## make the figure active again
+            # # make the figure active again
             plt.figure(fig.number);
-            ## draw the legend and title
-            ## check if a colorbar legend exists (this will cause
-            ## problems for subplot routines!)
+            # # draw the legend and title
+            # # check if a colorbar legend exists (this will cause
+            # # problems for subplot routines!)
             if cbar2 is True:
                 cax = plt.axes([l + w + 0.12, b, 0.02, h - 0.035])
             else:
                 cax = plt.axes([l + w + 0.03, b, 0.025, h - 0.035])
-            cb = fig.colorbar(jnkmap, cax=cax) # draw colorbar
+            cb = fig.colorbar(jnkmap, cax=cax)  # draw colorbar
             p_leg = mpl.font_manager.FontProperties(size='6')
             cax.set_title('altitude\n(m)', fontproperties=p_leg)
 
-            ## delete the ghost instance
+            # # delete the ghost instance
             plt.close(jnkfig.number)
             del jnkax, jnkfig, jnkmap
 
@@ -2788,7 +2788,7 @@ def plot_spectra(inspectra,
 
 
     """
-    ## make tick lables smaller
+    # # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
@@ -2796,7 +2796,7 @@ def plot_spectra(inspectra,
         FIGURE = Structure()
         fig = plt.figure(figsize=(8, 6))
         FIGURE.fig = fig
-        ax = fig.add_subplot(111)#,pos=[0.1,0.2,.8,.7])
+        ax = fig.add_subplot(111)  # ,pos=[0.1,0.2,.8,.7])
         FIGURE.ax = ax
     else:
         fig = FIGURE.fig
@@ -2813,12 +2813,12 @@ def plot_spectra(inspectra,
         inspectra = inspectra[:, 1:]
 
     if cum == 'norm':
-        ## Normalize the data so it fills to 100%
-        #spectra = np.zeros(inspectra.shape)
+        # # Normalize the data so it fills to 100%
+        # spectra = np.zeros(inspectra.shape)
         spectra = (inspectra.transpose() / np.sum(inspectra, axis=1)).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
-        #sums = np.sum(inspectra,axis=1)
-        #for i,elem in enumerate(inspectra):
+        # sums = np.sum(inspectra,axis=1)
+        # for i,elem in enumerate(inspectra):
         #    spectra[i,:] = elem/sums[i]
     elif cum is True and cum != 'norm':
         spectra = np.cumsum(inspectra[:, :], axis=1)
@@ -2828,18 +2828,18 @@ def plot_spectra(inspectra,
     # Set up plotting environment colors
     Nc = np.array([float(i) / numageclasses for i in range(numageclasses)])
     norm = mpl.colors.normalize(Nc.min(), Nc.max())
-    #jet = plt.cm.get_cmap('jet')
+    # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
     plt.hold('on')
     facecolors = []
-    #for i in range(0,H.numageclasses-1):
+    # for i in range(0,H.numageclasses-1):
     for i in range(numageclasses):
         facecolors.append(jet(norm(Nc[i])))
         if labels:
             lbl = labels[i]
         else:
             lbl = i
-        #ax.plot(ageclass[:,i])
+        # ax.plot(ageclass[:,i])
         if i == 0:
             # create the baseline
             if bars:
@@ -2853,10 +2853,10 @@ def plot_spectra(inspectra,
             else:
                 ax.fill_between(releasetimes, spectra[:, i - 1], spectra[:, i],
                                 color=facecolors[-1], label='%s' % (lbl))
-                #facecolors.append(jet(norm(Nc[i+1])))
+                # facecolors.append(jet(norm(Nc[i+1])))
 
 
-    #ax.set_yscale('log')
+    # ax.set_yscale('log')
     if y_datarange:
         print 'setting data range'
         ax.set_ylim(y_datarange)
@@ -2872,25 +2872,25 @@ def plot_spectra(inspectra,
         fig.suptitle('Emissions by %s' % (spectra_type), size='small')
 
     fig.autofmt_xdate()
-    #for xl in ax.get_xticklabels():
+    # for xl in ax.get_xticklabels():
     #    plt.setp(xl,size='x-small')
-    ## ListedColormap
+    # # ListedColormap
     pos = ax.get_position()
     l, b, w, h = getattr(pos, 'bounds', pos)
-    #polygons = ax.collections
-    #for i,p in enumerate(polygons): p.set_color(facecolors[i])
+    # polygons = ax.collections
+    # for i,p in enumerate(polygons): p.set_color(facecolors[i])
     # BoundaryNorm, and extended ends to show the "over" and "under"
     # value co
     ax2 = fig.add_axes([l, .08, w, 0.03])
     cmap = mpl.colors.ListedColormap(facecolors)
-    #cmap.set_over('0.25')
-    #cmap.set_under('0.75')
+    # cmap.set_over('0.25')
+    # cmap.set_under('0.75')
 
     # If a ListedColormap is used, the length of the bounds array must be
     # one greater than the length of the color list.  The bounds must be
     # monotonically increasing.
     bounds = range(numageclasses + 1)
-    #norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    # norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     cb2 = mpl.colorbar.ColorbarBase(ax2,
                                     cmap=cmap,
     #                                norm=norm,
@@ -2898,8 +2898,8 @@ def plot_spectra(inspectra,
     #                                # specify two extra boundaries:
                                     boundaries=bounds,
     #                                extend='both',
-                                    #values=range(H.numageclasses+1),
-                                    ticks=bounds, # optional
+                                    # values=range(H.numageclasses+1),
+                                    ticks=bounds,  # optional
                                     spacing='proportional',
                                     orientation='horizontal')
     if spectra_label:
@@ -2968,7 +2968,7 @@ def plot_agespectra(H, agespectra,
 
 
     """
-    ## make tick lables smaller
+    # # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
@@ -3010,7 +3010,7 @@ def plot_agespectra(H, agespectra,
         numageclasses = H.numageclasses
         releasetimes = H.releasetimes
 
-    #if cum == 'norm':
+    # if cum == 'norm':
     #    ## Normalize the data so it fills to 100%
     #    #spectra = np.zeros(inspectra.shape)
     #    spectra = (inspectra.transpose()/np.sum(inspectra, axis=1)).transpose()
@@ -3018,9 +3018,9 @@ def plot_agespectra(H, agespectra,
     #    #sums = np.sum(inspectra,axis=1)
     #    #for i,elem in enumerate(inspectra):
     #    #    spectra[i,:] = elem/sums[i]
-    #elif cum is True and cum != 'norm':
+    # elif cum is True and cum != 'norm':
     #    spectra = np.cumsum(inspectra[:,:],axis=1)
-    #else:
+    # else:
     #    spectra = inspectra
     if cum is not None:
         spectra = _cum_spec(inspectra, cum=cum)
@@ -3028,14 +3028,14 @@ def plot_agespectra(H, agespectra,
     # Set up plotting environment colors
     Nc = np.array([float(i) / numageclasses for i in range(numageclasses)])
     norm = mpl.colors.normalize(Nc.min(), Nc.max())
-    #jet = plt.cm.get_cmap('jet')
+    # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
     plt.hold('on')
     facecolors = []
-    #for i in range(0,H.numageclasses-1):
+    # for i in range(0,H.numageclasses-1):
     for i in range(numageclasses):
         facecolors.append(jet(norm(Nc[i])))
-        #ax.plot(ageclass[:,i])
+        # ax.plot(ageclass[:,i])
         if i == 0:
             # create the baseline
             if bars:
@@ -3049,12 +3049,12 @@ def plot_agespectra(H, agespectra,
             else:
                 ax.fill_between(releasetimes, spectra[:, i - 1], spectra[:, i],
                                 color=facecolors[-1], label='%s' % (i))
-                #facecolors.append(jet(norm(Nc[i+1])))
+                # facecolors.append(jet(norm(Nc[i+1])))
 
 
-    #ax.set_yscale('log')
+    # ax.set_yscale('log')
     if y_datarange:
-        #print 'setting data range'
+        # print 'setting data range'
         ax.set_ylim(y_range)
     else:
         ax.set_ylim((0, spectra.max()))
@@ -3065,25 +3065,25 @@ def plot_agespectra(H, agespectra,
     plt.title('%s' % (plt_title), size='small')
     fig.suptitle('Emissions by %s' % (spectra_type), size='small')
     fig.autofmt_xdate()
-    #for xl in ax.get_xticklabels():
+    # for xl in ax.get_xticklabels():
     #    plt.setp(xl,size='x-small')
-    ## ListedColormap
+    # # ListedColormap
     pos = ax.get_position()
     l, b, w, h = getattr(pos, 'bounds', pos)
-    #polygons = ax.collections
-    #for i,p in enumerate(polygons): p.set_color(facecolors[i])
+    # polygons = ax.collections
+    # for i,p in enumerate(polygons): p.set_color(facecolors[i])
     # BoundaryNorm, and extended ends to show the "over" and "under"
     # value co
     ax2 = fig.add_axes([l, .08, w, 0.03])
     cmap = mpl.colors.ListedColormap(facecolors)
-    #cmap.set_over('0.25')
-    #cmap.set_under('0.75')
+    # cmap.set_over('0.25')
+    # cmap.set_under('0.75')
 
     # If a ListedColormap is used, the length of the bounds array must be
     # one greater than the length of the color list.  The bounds must be
     # monotonically increasing.
     bounds = range(numageclasses + 1)
-    #norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    # norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     cb2 = mpl.colorbar.ColorbarBase(ax2,
                                     cmap=cmap,
     #                                norm=norm,
@@ -3091,8 +3091,8 @@ def plot_agespectra(H, agespectra,
     #                                # specify two extra boundaries:
                                     boundaries=bounds,
     #                                extend='both',
-                                    #values=range(H.numageclasses+1),
-                                    ticks=bounds, # optional
+                                    # values=range(H.numageclasses+1),
+                                    ticks=bounds,  # optional
                                     spacing='proportional',
                                     orientation='horizontal')
     cb2.set_label(spectra_label, size='x-small')
@@ -3115,13 +3115,13 @@ def plot_clusters(H, T, rel_i=0,
     trjs = T['Trajectories']
     labels = T['labels']
 
-    #Set legend properties:
+    # Set legend properties:
     p_legend = mpl.font_manager.FontProperties(size='8')
 
 
 
-    #extract only releases of interest
-    rel += 1  #account for zero indexing
+    # extract only releases of interest
+    rel += 1  # account for zero indexing
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
     if FIGURE == None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
@@ -3135,7 +3135,7 @@ def plot_clusters(H, T, rel_i=0,
     except:
         print 'problem getting ax,m, or fig.'
 
-    ## Remove prior retroplume
+    # # Remove prior retroplume
     if not overlay:
         if len(ax.artists) > 1:
             try:
@@ -3147,21 +3147,21 @@ def plot_clusters(H, T, rel_i=0,
                 'could not delete artists'
                 pass
 
-    #get cluster from data
-    #set up cluster index, start column of T array
+    # get cluster from data
+    # set up cluster index, start column of T array
     cindx = [16, 20, 24, 28, 32, 36]
     if ncluster == 'all':
-        #plot all clusters
+        # plot all clusters
         ncluster = range(5)
     elif isinstance(ncluster, int):
         ncluster = [ncluster]
 
     for nc in ncluster:
-        #clstrindx = 16 + (5*(nc))
+        # clstrindx = 16 + (5*(nc))
         clstrindx = cindx[nc]
         indx = [1] + range(clstrindx, clstrindx + 4)
         data = t[:, indx]
-        #use ellipses
+        # use ellipses
         ells = _genEllipse(data, m, sizescale=sizescale)
         texts = []
         for item in ells:
@@ -3175,11 +3175,11 @@ def plot_clusters(H, T, rel_i=0,
         for txt in texts:
             x = txt[0][0]
             y = txt[0][1]
-            #print x,y, t[1]
+            # print x,y, t[1]
             if draw_labels:
                 ax.text(x, y, txt[1])
-            #plt.colorbar(ax)
-    #ax.legend(ax.artists,(o.get_label() for o in ax.artists), prop=p_legend )
+            # plt.colorbar(ax)
+    # ax.legend(ax.artists,(o.get_label() for o in ax.artists), prop=p_legend )
     FIGURE.ax = ax
     FIGURE.fig = fig
     FIGURE.m = m
@@ -3201,11 +3201,11 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
     trjs = T['Trajectories']
     labels = T['labels']
 
-    #Set legend properties:
+    # Set legend properties:
     p_legend = mpl.font_manager.FontProperties(size='8')
 
-    #extract only releases of interest according to rel_i
-    rel = rel_i + 1  #account for zero indexing
+    # extract only releases of interest according to rel_i
+    rel = rel_i + 1  # account for zero indexing
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
     if FIGURE == None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
@@ -3218,7 +3218,7 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
     except:
         print 'problem getting ax,m, or fig.'
 
-    ## Remove prior retroplume
+    # # Remove prior retroplume
     if overlay:
         if len(ax.artists) > 1:
             try:
@@ -3230,10 +3230,10 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
                 'could not delete artists'
                 pass
 
-    #get trajectory from data
-    indx = [1, 2, 3, 4] #return, j,x,y,z
+    # get trajectory from data
+    indx = [1, 2, 3, 4]  # return, j,x,y,z
     data = t[:, indx]
-    #use ellipses
+    # use ellipses
     ells = _genEllipse(data, m, sizescale=sizescale)
     texts = []
     for item in ells:
@@ -3247,7 +3247,7 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
     for txt in texts:
         x = txt[0][0]
         y = txt[0][1]
-        #print x,y, t[1]
+        # print x,y, t[1]
         if draw_labels:
             ax.text(x, y, txt[1])
     plt.draw()
@@ -3319,18 +3319,18 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
     if H:
         pass
 
-    ## Set up the FIGURE
+    # # Set up the FIGURE
     if FIGURE == None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
-    ##Get fig info and make active
+    # #Get fig info and make active
     fig = FIGURE.fig
     m = FIGURE.m
     ax = FIGURE.fig.axes[0]
     plt.figure(fig.number)
     plt.axes(ax)
 
-    ## prepare the data
+    # # prepare the data
     cx, cy = m(lon, lat)
     if zlevel is None:
         zlevel = np.ones(len(lon)) * 10.
@@ -3339,14 +3339,14 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
     marker = 'o'
 
 
-    ## clear the previous track
+    # # clear the previous track
     if 'circles' in FIGURE.keys():
         del FIGURE['circles']
     if overlay is False:
         del ax.collections[FIGURE.indices.collections:]
         del ax.texts[FIGURE.indices.texts:]
 
-    ## plot the track
+    # # plot the track
     if draw_circles:
         cmap = plt.get_cmap('jet')
         circles = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
@@ -3357,12 +3357,12 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
             FIGURE.circles = circles
         except:
             pass
-        ## make the figure active again
+        # # make the figure active again
         plt.figure(fig.number)
-        ## draw the legend and title
-        ## CREATE COLORBAR
-        ## does a colorbar already exist?
-        ## Get the current axes, and properties for use later
+        # # draw the legend and title
+        # # CREATE COLORBAR
+        # # does a colorbar already exist?
+        # # Get the current axes, and properties for use later
         ax0 = fig.axes[0]
         pos = ax0.get_position()
         l, b, w, h = pos.bounds
@@ -3373,14 +3373,14 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
                 cb2.update_normal(circles)
             except:
                 cax2 = plt.axes([l + w + 0.08, b, 0.02, h])
-        ## using im2, not im (hack to prevent colors from being
-        ## too compressed at the low end on the colorbar - results
-        ## from highly nonuniform colormap)
-                cb2 = fig.colorbar(circles, cax=cax2) #, format='%3.2g') # draw colorbar
+        # # using im2, not im (hack to prevent colors from being
+        # # too compressed at the low end on the colorbar - results
+        # # from highly nonuniform colormap)
+                cb2 = fig.colorbar(circles, cax=cax2)  # , format='%3.2g') # draw colorbar
                 FIGURE.cax2 = cax2
                 FIGURE.cb2 = cb2
-        ## check if a colorbar legend exists (this will cause
-        ## problems for subplot routines!)
+        # # check if a colorbar legend exists (this will cause
+        # # problems for subplot routines!)
             p_leg = mpl.font_manager.FontProperties(size='6')
             if cbar2_title:
                 cax2.set_title(cbar2_title, fontproperties=p_leg)
@@ -3388,12 +3388,12 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
                 cax2.set_title('altitude\n(m)', fontproperties=p_leg)
         else:
             pass
-        #cax2 = plt.axes([l+w+0.03, b, 0.025, h-0.2])
+        # cax2 = plt.axes([l+w+0.03, b, 0.025, h-0.2])
         #    cb2 = fig.colorbar(jnkmap,cax=cax2) # draw colorbar
 
-        ## delete the ghost instance
-        #plt.close(jnkfig.number)
-        #del jnkax, jnkfig, jnkmap
+        # # delete the ghost instance
+        # plt.close(jnkfig.number)
+        # del jnkax, jnkfig, jnkmap
 
     plt.axes(ax)
     plt.setp(ax, xticks=[], yticks=[])
@@ -3469,25 +3469,25 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     if H:
         pass
 
-    ## Set up the FIGURE
+    # # Set up the FIGURE
     if FIGURE == None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
-    ##Get fig info and make active
+    # #Get fig info and make active
     fig = FIGURE.fig
     m = FIGURE.m
     ax = FIGURE.fig.axes[0]
     plt.figure(fig.number)
     plt.axes(ax)
 
-    ## prepare the data
+    # # prepare the data
     trjs = T['Trajectories']
-    rel = rel_i + 1  ## account for zero indexing
+    rel = rel_i + 1  # # account for zero indexing
     
-    ##extract only releases of interest
+    # #extract only releases of interest
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
     
-    ## Get the data for the days_back we're interested in
+    # # Get the data for the days_back we're interested in
     day_labels = _gen_daylabels(t[:days_back, 1])
     lon = t[:days_back, 2]
     lat = t[:days_back, 3]
@@ -3496,14 +3496,14 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     marker = 'o'
 
 
-    ## clear the previous track
+    # # clear the previous track
     if 'circles' in FIGURE.keys():
         del FIGURE['circles']
     if overlay is False:
         del ax.collections[FIGURE.indices.collections:]
         del ax.texts[FIGURE.indices.texts:]
 
-    ## plot the track
+    # # plot the track
     cx, cy = m(lon, lat)
     if draw_circles:
         cmap = plt.get_cmap('gist_gray')
@@ -3515,12 +3515,12 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
             FIGURE.circles = circles
         except:
             pass
-        ## make the figure active again
+        # # make the figure active again
         plt.figure(fig.number)
-        ## draw the legend and title
-        ## CREATE COLORBAR
-        ## does a colorbar already exist?
-        ## Get the current axes, and properties for use later
+        # # draw the legend and title
+        # # CREATE COLORBAR
+        # # does a colorbar already exist?
+        # # Get the current axes, and properties for use later
         ax0 = fig.axes[1]
         pos = ax0.get_position()
         l, b, w, h = pos.bounds
@@ -3531,26 +3531,26 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                 cb2.update_normal(circles)
             except:
                 cax2 = plt.axes([l + w + 0.08, b, 0.02, h])
-        ## using im2, not im (hack to prevent colors from being
-        ## too compressed at the low end on the colorbar - results
-        ## from highly nonuniform colormap)
-                cb2 = fig.colorbar(circles, cax=cax2) #, format='%3.2g') # draw colorbar
+        # # using im2, not im (hack to prevent colors from being
+        # # too compressed at the low end on the colorbar - results
+        # # from highly nonuniform colormap)
+                cb2 = fig.colorbar(circles, cax=cax2)  # , format='%3.2g') # draw colorbar
                 FIGURE.cax2 = cax2
                 FIGURE.cb2 = cb2
-        ## check if a colorbar legend exists (this will cause
-        ## problems for subplot routines!)
+        # # check if a colorbar legend exists (this will cause
+        # # problems for subplot routines!)
         else:
             cax2 = plt.axes([l + w + 0.03, b, 0.025, h - 0.2])
-            cb2 = fig.colorbar(jnkmap, cax=cax2) # draw colorbar
+            cb2 = fig.colorbar(jnkmap, cax=cax2)  # draw colorbar
 
         p_leg = mpl.font_manager.FontProperties(size='6')
         if cbar2_title:
             cax.set_title(cbar2_title, fontproperties=p_leg)
         else:
             cax2.set_title('altitude\n(m)', fontproperties=p_leg)
-        ## delete the ghost instance
-        #plt.close(jnkfig.number)
-        #del jnkax, jnkfig, jnkmap
+        # # delete the ghost instance
+        # plt.close(jnkfig.number)
+        # del jnkax, jnkfig, jnkmap
 
     plt.axes(ax)
     plt.setp(ax, xticks=[], yticks=[])
@@ -3609,7 +3609,7 @@ def plot_at_level(H, D, level=1, \
 
     dmax = data.max()
     dmin = data.min()
-    #print dmax,dmin
+    # print dmax,dmin
 
     if data_range == None:
         data_range = [dmin, dmax]
@@ -3675,7 +3675,7 @@ def plot_totalcolumn(H, D=None, \
         data_range = [dmin, dmax]
     else:
         dmin, dmax , = data_range
-        #print dmin,dmax
+        # print dmin,dmax
         
 
     if H.direction == 'backward':
@@ -3780,7 +3780,7 @@ def plot_sourcecontribution(H, D,
     else:
         try:
             D = D[(s, rel_i)]
-            data = D.slabs[0] #take total column
+            data = D.slabs[0]  # take total column
         except:
             raise IOError("Unrecognized 'grid' type passed")
 
@@ -3858,7 +3858,7 @@ def plot_sensitivity(H, data, \
              FigPar=None,
              cax_title=None,
              autofit=False, method='contourf', lsmask=False):
-    #autofit=False,method='imshow'):
+    # autofit=False,method='imshow'):
     """ plot_sensitivity: core function for plotting FLEXPART output.
 
     Usage::
@@ -3957,7 +3957,7 @@ def plot_sensitivity(H, data, \
         except:
             print 'could not drop m'
 
-    ## make tick lables smaller
+    # # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
@@ -3965,11 +3965,11 @@ def plot_sensitivity(H, data, \
     m = FIGURE.m
     ax = FIGURE.ax
 
-    ## make the figure current
+    # # make the figure current
     plt.figure(fig.number)
     plt.axes(ax)
 
-    ## set up transformations for the data array
+    # # set up transformations for the data array
     if method == 'imshow':
         if m.projection not in ['cyl', 'merc', 'mill']:
             lats = np.arange(H.outlat0, (H.outlat0 + (H.numygrid * H.dyout)), H.dyout)[:-1]
@@ -3979,7 +3979,7 @@ def plot_sensitivity(H, data, \
             lats = np.arange(H.outlat0, (H.outlat0 + (H.numygrid * H.dyout)), H.dyout)
             lons = np.arange(H.outlon0, (H.outlon0 + (H.numxgrid * H.dxout)), H.dxout)
 
-        ## transform to nx x ny regularly spaced native projection grid
+        # # transform to nx x ny regularly spaced native projection grid
         if transform:
             dx = 2.*np.pi * m.rmajor / len(lons)
             nx = int((m.xmax - m.xmin) / dx) + 1; ny = int((m.ymax - m.ymin) / dx) + 1
@@ -3991,11 +3991,11 @@ def plot_sensitivity(H, data, \
             topodat = data
 
     if method != 'imshow':
-        ## Check to see if a cyclic wraparound is required
+        # # Check to see if a cyclic wraparound is required
 
         lons = np.arange(H.outlon0, H.outlon0 + (H.dxout * H.numxgrid), H.dxout)
         lats = np.arange(H.outlat0, H.outlat0 + (H.dyout * H.numygrid), H.dyout)
-        ## if required add polar coordinates
+        # # if required add polar coordinates
         if 'npstere' in m.projection:
             if lats[-1] != 90.:
                 npole = np.ones(len(lons)).T * data[0, :]
@@ -4010,7 +4010,7 @@ def plot_sensitivity(H, data, \
         if m.projection == 'merc':
             topodat = data
 
-    ## get min/max range
+    # # get min/max range
     if data_range != None:
         dat_min = data_range[0]
         dat_max = data_range[1]
@@ -4024,32 +4024,32 @@ def plot_sensitivity(H, data, \
     else:
         clevs = [i for i in np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
 
-    ## draw land sea mask
-    #m.fillcontinents(zorder=0)
+    # # draw land sea mask
+    # m.fillcontinents(zorder=0)
     if lsmask:
         m.drawlsmask(ocean_color='grey', zorder= -10)
 
-    ## Plot Release Location if points were read
+    # # Plot Release Location if points were read
     if H.options['readp']:
         if rel_i:
             releaselocation = (H.xpoint[rel_i], H.ypoint[rel_i])
             xpt, ypt = m(releaselocation[0], releaselocation[1])
-            ## Remove prior location point
+            # # Remove prior location point
             try:
                 del ax.lines[-1]
             except:
                 pass
             location, = m.plot([xpt], [ypt], 'bx', linewidth=6, markersize=20, zorder=1000)
 
-    ## Plot the footprint
+    # # Plot the footprint
 
-    ## Set up the IMAGE
-    ## cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
-    #colmap = plt.get_cmap('jet')
+    # # Set up the IMAGE
+    # # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
+    # colmap = plt.get_cmap('jet')
     colmap = _gen_flexpart_colormap()
     colmap.set_over(color='k', alpha=0.8)
-    ## Plotting METHODS (pcolormesh now default, imshow is smoother)
-    #print topodat.max(), topodat.min(), topodat.shape
+    # # Plotting METHODS (pcolormesh now default, imshow is smoother)
+    # print topodat.max(), topodat.min(), topodat.shape
     if method == 'imshow':
         im = m.imshow(topodat, cmap=colmap, zorder= -1,
                       norm=mpl.colors.LogNorm(vmin=clevs[0],
@@ -4061,9 +4061,9 @@ def plot_sensitivity(H, data, \
                           norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                   vmax=clevs[-1]))
     if method == 'contourf':
-        ## Trying some fancier scaling
-        #cnts,bins = np.histogram(topodat,bins=100)
-        #topodat = np.ma.masked_where(topodat< .05* np.average((0,bins[1])),topodat)
+        # # Trying some fancier scaling
+        # cnts,bins = np.histogram(topodat,bins=100)
+        # topodat = np.ma.masked_where(topodat< .05* np.average((0,bins[1])),topodat)
         nx, ny = m(*np.meshgrid(lons, lats))
         im = m.contourf(nx, ny, topodat, cmap=colmap, levels=clevs,
                         norm=mpl.colors.LogNorm(vmin=clevs[0],
@@ -4075,50 +4075,50 @@ def plot_sensitivity(H, data, \
                         norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                 vmax=clevs[-1]))
 
-    ## Get the current axes, and properties for use later
+    # # Get the current axes, and properties for use later
     pos = ax.get_position()
     l, b, w, h = pos.bounds
 
-    ## CREATE COLORBAR
-    ## Note, with upgrades to matplotlib and basemap had to make some
-    ## changes here... no more 'ghost' axes
-    ## does a colorbar already exist?
+    # # CREATE COLORBAR
+    # # Note, with upgrades to matplotlib and basemap had to make some
+    # # changes here... no more 'ghost' axes
+    # # does a colorbar already exist?
     try:
         cb = FIGURE.cb
         cax = FIGURE.cax
         cb.update_normal(im)
     except:
-    ## make a copy of the image object, change
-    ## colormap to linear version of the precip colormap.
-    #pdb.set_trace()
-    #im2 = copy.copy(im)
-    #im2.set_cmap(colmap)
-    ## create new axis for colorbar.
+    # # make a copy of the image object, change
+    # # colormap to linear version of the precip colormap.
+    # pdb.set_trace()
+    # im2 = copy.copy(im)
+    # im2.set_cmap(colmap)
+    # # create new axis for colorbar.
         h = 0.5 * h
         l = l + w + .03
         b = 0.5 - (h / 2)
         w = 0.025
         cax = plt.axes([l, b, w, h])
-    ## using im2, not im (hack to prevent colors from being
-    ## too compressed at the low end on the colorbar - results
-    ## from highly nonuniform colormap)
-        cb = fig.colorbar(im, cax=cax) #, format='%3.2g') # draw colorbar
+    # # using im2, not im (hack to prevent colors from being
+    # # too compressed at the low end on the colorbar - results
+    # # from highly nonuniform colormap)
+        cb = fig.colorbar(im, cax=cax)  # , format='%3.2g') # draw colorbar
         FIGURE.cax = cax
         FIGURE.cb = cb
-    #cb.update_normal(im2)
+    # cb.update_normal(im2)
 
 
 
 
-    ## set colorbar label and ticks
-    #pdb.set_trace()
+    # # set colorbar label and ticks
+    # pdb.set_trace()
     p_cax = mpl.font_manager.FontProperties(size='6')
-    clabels = list(clevs[::10]) ##clevs, by 10 steps
-    clabels.append(clevs[-1]) ## add the last label
-    #cax.set_yticks(np.linspace(clabels[0],clabels[-1],len(clabels)))
+    clabels = list(clevs[::10])  # #clevs, by 10 steps
+    clabels.append(clevs[-1])  # # add the last label
+    # cax.set_yticks(np.linspace(clabels[0],clabels[-1],len(clabels)))
     cax.set_yticks(np.linspace(0, 1, len(clabels)))
     cax.set_yticklabels(['%3.2g' % cl for cl in clabels])
-                        #fontproperties=p_cax)
+                        # fontproperties=p_cax)
     if H.direction == 'forward':
         cax.set_title('%s' % units,
                       fontproperties=p_cax)
@@ -4129,16 +4129,16 @@ def plot_sensitivity(H, data, \
             cax.set_title('sensitivity\n({0})'.format(units),
                           fontproperties=p_cax)
 
-    ## make the original axes current again
+    # # make the original axes current again
     plt.axes(ax)
 
-    ## write text information block on plot
-    ## first try to remove prior text by accessing
-    ## the last text element added to the axes from
-    ## the prior iteration.
-    ## This is tricky when using together with plot_clusters...
-    ## need to figure out how to resolve the indexing
-    ## of what texts, collections, etc to delete, when iterating.
+    # # write text information block on plot
+    # # first try to remove prior text by accessing
+    # # the last text element added to the axes from
+    # # the prior iteration.
+    # # This is tricky when using together with plot_clusters...
+    # # need to figure out how to resolve the indexing
+    # # of what texts, collections, etc to delete, when iterating.
     try:
         del ax.texts[FIGURE.indices.texts:]
         del ax.artists[FIGURE.indices.artists:]
@@ -4160,8 +4160,8 @@ def plot_sensitivity(H, data, \
     FIGURE.fig = fig
 
     if plottitle != None:
-        #plt.title(plottitle,fontproperties=p_cax)
-    #plt = plt
+        # plt.title(plottitle,fontproperties=p_cax)
+    # plt = plt
         FIGURE.ax.set_title(plottitle, fontsize=10)
     return FIGURE
 
@@ -4265,11 +4265,11 @@ def plot_curtain(H, data, \
     fig = FIGURE.fig
     ax = FIGURE.ax
     
-    ## make the figure current
+    # # make the figure current
     plt.figure(fig.number)
     plt.axes(ax)
 
-    ## get min/max range
+    # # get min/max range
     if data_range != None:
         dat_min = data_range[0]
         dat_max = data_range[1]
@@ -4281,8 +4281,8 @@ def plot_curtain(H, data, \
     else:
         clevs = [i for i in np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
 
-    ## Set up the IMAGE
-    ## cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
+    # # Set up the IMAGE
+    # # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
     colmap = _gen_flexpart_colormap()
     colmap.set_over(color='k', alpha=0.8)
     topodat = data
@@ -4307,43 +4307,43 @@ def plot_curtain(H, data, \
                         norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                 vmax=clevs[-1]))
 
-    ## Get the current axes, and properties for use later
+    # # Get the current axes, and properties for use later
     pos = ax.get_position()
     l, b, w, h = pos.bounds
 
-    ## CREATE COLORBAR
-    ## Note, with upgrades to matplotlib and basemap had to make some
-    ## changes here... no more 'ghost' axes
-    ## does a colorbar already exist?
+    # # CREATE COLORBAR
+    # # Note, with upgrades to matplotlib and basemap had to make some
+    # # changes here... no more 'ghost' axes
+    # # does a colorbar already exist?
     try:
         cb = FIGURE.cb
         cax = FIGURE.cax
         cb.update_normal(im)
     except:
-    ## make a copy of the image object, change
-    ## colormap to linear version of the precip colormap.
-    ## create new axis for colorbar.
+    # # make a copy of the image object, change
+    # # colormap to linear version of the precip colormap.
+    # # create new axis for colorbar.
         h = 0.8 * h
         l = l + w + .02
         b = 0.5 - (h / 2)
         w = 0.025
         cax = plt.axes([l, b, w, h])
-    ## using im2, not im (hack to prevent colors from being
-    ## too compressed at the low end on the colorbar - results
-    ## from highly nonuniform colormap)
-        cb = fig.colorbar(im, cax=cax) #, format='%3.2g') # draw colorbar
+    # # using im2, not im (hack to prevent colors from being
+    # # too compressed at the low end on the colorbar - results
+    # # from highly nonuniform colormap)
+        cb = fig.colorbar(im, cax=cax)  # , format='%3.2g') # draw colorbar
         FIGURE.cax = cax
         FIGURE.cb = cb
 
 
-    ## set colorbar label and ticks
+    # # set colorbar label and ticks
     p_cax = mpl.font_manager.FontProperties(size='6')
-    clabels = list(clevs[::10]) ##clevs, by 10 steps
-    clabels.append(clevs[-1]) ## add the last label
-    #cax.set_yticks(np.linspace(clabels[0],clabels[-1],len(clabels)))
+    clabels = list(clevs[::10])  # #clevs, by 10 steps
+    clabels.append(clevs[-1])  # # add the last label
+    # cax.set_yticks(np.linspace(clabels[0],clabels[-1],len(clabels)))
     cax.set_yticks(np.linspace(0, 1, len(clabels)))
     cax.set_yticklabels(['%3.2g' % cl for cl in clabels])
-                        #fontproperties=p_cax)
+                        # fontproperties=p_cax)
     
     if cax_title:
         cax.set_title(cax_title.format(units), fontproperties=p_cax)
@@ -4351,7 +4351,7 @@ def plot_curtain(H, data, \
         cax.set_title('sensitivity\n({0})'.format(units),
                           fontproperties=p_cax)
 
-    ## make the original axes current again
+    # # make the original axes current again
     plt.axes(ax)
     plt.grid(True)
     FIGURE.ax = ax
@@ -4373,7 +4373,7 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
     m = FIGURE.m
     ax = FIGURE.ax
 
-    ## make the figure current
+    # # make the figure current
     plt.figure(fig.number)
     plt.axes(ax)
 
@@ -4388,7 +4388,7 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
         cnt = datelabels.index(date)
     else:
         cnt = 0
-    ## FOR OPENDAP OVERLAY
+    # # FOR OPENDAP OVERLAY
     slp_ = slpin[cnt, :, :]
     u_ = uin[cnt, :, :]
     v_ = vin[cnt, :, :]
@@ -4412,14 +4412,14 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
     clevs = np.arange(960, 1061, 5)
     # compute native x,y coordinates of grid.
     x, y = m(lons, lats)
-    #pos = FIG.ax.get_position()
-    #l, b, w, h = pos.bounds
+    # pos = FIG.ax.get_position()
+    # l, b, w, h = pos.bounds
 
     CS = m.contour(x, y, slpgrid, clevs, linewidths=1, colors='k', animated=True)
-    #CS = FIG.m.contourf(x,y,slpgrid,clevs,cmap=plt.cm.RdBu_r,animated=True,alpha=0.7)
+    # CS = FIG.m.contourf(x,y,slpgrid,clevs,cmap=plt.cm.RdBu_r,animated=True,alpha=0.7)
    # CS = FIG.m.contour(x,y,slp[0,:,:],clevs,linewidths=0.5,colors='k',animated=True)
 #            CS = FIG.m.contourf(x,y,slp[0,:,:],clevs,cmap=plt.cm.RdBu_r,animated=True,alpha=0.7)
-    #plt.clabel(CS,inline=1,fontsize=10)
+    # plt.clabel(CS,inline=1,fontsize=10)
     # plot wind vectors over maplt.
     urot, vrot, xx, yy = m.transform_vector(ugrid, vgrid, newlons, latitudes, 51, 51,
                                          returnxy=True, masked=True)
@@ -4627,7 +4627,7 @@ def closest(num, numlist):
 
 
 
-class Structure(dict,object):
+class Structure(dict, object):
     """ A 'fancy' dictionary that provides 'MatLab' structure-like
     referencing. 
 
@@ -4652,7 +4652,9 @@ class Structure(dict,object):
         """ set attributes with a dict """
         for k in D.keys():
             self.__setattr__(k, D[k])
-
+    
+    def __dir__(self):
+        return self.keys()
 
 class Header(Structure):
     """This is the primary starting point for processing FLEXPART output.
@@ -4762,7 +4764,7 @@ class Header(Structure):
             # day = day[:8]
             firedata = em.MODIS_hotspot(day)
             daily = firedata.daily
-            #pdb.set_trace()
+            # pdb.set_trace()
             if daily is None:
                 continue
             else:
@@ -4833,6 +4835,8 @@ def data_range(data, min='median'):
         dmin = 1e-5    
     
     return [dmin, dmax]
+def _normdatetime(Y, M, D, h, m, s):
+    return datetime.datetime(Y, M, D) + datetime.timedelta(hours=h, minutes=m, seconds=s)
 
 def _log_clevs(dat_min, dat_max):
     """
@@ -4864,7 +4868,7 @@ def _log_clevs(dat_min, dat_max):
         dmn = dmx - 3
         
         
-    ## create equally spaced range
+    # # create equally spaced range
     if dmx == dmn:
         dmx = dmn + 1
     clevs = np.logspace(dmn, dmx, 100)
@@ -4885,12 +4889,12 @@ def _cum_spec(inspectra, cum=True):
     """ helper function for the plot_spectra routines """
 
     if cum == 'norm':
-        ## Normalize the data so it fills to 100%
-        #spectra = np.zeros(inspectra.shape)
+        # # Normalize the data so it fills to 100%
+        # spectra = np.zeros(inspectra.shape)
         spectra = (inspectra.transpose() / np.sum(inspectra, axis=1)).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
-        #sums = np.sum(inspectra,axis=1)
-        #for i,elem in enumerate(inspectra):
+        # sums = np.sum(inspectra,axis=1)
+        # for i,elem in enumerate(inspectra):
         #    spectra[i,:] = elem/sums[i]
     elif cum is True and cum != 'norm':
         spectra = np.cumsum(inspectra[:, :], axis=1)
@@ -4931,9 +4935,9 @@ def _gen_altitude_color(p, altlim=(0, 5000), numcon=1, cmap_id='jet'):
     """
     norm = mpl.colors.Normalize(vmin=altlim[0], vmax=altlim[1])
     cmap = plt.cm.get_cmap(cmap_id)
-    #p = p/altmax
+    # p = p/altmax
     cm = cmap(norm(p))
-    #print p, cm
+    # print p, cm
     return cm
 
 
@@ -4965,7 +4969,7 @@ def _datarange(H, G, index=None):
         zpmax = np.max(G[:, :, 0, i] / Heightnn[:, :, 0])
         if zpmax > fpmax:
             fpmax = zpmax
-        #print fpmax
+        # print fpmax
     tcmax = np.max(G)
     return ((0, fpmax), (0, tfcmax))
 
@@ -5006,7 +5010,7 @@ def _genEllipse(data, m, sizescale=20000,
                 facecolor=_gen_altitude_color(p[3], altlim=altlim, cmap_id='gray'), \
                 label=_gen_daylabels(p[0])), \
                 np.array(m(p[1], p[2]))) for p in data]
-                     #np.array( m(p[1],p[2])) ) for p in data]
+                     # np.array( m(p[1],p[2])) ) for p in data]
     else:
         ell = [(Ellipse(xy=np.array(m(p[1], p[2])),
                 width=1e4 * sizescale, height=1e4 * sizescale,
@@ -5040,7 +5044,7 @@ def _gen_flexpart_colormap(ctbfile=None, colors=None):
     if colors:
         name = 'user_colormap'
     if not colors:
-        ## AST Colorset for FLEXPART
+        # # AST Colorset for FLEXPART
         colors = [1.0000000e+00, 1.0000000e+00, 1.0000000e+00
                 , 9.9607843e-01, 9.1372549e-01, 1.0000000e+00
                 , 9.8431373e-01, 8.2352941e-01, 1.0000000e+00
@@ -5105,7 +5109,7 @@ def main ():
     global options, args
     here = os.path.curdir
     dataDir = options.pathname
-    H = read_header(dataDir, **{'readp':1}) #readheader and release pointspiu
+    H = read_header(dataDir, **{'readp':1})  # readheader and release pointspiu
     G = readgridV8(H, **{'unit':'time'})
     D = get_slabs(H, G)
 
@@ -5131,7 +5135,7 @@ if __name__ == '__main__':
         parser.add_option ('-d', '--directory', dest='pathname',
                            default=False, help='pathname of directory containg FLEXPART Output')
         (options, args) = parser.parse_args()
-        #if len(args) < 1:
+        # if len(args) < 1:
         #    parser.error ('missing argument')
         if options.verbose: print time.asctime()
 
@@ -5150,9 +5154,9 @@ if __name__ == '__main__':
         if options.verbose: print 'TOTAL TIME IN MINUTES:',
         if options.verbose: print (time.time() - start_time) / 60.0
         sys.exit(exit_code)
-    except KeyboardInterrupt, e: # Ctrl-C
+    except KeyboardInterrupt, e:  # Ctrl-C
         raise e
-    except SystemExit, e: # sys.exit()
+    except SystemExit, e:  # sys.exit()
         raise e
     except Exception, e:
         print 'ERROR, UNEXPECTED EXCEPTION'
