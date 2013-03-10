@@ -58,6 +58,7 @@ import datetime
 import itertools
 from math import pi, sqrt, cos
 import traceback
+import pdb
 
 
 # Dependencies:
@@ -1163,7 +1164,9 @@ def read_header(pathname, **kwargs):
     h['nz'] = nz
     
     # Convert ireleasestart and ireleaseend to datetimes, fix issue #10
-    start_day = datetime.datetime.strptime(str(h['ibdate']), '%Y%m%d%')
+    print h['ibdate']
+    pdb.set_trace()
+    start_day = datetime.datetime.strptime(str(h['ibdate']), '%Y%m%d')
     H, M, S , = [int(str(h['ibtime']).zfill(6)[i:i + 2]) for i in range(0, 6, 2)] 
     start_time = datetime.timedelta(hours=H, minutes=M, seconds=S)
     h['simulationstart'] = start_day + start_time
