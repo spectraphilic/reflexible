@@ -1673,7 +1673,8 @@ def _readgridBF(H, filename):
 
     # # Import pflexcy.so (cython compiled version of dumpgrid)
     try:
-        from pflexcy import dumpdatagrid, dumpdepogrid
+        
+        from sdspflexcy import dumpdatagrid, dumpdepogrid
         print 'using pflexcy'
     except:
         print """WARNING: Using PURE Python to readgrid, execution will be slow.
@@ -1930,11 +1931,11 @@ def readgridV8(H, **kwargs):
             time_ret = [time_ret]
 
         if time_ret[0] < 0:
-            if forward == False:
+            #if forward == False:
                 # # get all dates for calculating footprint.
-                time_ret = np.arange(len(H.available_dates))
-            else:
-                raise ValueError("Must enter a positive time_ret for forward runs")
+            time_ret = np.arange(len(H.available_dates))
+            #else:
+            #    raise ValueError("Must enter a positive time_ret for forward runs")
 
         for t in time_ret:
             get_dates.append(H.available_dates[t])
@@ -1991,7 +1992,7 @@ def readgridV8(H, **kwargs):
         try:
             from nilu.pflexpart.FortFlex import readgrid, sumgrid
             useFortFlex = True
-            print 'using nilu.pflexpart FortFlex'
+            #print 'using nilu.pflexpart FortFlex'
         except:
             useFortFlex = False
             print('Cannot load FortFlex, reverting to BinaryFile.')
@@ -2084,7 +2085,7 @@ def readgridV8(H, **kwargs):
                     # not trying to do anything here... must be done
                     # after retrieving the grid
                     # D = get_slabs(H,np.squeeze(zplot))
-                    rel_i = H.available_dates.index(datestring)
+                    rel_i = 0 #H.available_dates.index(datestring)
                     D = zplot
                     
                 else:
@@ -2402,7 +2403,7 @@ def monthly_footprints(H):
 
 
 
-def fill_backward(H, nspec=0, FD=None, add_attributes=False):
+def fill_grids(H, nspec=0, FD=None, add_attributes=False):
     """ for backward runs, calculates the 20-day sensitivity at each release point.
 
     Usage::
@@ -2442,7 +2443,7 @@ def fill_backward(H, nspec=0, FD=None, add_attributes=False):
 
     """
 
-    assert H.direction == 'backward', "fill_backward is only valid for backward runs"
+#    assert H.direction == 'backward', "fill_backward is only valid for backward runs"
     # # make sure npsec is iterable
     if isinstance(nspec, int):
         species = [nspec]
@@ -2450,36 +2451,50 @@ def fill_backward(H, nspec=0, FD=None, add_attributes=False):
         species = nspec
     assert iter(species), 'nspec must be iterable, or you can pass an int'
     # # initialize variables
-    C = Structure()
-    for s, k in itertools.product(species, range(H.numpointspec)):
-        C[(s, k)] = Structure()
-        C[(s, k)].grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
-        C[(s, k)]['itime'] = None
-        C[(s, k)]['timestamp'] = H.releasetimes[k]
-        C[(s, k)]['species'] = H['species'][s]
-        C[(s, k)]['gridfile'] = 'multiple'
-        C[(s, k)]['rel_i'] = k
-        C[(s, k)]['spec_i'] = s
-
     if FD is None:
         # # then we need to read the grids
         FD = read_grid(H, time_ret= -1, nspec_ret=species)
 
-    # # read data grids and attribute/sum sensitivity
-    print species
-    for s in species:
-        # # cycle through all the date grids (20days back)
-        for d in FD.grid_dates:
-            # # cycle through each release point
-            for k in range(H.numpointspec):
-                contribution = FD[(s, d)].grid[:, :, :, k]
-                C[(s, k)].grid = C[(s, k)].grid + contribution
-
+    C = Structure()
+    
+    if H.direction == 'backward':
+        
+        for s, k in itertools.product(species, range(H.numpointspec)):
+            C[(s, k)] = Structure()
+            C[(s, k)].grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
+            C[(s, k)]['itime'] = None
+            C[(s, k)]['timestamp'] = H.releasetimes[k]
+            C[(s, k)]['species'] = H['species'][s]
+            C[(s, k)]['gridfile'] = 'multiple'
+            C[(s, k)]['rel_i'] = k
+            C[(s, k)]['spec_i'] = s
+    
+        # read data grids and attribute/sum sensitivity
+        print species
+        for s in species:
+            
+            for d in FD.grid_dates:
+                # cycle through all the date grids (20days back)
+                for k in range(H.numpointspec):
+                    # cycle through each release point
+                    contribution = FD[(s, d)].grid[:, :, :, k]
+                    C[(s, k)].grid = C[(s, k)].grid + contribution
+    
+    # added this, not sure if it makes sense to have this for 'forward'
+    # however, adding 'C' does not add to memory, as it points to same
+    # memory location as FD
+    if H.direction == 'forward':
+        for s in species:
+            for k in range(len(FD.grid_dates)):
+                d = FD.grid_dates[k]
+                C[(s, k)] = FD[(s, d)]
+                    
     for s, k in C:
         # # add total column
         C[(s, k)].slabs = get_slabs(H, C[(s, k)].grid)
         # # shape, min, max based on total column
-        C[(s, k)]['shape'] = C[(s, k)].grid[0].shape
+        if H.direction == 'backward':
+            C[(s, k)]['shape'] = C[(s, k)].grid[0].shape
         C[(s, k)]['max'] = C[(s, k)].grid[0].max()
         C[(s, k)]['min'] = C[(s, k)].grid[0].min()
 
@@ -2489,6 +2504,7 @@ def fill_backward(H, nspec=0, FD=None, add_attributes=False):
         H.FD = FD
     else:
         return C
+
 
 
 def read_emissions(emissionsfile, E=None, maxemissions=1):
@@ -2567,8 +2583,8 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
             try:
                 g = G[:, :, :, index]
             except:
-                print '######### ERROR: Which Release Point to get? ########## '
-                raise IOError
+                raise IOError( '######### ERROR: Which Release Point to get? ########## ')
+            
     if len(grid_shape) is 3:
         if index is None:
             g = G
@@ -4753,7 +4769,7 @@ class Header(Structure):
 
     def fill_backward(self, **kwargs):
         """ see :func:`fill_backward` """
-        fill_backward(self, add_attributes=True, **kwargs)
+        fill_grids(self, add_attributes=True, **kwargs)
 
     def add_trajectory(self, **kwargs):
         """ see :func:`read_trajectories` """
