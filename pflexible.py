@@ -2388,6 +2388,20 @@ def readgridV6(H, **kwargs):
 
     return fd
 
+def monthly_footprints(H):
+    
+     
+    footprints = np.zeros((H.ny, H.nx, len(H.C.keys())))
+    for i, key in enumerate(H.C):
+        footprints[:,:,i] = H.C[key].slabs[0]
+    
+    #footprints = np.average(footprints, axis=2)
+        
+    return footprints
+
+
+
+
 def fill_backward(H, nspec=0, FD=None, add_attributes=False):
     """ for backward runs, calculates the 20-day sensitivity at each release point.
 
@@ -2748,7 +2762,7 @@ def plot_spectra(inspectra,
                     FIGURE=None, y_datarange=None,
                     cum=False, labels=[],
                     bars=False, debug=False):
-    """ plot an spectra
+    """ plot a spectra
 
     Usage::
 
@@ -2780,12 +2794,6 @@ def plot_spectra(inspectra,
     .. todo::
         There's a lot of redundancy in the storage of attributes, maybe there is a
         better way to handle this.
-
-    .. note::
-        Required attributes of 'H' if you want to make a dummy H. Or just set
-        H to "None" and it will be taken from the agespectra input.
-        H.numageclasses
-        H.releasetimes
 
 
     """
