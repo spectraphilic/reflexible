@@ -81,7 +81,7 @@ except ImportError:
 # local imports
 import mapping as mp
 
-__version__ = '0.9.5'
+__version__ = '0.9.6'
 __path__ = os.path.abspath(os.curdir)
 
 #### Functions for reading FLEXPART output ##### 
@@ -4779,11 +4779,11 @@ class Header(Structure):
         """ uses the :mod:`emissions` module to read the MODIS hotspot data and
         add it to the header class as a 'fires' attribute.
         
-        **This function is only available within NILU.**
+        **This function is only available within UIO.**
         
         """
 
-        from nilu.pflexpart import emissions as em
+        from jfb.pflexpart import emissions as em
         self.fires = None
         for day in self.available_dates_dt:
             # day = day[:8]
@@ -4881,15 +4881,15 @@ def _log_clevs(dat_min, dat_max):
     if dat_max > 0:
         dmx = int(np.round(np.log10(dat_max))) + 1
     else:
-        print 'dat_max not positive'
-        print dat_max
+        #print 'dat_max not positive'
+        #print dat_max
         dmx = 1
             
     if dat_min > 0:
         dmn = int(np.round(np.log10(dat_min)))
     elif dat_min == 0. or np.isnan(dat_min):
-        print 'dat_min not positive'
-        print dat_min
+        #print 'dat_min not positive'
+        #print dat_min
         dmn = dmx - 3
         
         
