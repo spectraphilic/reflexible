@@ -48,7 +48,7 @@ for analysis and creation of the retroplumes.
 
 I suggest using wget to grab the data::
 
-  > wget http://folk.uio.no/johnbur/sharing/flexpart_V8data.tgz
+    wget http://folk.uio.no/johnbur/sharing/flexpart_V8data.tgz
 
   
 ----
@@ -112,8 +112,12 @@ the section in the Installation instructions.
   See the :func:`read_grid <pflexible.read_grid>` function 
   for information on the keyword arguments.
 
-Depending on how you called the :func:At this point you should now have a variable 'FD' which is again a dictionary of
-the FLEXPART grids. Look at the keys of the dictionary to see what information
+At this point you should now have a variable 'FD' which is again a dictionary of
+the FLEXPART grids. This 'FD' object is either available directly in your
+workspace, or alternatively, if you called `H.fill_backward()` it is an
+attribute of the header: `H.FD`. This is the preferred method.
+
+Look at the keys of the dictionary to see what information
 is stored. The actual data is keyed by tuples: (nspec, datestr) where nspec is
 the species number and datestr is a YYYYMMDDHHMMSS string for the grid
 timestep.
@@ -125,12 +129,12 @@ Okay, let\'s take a look at the example code line by line. The first line import
 giving it a namespace "pf". The next few lines simply define the paths for "SOURCE_DIR" and 
 "OUTPUT_DIR" (you probably already changed these).::
 
-  > import pflexible as pf
+    import pflexible as pf
 
 The next line creates a :class:`Header` class "H", by passing the path
 of the directory (not header path) containing the FLEXPART run.::
 
-  > H = pf.Header(SOURCE_DIR)
+    H = pf.Header(SOURCE_DIR)
 
 .. note::
   This example uses the `methods` of the Header class, :class:`plexpart.Header`.
@@ -145,13 +149,13 @@ H is now an object in your workspace. Using Ipython you can explore the methods
 and attributes of H. We call the `fill_backward` method to populate the "D"
 attribute (a dictionary) with all the data from the run.::
 
-  > H.fill_backward(nspec=(0,1))
+    H.fill_backward(nspec=(0,1))
 
 H.C is now keyed by (s,k) where s is an integer for the species #, and k is an
 integer for the release id. In the example, I use the :func:`read_trajectories` function
 to get the trajectories from the run output directory.::
 
-  > T = pf.read_trajectories(H)
+    T = pf.read_trajectories(H)
 
 Note, that the only required parameter is the Header "H", this provides all the
 metadata for the function to read the trajectories. This is a function that 
@@ -180,18 +184,18 @@ pull the "data" object out of the dictionary. The "data" object is returned from
 the function :func:`readgridV8` and has some attributes that we can use later
 in the :func:`plot_totalcolumn` function and for saving naming the figure.::
 
-  > for s,k in H.D:
-  >    data = H.D[(s,k)]
-  >    TC = pf.plot_totalcolumn(H,data,region='POLARCAT',FIGURE=TC)
-  >    TC = pf.plot_trajectory(H,T,k,FIGURE=TC)
+    for s,k in H.D:
+        data = H.D[(s,k)]
+        TC = pf.plot_totalcolumn(H,data,region='POLARCAT',FIGURE=TC)
+        TC = pf.plot_trajectory(H,T,k,FIGURE=TC)
 
 ----
 
 plot the total column and overlay the trajectories. The following lines::
 
-  > filename = '%s_tc_%s.png' % (D.species,D.timestamp)
-  > ofilename = os.path.join(OUTPUT_DIR,filename)
-  > TC.fig.savefig(ofilename)
+    filename = '%s_tc_%s.png' % (D.species,D.timestamp)
+    ofilename = os.path.join(OUTPUT_DIR,filename)
+    TC.fig.savefig(ofilename)
 
 create filenames and save the figure to the path defined by `ofilename`
 comprised of the `OUTPUT_DIR` and the `filename` variables. The
