@@ -102,19 +102,21 @@ also need to be available in the paths defined here.
 
 Building FortFlex
 =================
+ 
+FortFlex is a Fortran module that allows highly efficient reading of the raw FLEXPART output.
+Building FortFlex is simple, and required only running a script within the ``f2py_build`` directory of 
+the pflexible distribution:
 
-Unless you're working on a 64bit Ubuntu machine, you will certainly have to
-rebuild the FortFlex module. This is fairly easy. Navigate to the ``f2py_build``
-directory. See the README file for instructions, but most likely, you just need
-to run the following command::
+    cd f2py_build
+    chmod +x build_FortFlex.sh
+    ./build_FortFlex.sh
+    
+Assuming you have all dependencies for f2py (gfortran, etc.) this will build and copy a new module into
+pflexible package called FortFlex.so that will automatically be used by the ``pf.read_grid`` routines.
 
-   %f2py -c --fcompiler=gfortran FortFlex.pyf FortFlex.f
-
-You will need to replace the `fcompiler` with whatever compiler you have. Once
-you have built the ``FortFlex.so`` file, copy into the same directory as
-``pflexible.py`` or somewhere on your *PYTHONPATH*. **NOTE** I am
-trying to replace this dependency (or at least make more builds available, if
-you have suggestions, please contact me).
+If you have built the ``FortFlex.so`` module independently, be sure to copy it into the same directory as
+``pflexible.py`` or somewhere on your *PYTHONPATH*. **NOTE** I am trying to replace this dependency 
+(or at least make more builds available, if you have suggestions, please contact me).
 
 
 .. toctree::
