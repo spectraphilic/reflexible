@@ -40,20 +40,15 @@ Clone the bitbucket repository into a folder in your PYTHONPATH::
 
 ### Sphinx Documentation ###
 
-The documentation is hosted at my
-[homepage](http://niflheim.nilu.no/jfburkhart). You can get to it under the
-'Software' section.
-
-I am also trying to build it at readthedocs, but there are currently problems
-with the autodoc for the modules [readthedocs](http://pflexible.readthedocs.org)
-
+The documentation is hosted at
+[readthedocs](http://pflexible.readthedocs.org/en/latest/index.html). 
 
 ## Working with pflexible
 
 There are a few 'gotchas' when using the module. First, you will likely
 have to recompile (f2py) the FortFlex.f file and create a FortFlex.so module
 for whatever computer you're using. The one presently is compiled for 
-64bit Linux (Ubuntu 12.04). For more information see the f2py directory.
+64bit Linux (Ubuntu 12.04). For more information see the f2py directory and the build_FortFlex.sh script.
 
 An alternative 'BinaryFile' class has been created so one can work with pure
 Python. Alone, it is significantly slower than the FortFlex module, however,
@@ -69,9 +64,9 @@ and determine the best module to use -- somewhat transparently to the user. See
 the pflexible.readgridV8 function for more information.
 
 Primary functionality comes from the readheaderV8 function and the readgridV8
-function. I have tried to create a "Header" class that can be used for some 
+function. I have created a "Header" class that can be used for some 
 typical analysis. See the examples directory, and don't forget to read the
-source code.
+source code and the [getting started](http://pflexible.readthedocs.org/en/latest/getting_started.html) documentation. 
 
 ## Key Tools
 
