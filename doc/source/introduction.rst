@@ -11,8 +11,7 @@ Disperion Model output. Currently it is built for `FLEXPART
 generality.
 
 Contributions and collaboration are welcome. The code is hosted at bitbucket and
-the documentation is hosted at readthedocs. pflexible was written by `John
-F. Burkhart <http://niflheim.nilu.no/jfburkhart>`_ and is licensed under
+the documentation is hosted at readthedocs. pflexible is licensed under
 Creative Commons.
 
 Current development activities are focused on improved generality and handling of
@@ -35,9 +34,9 @@ First, make sure you also have the dependencies installed:
 
 Note the easiest way I've found to deal with the dependencies is to use one of
 'complete distributions' such as `Enthought <http://www.enthought.com>`_ or the
-`python(xy) <http://www.pythonxy.com>`_. For Ubuntu you can just use the
-packages. For the netcdf, we found it easiest to use the science-meteorology-dev
-meta package and use pip to install netcdf4.
+`python(xy) <http://www.pythonxy.com>`_ or ideally `Anaconda <http://www.continuum.io>`_.
+For Ubuntu you can pretty easily just install the required packages. For the netcdf, we 
+found it easiest to use the science-meteorology-dev meta package and use pip to install netcdf4-python.
 
 Once you've installed all the dependencies, you can get the code from either
 sources below.
