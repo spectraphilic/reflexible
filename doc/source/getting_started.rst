@@ -11,8 +11,11 @@ A quick overview of FLEXPART data
 =================================
 
 pflexible was originally developed for working with FLEXPART V8.x which has
-some fairly new features to how the output data is created. See the 
-documents for information regarding `FLEXPART
+some fairly new features to how the output data is created. The latest version of FLEXPART
+also has functionality for saving directly to Netcdf. The ability to read this data directly
+is forthcoming, but for now pflexible still only works with the raw unformatted binary Fortran
+data FLEXPART has traditionally used for output. 
+See the documents for information regarding `FLEXPART
 <http://transport.nilu.no/flexpart>`_ .
 
 A `users guide <http://zardoz.nilu.no/~andreas/flexpart/flexpart8.pdf>`_ for
@@ -39,14 +42,13 @@ feel free to contact me: `John F. Burkhart <mailto:jfburkhart@gmail.com>`_
 Fetching example data
 ---------------------
 
-An example data set is available for testing. The data is from the 
-`International Polar Year (IPY) <http://www.ipy.org>`_ `POLARCAT
-<http://www.polarcat.no>`_ NOAA-ICEALOT Cruise, and provides retroplume
-data for April 14, 2009 from the *R/V Knorr* off the North Coast of Norway.
+An example data set is available for testing. The data contains a simple backward
+run case, and thus is suitable for testing some of the unique functions of pflexible
+for analysis and creation of the retroplumes.
 
-The data is 1 Gb, I suggest using wget to grab the data::
+I suggest using wget to grab the data::
 
-  > wget http://niflheim.nilu.no/~burkhart/sharing/pflexible_testdata.tgz
+  > wget http://folk.uio.no/johnbur/sharing/flexpart_V8data.tgz
 
   
 ----
@@ -61,7 +63,7 @@ work with you can begin to use the module. The first step is to load the
 module. Depending on how you checked out the code, you can accomplish this in a
 few different way, but the preferred is as follows::
 
-    %import pflexible as pf
+    import pflexible as pf
 
 .. sidebar:: header file
 
@@ -71,14 +73,14 @@ few different way, but the preferred is as follows::
 
 The next step is to read the FLEXPART header file from a dataset::
 
-    %H = pf.Header('/path/to/flexpart/output')
+    H = pf.Header('/path/to/flexpart/output')
 
 
 Now you have a variable 'H' which has all the information about the run that is
 available from the header file. This 'Header' is essentially a dictionary, so
 the first step may be to explore some of the keys::
 
-    %H.keys()
+    H.keys()
 
 This should produce some output that looks familiar to your from your FLEXPART
 run setup.
@@ -86,19 +88,31 @@ run setup.
 ----
 
 Reasonably, you should now want to read in some of the data from your run. This
-is accomplished easlier using the :func:`read_grid <pflexible.read_grid>`. For optimal
-performance, this function will use the FortFlex module. However, as a fall
-back there is a pure python method, but it is significantly slower. If you are
-having problems compiling :mod:`FortFlex <pflexible.FortFlex>`, see 
-the section above. Either way, the function call looks like::
+is accomplished easily using the :func:`read_grid <pflexible.read_grid>`. This function
+may be called directly, or there
+are several alternative ways we can read the data. A special method exists for backward runs
+that collects all the data from the 20-days back in time (by default) and creates accumulated
+totals of the sensitivity::
 
-    > FD = pf.read_grid(H,time_ret=0,nspec_ret=0)
+    H.fill_backwards()
+    
+Alternatively, we may only want to read specific grids, in which case we can call the function
+directly::
+
+    FD = pf.read_grid(H,time_ret=0,nspec_ret=0)
+    
+For optimal performance, this function will use the FortFlex module. However, as a fall
+back there is a pure python method, but it is significantly slower. If you receive a message
+about using the Pure Python approach it is highly recommended to build the FortFlex module.
+If you are having problems compiling :mod:`FortFlex <pflexible.FortFlex>`, see 
+the section in the Installation instructions. 
+   
 
 .. note::
   See the :func:`read_grid <pflexible.read_grid>` function 
   for information on the keyword arguments.
 
-At this point you should now have a variable 'FD' which is again a dictionary of
+Depending on how you called the :func:At this point you should now have a variable 'FD' which is again a dictionary of
 the FLEXPART grids. Look at the keys of the dictionary to see what information
 is stored. The actual data is keyed by tuples: (nspec, datestr) where nspec is
 the species number and datestr is a YYYYMMDDHHMMSS string for the grid
