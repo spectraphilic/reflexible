@@ -1,3 +1,10 @@
+If you are a first time user of pflexible, you probably just need to run the build_FortFlex.sh script in this directory:
+
+chmod +x build_FortFlex.sh
+./build_FortFlex.sh
+
+If you are looking for some more detailed information on the f2py modules behind FortFlex, keep reading.
+
 #MODULES INCLUDED HERE:
 
 ===reademissions_f2py.f===
