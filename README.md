@@ -26,8 +26,8 @@ bitbucket.
 
 Direct inquiries may be sent to::
 
-	John F Burkhart, Norwegian Institute for Air Research
-	[john.burkhart](mailto://john.burkhart@nilu.no)
+	John F Burkhart, University of Oslo
+	[john.burkhart](mailto://john.burkhart@geo.uio.no)
 
 
 ## Web Resources ##
@@ -97,6 +97,3 @@ routines for working with basemap.
         
 All these routines were written 'on the fly', without a design plan
 or test cases. Everything probably could use a rewrite!
-        
-        
-
