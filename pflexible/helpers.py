@@ -30,13 +30,12 @@ class BinaryFile(object):
 
     """
 
-
     # Common types whose conversion can be accelerated via the struct
     # module
     structtypes = {
         'i1': 'b', 'i2': 'h', 'i4': 'i',
         'f4': 'f', 'f8': 'd',
-        }
+    }
 
     def __init__(self, filename, mode="r", order="fortran"):
         """Open the `filename` for write/read binary files.
@@ -54,10 +53,9 @@ class BinaryFile(object):
         self.file = open(filename, mode=self.mode, buffering=1)
         """The file handler."""
         if order not in ['fortran', 'c']:
-            raise ValueError, "order should be either 'fortran' or 'c'."
+            raise ValueError("order should be either 'fortran' or 'c'.")
         self.order = order
         """The order for file ('c' or 'fortran')."""
-
 
     def read(self, dtype, shape=(1,)):
         """Read an array of `dtype` and `shape` from current position.
@@ -69,10 +67,10 @@ class BinaryFile(object):
         """
         if not isinstance(dtype, np.dtype):
             dtype = np.dtype(dtype)
-        if type(shape) is int:
+        if isinstance(shape, int):
             shape = (shape,)
-        if type(shape) is not tuple:
-            raise ValueError, "shape must be a tuple"
+        if not isinstance(shape, tuple):
+            raise ValueError("shape must be a tuple")
         length = dtype.itemsize
         rank = len(shape)
         if rank == 1:
@@ -95,7 +93,7 @@ class BinaryFile(object):
         # Read the data from file
         data = self.file.read(length)
         if len(data) < length:
-            raise EOFError, "Asking for more data than available in file."
+            raise EOFError("Asking for more data than available in file.")
 
         # Convert read string into a regular array, or scalar
         dts = dtype.base.str[1:]
@@ -127,7 +125,6 @@ class BinaryFile(object):
                 data = data.copy()
         return data
 
-
     def write(self, arr):
         """Write an `arr` to current position.
 
@@ -139,7 +136,6 @@ class BinaryFile(object):
             arr = arr.transpose().copy()
         # Write the data to file
         self.file.write(arr.data)
-
 
     def seek(self, offset, whence=0):
         """Move to new file position.
@@ -155,16 +151,13 @@ class BinaryFile(object):
         """
         self.file.seek(offset, whence)
 
-
     def tell(self):
         "Returns current file position, an integer (may be a long integer)."
         return self.file.tell()
 
-
     def flush(self):
         "Flush buffers to file."
         self.file.flush()
-
 
     def close(self):
         "End access to file."
@@ -180,14 +173,14 @@ def closest(num, numlist):
     if dates:
         num = date2num(num)
         assert isinstance(numlist[0], datetime.datetime), \
-               "num is date, numlist must be a list of dates"
+            "num is date, numlist must be a list of dates"
         numlist = date2num(numlist)
 
     return (np.abs(numlist - num)).argmin()
 
 
-
 class Structure(dict, object):
+
     """ A 'fancy' dictionary that provides 'MatLab' structure-like
     referencing.
 
@@ -195,6 +188,7 @@ class Structure(dict, object):
         may be replaced with a pure dict in future release.
 
     """
+
     def __getattr__(self, attr):
         # Fake a __getstate__ method that returns None
         if attr == "__getstate__":
@@ -216,7 +210,9 @@ class Structure(dict, object):
     def __dir__(self):
         return self.keys()
 
+
 class Header(Structure):
+
     """This is the primary starting point for processing FLEXPART output.
     The Header class ( :class:`Structure` ) behaves like a dictionary.
     It contains all the metadata from the simulation run as read from the
@@ -271,8 +267,8 @@ class Header(Structure):
 
     """
 
-
-    def __init__(self, path=None, headerfile=None, version='V8', **readheader_ops):
+    def __init__(self, path=None, headerfile=None, version='V8',
+                 **readheader_ops):
         """
 
 
@@ -288,13 +284,14 @@ class Header(Structure):
             Could not set header variables.
             Does the `header` file exist in path?\n{0}'''.format(path))
 
-
-
-
     def lonlat(self):
         """ Add longitude and latitude attributes using data from header """
-        lons = np.arange(self.outlon0, self.outlon0 + (self.dxout * self.numxgrid), self.dxout)
-        lats = np.arange(self.outlat0, self.outlat0 + (self.dyout * self.numygrid), self.dyout)
+        lons = np.arange(self.outlon0,
+                         self.outlon0 + (self.dxout * self.numxgrid),
+                         self.dxout)
+        lats = np.arange(self.outlat0,
+                         self.outlat0 + (self.dyout * self.numygrid),
+                         self.dyout)
         self.longitude = lons
         self.latitude = lats
 
@@ -328,11 +325,13 @@ class Header(Structure):
             if daily is None:
                 continue
             else:
-                if self.fires == None:
+                if self.fires is None:
                     self.fires = daily
                 else:
 
-                    self.fires = np.hstack((self.fires, daily)).view(np.recarray)
+                    self.fires = np.hstack(
+                        (self.fires, daily)).view(
+                        np.recarray)
 
     def closest_dates(self, dateval, fmt=None, take_set=False):
         """ given an iterable of datetimes, finds the closest dates.
@@ -354,7 +353,6 @@ class Header(Structure):
         except IOError:
             print('If dateval is iterable, must contain datetimes')
 
-
     def closest_date(self, dateval, fmt=None):
         """ given a datestring or datetime, tries to find the closest date.
             if passed a list, assumes it is a list of datetimes
@@ -373,6 +371,7 @@ class Header(Structure):
             dateval = datetime.datetime.strptime(dateval, fmt)
 
         return closest(dateval, self['available_dates_dt'])
+
 
 def data_range(data, min='median'):
     """
@@ -395,8 +394,12 @@ def data_range(data, min='median'):
         dmin = 1e-5
 
     return [dmin, dmax]
+
+
 def _normdatetime(Y, M, D, h, m, s):
-    return datetime.datetime(Y, M, D) + datetime.timedelta(hours=h, minutes=m, seconds=s)
+    return datetime.datetime(
+        Y, M, D) + datetime.timedelta(hours=h, minutes=m, seconds=s)
+
 
 def _log_clevs(dat_min, dat_max):
     """
@@ -416,26 +419,23 @@ def _log_clevs(dat_min, dat_max):
     if dat_max > 0:
         dmx = int(np.round(np.log10(dat_max))) + 1
     else:
-        #print 'dat_max not positive'
-        #print dat_max
+        # print 'dat_max not positive'
+        # print dat_max
         dmx = 1
 
     if dat_min > 0:
         dmn = int(np.round(np.log10(dat_min)))
     elif dat_min == 0. or np.isnan(dat_min):
-        #print 'dat_min not positive'
-        #print dat_min
+        # print 'dat_min not positive'
+        # print dat_min
         dmn = dmx - 3
 
-
-    # # create equally spaced range
+    # create equally spaced range
     if dmx == dmn:
         dmx = dmn + 1
     clevs = np.logspace(dmn, dmx, 100)
 
     return clevs
-
-
 
 
 def add_nilu_logo(fig, xo=10, yo=520, origin='upper'):
@@ -445,13 +445,18 @@ def add_nilu_logo(fig, xo=10, yo=520, origin='upper'):
     fig.figimage(im, xo, yo, origin=origin)
     return fig
 
+
 def _cum_spec(inspectra, cum=True):
     """ helper function for the plot_spectra routines """
 
     if cum == 'norm':
-        # # Normalize the data so it fills to 100%
+        # Normalize the data so it fills to 100%
         # spectra = np.zeros(inspectra.shape)
-        spectra = (inspectra.transpose() / np.sum(inspectra, axis=1)).transpose()
+        spectra = (
+            inspectra.transpose() /
+            np.sum(
+                inspectra,
+                axis=1)).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
         # sums = np.sum(inspectra,axis=1)
         # for i,elem in enumerate(inspectra):
@@ -463,6 +468,7 @@ def _cum_spec(inspectra, cum=True):
 
     return spectra
 
+
 def _getfile_lines(infile):
     """ returns all lines from a file or file string
     reverts to beginning of file."""
@@ -472,6 +478,7 @@ def _getfile_lines(infile):
     else:
         infile.seek(0)
         return infile.readlines()
+
 
 def _gen_MapPar_fromHeader(H):
     """
@@ -514,13 +521,12 @@ def _gen_daylabels(P, H=None, dt=86400):
         return [str(1 + int(abs(p)) / dt) for p in P]
 
 
-
 def _datarange(H, G, index=None):
     """ returns max and min for footprint and total column
         for a given range of releases [default is all] """
     Heightnn = H['Heightnn']
     fpmax = -999.
-    if index == None:
+    if index is None:
         seek = range(G.shape[-1])
     else:
         seek = [index]
@@ -532,7 +538,6 @@ def _datarange(H, G, index=None):
         # print fpmax
     tcmax = np.max(G)
     return ((0, fpmax), (0, tfcmax))
-
 
 
 def _genEllipse(data, m, sizescale=20000,
@@ -559,24 +564,30 @@ def _genEllipse(data, m, sizescale=20000,
 
     """
     r, c = data.shape
-    if altlim == None:
+    if altlim is None:
         altlim = (np.min(data[:, 3]), np.max(data[:, 3]))
 
     if c == 5:
 
         ell = [(Ellipse(xy=np.array(m(p[1], p[2])),
-                width=p[4] * sizescale, height=p[4] * sizescale,
-                angle=360,
-                facecolor=_gen_altitude_color(p[3], altlim=altlim, cmap_id='gray'), \
-                label=_gen_daylabels(p[0])), \
+                        width=p[4] * sizescale, height=p[4] * sizescale,
+                        angle=360,
+                        facecolor=_gen_altitude_color(
+                            p[3],
+                            altlim=altlim,
+                            cmap_id='gray'),
+                        label=_gen_daylabels(p[0])),
                 np.array(m(p[1], p[2]))) for p in data]
-                     # np.array( m(p[1],p[2])) ) for p in data]
+        # np.array( m(p[1],p[2])) ) for p in data]
     else:
         ell = [(Ellipse(xy=np.array(m(p[1], p[2])),
-                width=1e4 * sizescale, height=1e4 * sizescale,
-                angle=360, \
-                facecolor=_gen_altitude_color(p[3], altlim=altlim, cmap_id='gray'), \
-                label=_gen_daylabels(p[0])), \
+                        width=1e4 * sizescale, height=1e4 * sizescale,
+                        angle=360,
+                        facecolor=_gen_altitude_color(
+                            p[3],
+                            altlim=altlim,
+                            cmap_id='gray'),
+                        label=_gen_daylabels(p[0])),
                 np.array(m(p[1], p[2]))) for p in data]
 
     return ell
@@ -604,60 +615,59 @@ def _gen_flexpart_colormap(ctbfile=None, colors=None):
     if colors:
         name = 'user_colormap'
     if not colors:
-        # # AST Colorset for FLEXPART
-        colors = [1.0000000e+00, 1.0000000e+00, 1.0000000e+00
-                , 9.9607843e-01, 9.1372549e-01, 1.0000000e+00
-                , 9.8431373e-01, 8.2352941e-01, 1.0000000e+00
-                , 9.6470588e-01, 7.1764706e-01, 1.0000000e+00
-                , 9.3333333e-01, 6.0000000e-01, 1.0000000e+00
-                , 8.9019608e-01, 4.4705882e-01, 1.0000000e+00
-                , 8.3137255e-01, 2.0000000e-01, 1.0000000e+00
-                , 7.5686275e-01, 0.0000000e+00, 1.0000000e+00
-                , 6.6274510e-01, 0.0000000e+00, 1.0000000e+00
-                , 5.4901961e-01, 0.0000000e+00, 1.0000000e+00
-                , 4.0784314e-01, 0.0000000e+00, 1.0000000e+00
-                , 2.4705882e-01, 0.0000000e+00, 1.0000000e+00
-                , 7.4509804e-02, 0.0000000e+00, 1.0000000e+00
-                , 0.0000000e+00, 2.8235294e-01, 1.0000000e+00
-                , 0.0000000e+00, 4.8627451e-01, 1.0000000e+00
-                , 0.0000000e+00, 6.3137255e-01, 1.0000000e+00
-                , 0.0000000e+00, 7.4509804e-01, 1.0000000e+00
-                , 0.0000000e+00, 8.4705882e-01, 1.0000000e+00
-                , 0.0000000e+00, 9.3725490e-01, 1.0000000e+00
-                , 0.0000000e+00, 1.0000000e+00, 9.7647059e-01
-                , 0.0000000e+00, 1.0000000e+00, 8.9411765e-01
-                , 0.0000000e+00, 1.0000000e+00, 8.0000000e-01
-                , 0.0000000e+00, 1.0000000e+00, 6.9019608e-01
-                , 0.0000000e+00, 1.0000000e+00, 5.6470588e-01
-                , 0.0000000e+00, 1.0000000e+00, 4.0000000e-01
-                , 0.0000000e+00, 1.0000000e+00, 0.0000000e+00
-                , 3.9607843e-01, 1.0000000e+00, 0.0000000e+00
-                , 5.6470588e-01, 1.0000000e+00, 0.0000000e+00
-                , 6.9019608e-01, 1.0000000e+00, 0.0000000e+00
-                , 7.9607843e-01, 1.0000000e+00, 0.0000000e+00
-                , 8.9411765e-01, 1.0000000e+00, 0.0000000e+00
-                , 9.7647059e-01, 1.0000000e+00, 0.0000000e+00
-                , 1.0000000e+00, 9.4509804e-01, 0.0000000e+00
-                , 1.0000000e+00, 8.7450980e-01, 0.0000000e+00
-                , 1.0000000e+00, 7.9215686e-01, 0.0000000e+00
-                , 1.0000000e+00, 7.0588235e-01, 0.0000000e+00
-                , 1.0000000e+00, 6.0392157e-01, 0.0000000e+00
-                , 1.0000000e+00, 4.8235294e-01, 0.0000000e+00
-                , 1.0000000e+00, 3.1372549e-01, 0.0000000e+00
-                , 1.0000000e+00, 0.0000000e+00, 1.4901961e-01
-                , 1.0000000e+00, 0.0000000e+00, 3.3333333e-01
-                , 1.0000000e+00, 0.0000000e+00, 4.4705882e-01
-                , 1.0000000e+00, 0.0000000e+00, 5.3725490e-01
-                , 1.0000000e+00, 0.0000000e+00, 6.1176471e-01
-                , 9.7647059e-01, 0.0000000e+00, 6.6666667e-01
-                , 8.9411765e-01, 0.0000000e+00, 6.6666667e-01
-                , 7.9607843e-01, 0.0000000e+00, 6.3921569e-01
-                , 6.9019608e-01, 0.0000000e+00, 5.9215686e-01
-                , 5.6470588e-01, 0.0000000e+00, 5.0980392e-01
-                , 3.9607843e-01, 0.0000000e+00, 3.8039216e-01]
+        # AST Colorset for FLEXPART
+        colors = [
+            1.0000000e+00, 1.0000000e+00, 1.0000000e+00,
+            9.9607843e-01, 9.1372549e-01, 1.0000000e+00,
+            9.8431373e-01, 8.2352941e-01, 1.0000000e+00,
+            9.6470588e-01, 7.1764706e-01, 1.0000000e+00,
+            9.3333333e-01, 6.0000000e-01, 1.0000000e+00,
+            8.9019608e-01, 4.4705882e-01, 1.0000000e+00,
+            8.3137255e-01, 2.0000000e-01, 1.0000000e+00,
+            7.5686275e-01, 0.0000000e+00, 1.0000000e+00,
+            6.6274510e-01, 0.0000000e+00, 1.0000000e+00,
+            5.4901961e-01, 0.0000000e+00, 1.0000000e+00,
+            4.0784314e-01, 0.0000000e+00, 1.0000000e+00,
+            2.4705882e-01, 0.0000000e+00, 1.0000000e+00,
+            7.4509804e-02, 0.0000000e+00, 1.0000000e+00,
+            0.0000000e+00, 2.8235294e-01, 1.0000000e+00,
+            0.0000000e+00, 4.8627451e-01, 1.0000000e+00,
+            0.0000000e+00, 6.3137255e-01, 1.0000000e+00,
+            0.0000000e+00, 7.4509804e-01, 1.0000000e+00,
+            0.0000000e+00, 8.4705882e-01, 1.0000000e+00,
+            0.0000000e+00, 9.3725490e-01, 1.0000000e+00,
+            0.0000000e+00, 1.0000000e+00, 9.7647059e-01,
+            0.0000000e+00, 1.0000000e+00, 8.9411765e-01,
+            0.0000000e+00, 1.0000000e+00, 8.0000000e-01,
+            0.0000000e+00, 1.0000000e+00, 6.9019608e-01,
+            0.0000000e+00, 1.0000000e+00, 5.6470588e-01,
+            0.0000000e+00, 1.0000000e+00, 4.0000000e-01,
+            0.0000000e+00, 1.0000000e+00, 0.0000000e+00,
+            3.9607843e-01, 1.0000000e+00, 0.0000000e+00,
+            5.6470588e-01, 1.0000000e+00, 0.0000000e+00,
+            6.9019608e-01, 1.0000000e+00, 0.0000000e+00,
+            7.9607843e-01, 1.0000000e+00, 0.0000000e+00,
+            8.9411765e-01, 1.0000000e+00, 0.0000000e+00,
+            9.7647059e-01, 1.0000000e+00, 0.0000000e+00,
+            1.0000000e+00, 9.4509804e-01, 0.0000000e+00,
+            1.0000000e+00, 8.7450980e-01, 0.0000000e+00,
+            1.0000000e+00, 7.9215686e-01, 0.0000000e+00,
+            1.0000000e+00, 7.0588235e-01, 0.0000000e+00,
+            1.0000000e+00, 6.0392157e-01, 0.0000000e+00,
+            1.0000000e+00, 4.8235294e-01, 0.0000000e+00,
+            1.0000000e+00, 3.1372549e-01, 0.0000000e+00,
+            1.0000000e+00, 0.0000000e+00, 1.4901961e-01,
+            1.0000000e+00, 0.0000000e+00, 3.3333333e-01,
+            1.0000000e+00, 0.0000000e+00, 4.4705882e-01,
+            1.0000000e+00, 0.0000000e+00, 5.3725490e-01,
+            1.0000000e+00, 0.0000000e+00, 6.1176471e-01,
+            9.7647059e-01, 0.0000000e+00, 6.6666667e-01,
+            8.9411765e-01, 0.0000000e+00, 6.6666667e-01,
+            7.9607843e-01, 0.0000000e+00, 6.3921569e-01,
+            6.9019608e-01, 0.0000000e+00, 5.9215686e-01,
+            5.6470588e-01, 0.0000000e+00, 5.0980392e-01,
+            3.9607843e-01, 0.0000000e+00, 3.8039216e-01]
         colors = np.reshape(colors, (-1, 3))
         name = 'flexpart_cmap'
     cmap = ListedColormap(colors, name)
     return cmap
-
-
