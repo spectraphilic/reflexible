@@ -7,7 +7,6 @@ from math import pi, sqrt, cos
 import numpy as np
 
 
-
 def read_command(path, headerrows=7):
     """
     Reads a FLEXPART COMMAND file.
@@ -98,30 +97,30 @@ def read_command(path, headerrows=7):
     lines = file(path, 'r').readlines()
     command_vals = [i.strip() for i in lines[headerrows:]]  # clean line ends
     COMMAND_KEYS = (
-               'SIM_DIR',
-               'SIM_START',
-               'SIM_END',
-               'AVG_CNC_INT',
-               'AVG_CNC_TAVG',
-               'CNC_SAMP_TIME',
-               'T_PARTSPLIT',
-               'SYNC',
-               'CTL',
-               'IFINE',
-               'IOUT',
-               'IPOUT',
-               'LSUBGRID',
-               'LCONVECTION',
-               'LAGESPECTRA',
-               'IPIN',
-               'OUTPUTFOREACHRELEASE',
-               'IFLUX',
-               'MDOMAINFILL',
-               'IND_SOURCE',
-               'IND_RECEPTOR',
-               'MQUASILAG',
-               'NESTED_OUTPUT',
-               'LINIT_COND')
+        'SIM_DIR',
+        'SIM_START',
+        'SIM_END',
+        'AVG_CNC_INT',
+        'AVG_CNC_TAVG',
+        'CNC_SAMP_TIME',
+        'T_PARTSPLIT',
+        'SYNC',
+        'CTL',
+        'IFINE',
+        'IOUT',
+        'IPOUT',
+        'LSUBGRID',
+        'LCONVECTION',
+        'LAGESPECTRA',
+        'IPIN',
+        'OUTPUTFOREACHRELEASE',
+        'IFLUX',
+        'MDOMAINFILL',
+        'IND_SOURCE',
+        'IND_RECEPTOR',
+        'MQUASILAG',
+        'NESTED_OUTPUT',
+        'LINIT_COND')
     float_keys = ['CTL']
     date_keys = ['SIM_START', 'SIM_END']
 
@@ -138,8 +137,6 @@ def read_command(path, headerrows=7):
 
         COMMAND[key] = val
     return COMMAND
-
-
 
 
 def read_releases(path, headerrows=11):
@@ -205,14 +202,13 @@ def read_releases(path, headerrows=11):
             b[10 + i] = float(b[10 + i])
         b = tuple(b)
 
-
-    names = ['start_time', 'end_time', 'lllon', 'lllat', 'urlon', 'urlat', \
-                          'altunit', 'elv1', 'elv2', 'numpart']
+    names = ['start_time', 'end_time', 'lllon', 'lllat', 'urlon', 'urlat',
+             'altunit', 'elv1', 'elv2', 'numpart']
     # formats = [object, object, np.float, np.float, np.float, np.float,\
     #                      int, np.float, np.float, int]
     for i in range(nspec):
-            names.append('mass%s' % i)
-            # formats.append(np.float)
+        names.append('mass%s' % i)
+        # formats.append(np.float)
     names.append('id')
     # formats.append('S30')
 
@@ -221,9 +217,9 @@ def read_releases(path, headerrows=11):
     return np.rec.fromrecords(blocks, names=names)
 
 
-def read_trajectories(H, trajfile='trajectories.txt', \
-                     ncluster=5, \
-                     ageclasses=20):
+def read_trajectories(H, trajfile='trajectories.txt',
+                      ncluster=5,
+                      ageclasses=20):
     """
     Reads the trajectories.txt file in a FLEXPART run output directory.
 
@@ -307,7 +303,6 @@ def read_trajectories(H, trajfile='trajectories.txt', \
         path = H.path
         alltraj = file(os.path.join(path, trajfile), 'r').readlines()
 
-
     try:
         ibdate, ibtime, model, version = alltraj[0].strip().split()[:4]
     except:
@@ -322,23 +317,34 @@ def read_trajectories(H, trajfile='trajectories.txt', \
     Trajectories = []
 
     for i in range(3, 3 + (numpoint * 2), 2):
-        i1, i2, xp1, yp1, xp2, yp2, zp1, zp2, k, npart , = \
-          tuple([float(j) for j in alltraj[i].strip().split()])
+        i1, i2, xp1, yp1, xp2, yp2, zp1, zp2, k, npart, = \
+            tuple([float(j) for j in alltraj[i].strip().split()])
         itimerel1 = dt + datetime.timedelta(seconds=i1)
         itimerel2 = dt + datetime.timedelta(seconds=i2)
         Xp = (xp1 + xp2) / 2
         Yp = (yp1 + yp2) / 2
         Zp = (zp1 + zp2) / 2
-        RelTraj[alltraj[i + 1].strip()] = np.array((itimerel1, itimerel2, Xp, Yp, Zp, k, npart))
+        RelTraj[
+            alltraj[
+                i +
+                1].strip()] = np.array(
+            (itimerel1,
+             itimerel2,
+             Xp,
+             Yp,
+             Zp,
+             k,
+             npart))
 
     for i in range(3 + (numpoint * 2), len(alltraj)):
         raw = alltraj[i]
-        FMT = [0, 5, 8, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6] + ncluster * [8, 8, 7, 6, 8]
+        FMT = [0, 5, 8, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6] + \
+              ncluster * [8, 8, 7, 6, 8]
 
-        data = [raw[sum(FMT[:ii]):sum(FMT[:ii + 1])] for ii in range(1, len(FMT) - 1)] + \
-                     [raw[sum(FMT[:-1]):]]
+        data = [raw[sum(FMT[:ii]):sum(FMT[:ii + 1])]
+                for ii in range(1, len(FMT) - 1)] + [raw[sum(FMT[:-1]):]]
         ### FIX ###
-        # ## To get rid of '******' that is now in trajectories.txt
+        # To get rid of '******' that is now in trajectories.txt
         data = [float(r.replace('********', 'NaN')) for r in data]
 
         Trajectories.append(data)
@@ -348,20 +354,21 @@ def read_trajectories(H, trajfile='trajectories.txt', \
     RelTraj['date'] = dt
     RelTraj['Trajectories'] = data
     RelTraj['labels'] = \
-            ['release number', 'seconds prior to release', 'lon', 'lat', 'height', 'mean topography', \
-             'mean mixing height', 'mean tropopause height', 'mean PV index', \
-             'rms distance', 'rms', 'zrms distance', 'zrms', \
-             'fraction height??', 'fraction PV<2pvu', 'fraction in troposphere'] + \
-            ncluster * ['xcluster', 'ycluster', 'zcluster', 'fcluster', 'rmscluster']
-    RelTraj['info'] = \
-    """
+        ['release number', 'seconds prior to release', 'lon', 'lat', 'height',
+         'mean topography', 'mean mixing height', 'mean tropopause height',
+         'mean PV index', 'rms distance', 'rms', 'zrms distance', 'zrms',
+         'fraction height??', 'fraction PV<2pvu',
+         'fraction in troposphere'] + ncluster * [
+            'xcluster', 'ycluster', 'zcluster', 'fcluster', 'rmscluster']
+    RelTraj['info'] = """
     Returns a dictionary:
         R['Trajectories'] = array_of_floats(
-            releasenum,it1,xi,yi,zi,topoi,hmixi,tropoi,pvi,
-            rmsdisti,rmsi,zrmsdisti,zrmsi,hfri,pvfri,trfri,
-            (xclusti(k),yclusti(k),zclusti(k),fclusti(k),rmsclusti(k),k=1,5))
+            releasenum, it1, xi, yi, zi, topoi, hmixi, tropoi, pvi,
+            rmsdisti, rmsi, zrmsdisti, zrmsi, hfri, pvfri, trfri,
+            (xclusti(k), yclusti(k), zclusti(k), fclusti(k), rmsclusti(k),
+             k=1,5))
 
-        R['RELEASE_ID'] = (dt_i1,dt_i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
+        R['RELEASE_ID'] = (dt_i1, dt_i2, xp1, yp1, xp2, yp2, zp1, zp2, k, npart)
         R['info'] = this message
 
     To plot a trajectory timeseries:
@@ -375,7 +382,8 @@ def read_trajectories(H, trajfile='trajectories.txt', \
     return RelTraj
 
 
-def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_track=False):
+def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0,
+                           get_track=False):
     """
     extracts curtain data along a given flight track
 
@@ -423,8 +431,6 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
         curtain = np.zeros((len(flighttrack), len(H.outheight)))
 
     for i, (t, lon, lat, elv) in enumerate(flighttrack):
-
-
         # loop over FD tuples using t to extract the right time.
         # assuming t is a datetime
         idx = H.closest_date(t)
@@ -432,7 +438,6 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
         if H.direction == 'forward':
             grid = H.FD[(nspec, datestring)]['grid']
             grid = grid[:, :, :, index]
-
         elif H.direction == 'backward':
             grid = H.C[(0, idx)]['grid']
 
@@ -446,6 +451,7 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
             curtain[i] = grid[I, J, :]
 
     return curtain.T
+
 
 def curtain_for_line(grid, X, Y, coords, index=0):
     """
@@ -499,7 +505,6 @@ def groundlevel_for_line(H, X, Y, coords, index=0):
 
     output: groundlevel (a 1-d array with shape (len(flighttrack)
 
-
     """
     try:
         hgt = H.Heightnn[:, :, 0]
@@ -528,17 +533,13 @@ def curtain_agltoasl(H, curtain_agl, coords, below_gl=0.0):
     """
 
     gl = groundlevel_for_line(H, H.longitude, H.latitude, coords)
-
     H.asl_axis = np.linspace(0, H.outheight[-1])
-
     xp = H.outheight - H.outheight[0]
-
     casl = np.zeros((len(H.asl_axis), len(coords)))
 
     for i in xrange(len(coords)):
-        casl[:, i] = np.interp(H.asl_axis, xp + gl[i], \
-                              curtain_agl[:, i], left=below_gl)
-
+        casl[:, i] = np.interp(H.asl_axis, xp + gl[i],
+                               curtain_agl[:, i], left=below_gl)
     return casl
 
 
@@ -590,7 +591,10 @@ def read_agespectrum(filename, part=False, ndays=20):
     for line in f[2:]:
         line = line.strip().split()
         # convert ibdate, ibtime to datetime
-        dt = datetime.datetime.strptime(line[0] + line[1].zfill(6), '%Y%m%d%H%M%S')
+        dt = datetime.datetime.strptime(
+            line[0] +
+            line[1].zfill(6),
+            '%Y%m%d%H%M%S')
         data = [float(i) for i in line[2:]]
         # reordering the array, dt object will be '0'
         data = [data[1]] + [data[0]] + data[2:]
@@ -602,7 +606,7 @@ def read_agespectrum(filename, part=False, ndays=20):
     A['numspec'] = numspec
     A['filename'] = filename
     A['info'] = \
-    """
+        """
     A dictionary containing ageclass information:
     keys:
          agespectrum = 2d-array(dt, lon, lat, alt, tracer[:numageclass] for each release)
@@ -662,8 +666,6 @@ def save_spectrum(outf, H, agespectra, spectype='agespec',
     outf.close()
 
 
-
-
 def gridarea(H):
     """returns an array of area corresponding to each nx,ny,nz
 
@@ -680,10 +682,9 @@ def gridarea(H):
 
     """
 
-
     pih = pi / 180.
     r_earth = 6.371e6
-    cosfunc = lambda y : cos(y * pih) * r_earth
+    cosfunc = lambda y: cos(y * pih) * r_earth
 
     nx = H['numxgrid']
     ny = H['numygrid']
@@ -693,24 +694,29 @@ def gridarea(H):
     area = np.zeros((nx, ny))
 
     for iy in range(ny):
-        ylata = outlat0 + (float(iy) + 0.5) * dyout  # NEED TO Check this, iy since arrays are 0-index
+        # NEED TO Check this, iy since arrays are 0-index
+        ylata = outlat0 + (float(iy) + 0.5) * dyout
         ylatp = ylata + 0.5 * dyout
         ylatm = ylata - 0.5 * dyout
-        if (ylatm < 0 and ylatp > 0): hzone = dyout * r_earth * pih
+        if (ylatm < 0 and ylatp > 0):
+            hzone = dyout * r_earth * pih
         else:
             # cosfact = cosfunc(ylata)
             cosfactp = cosfunc(ylatp)
             cosfactm = cosfunc(ylatm)
             if cosfactp < cosfactm:
-                hzone = sqrt(r_earth ** 2 - cosfactp ** 2) - sqrt(r_earth ** 2 - cosfactm ** 2)
+                hzone = sqrt(r_earth ** 2 - cosfactp ** 2) - \
+                    sqrt(r_earth ** 2 - cosfactm ** 2)
             else:
-                hzone = sqrt(r_earth ** 2 - cosfactm ** 2) - sqrt(r_earth ** 2 - cosfactp ** 2)
+                hzone = sqrt(r_earth ** 2 - cosfactm ** 2) - \
+                    sqrt(r_earth ** 2 - cosfactp ** 2)
 
-        gridarea = 2.*pi * r_earth * hzone * dxout / 360.
+        gridarea = 2. * pi * r_earth * hzone * dxout / 360.
         for ix in range(nx):
             area[ix, iy] = gridarea
 
     return area
+
 
 def _get_header_version(bf):
     """
@@ -730,6 +736,7 @@ def _get_header_version(bf):
     bf.seek(ret)
 
     return version
+
 
 def read_header(pathname, **kwargs):
     """
@@ -793,24 +800,29 @@ def read_header(pathname, **kwargs):
     OPS.headerfile = None
     OPS.datefile = None
 
-    # # add keyword overides and options to header
+    # add keyword overides and options to header
     for k in kwargs.keys():
         if k not in OPS.keys():
             print("WARNING: {0} not a valid input option.".format(k))
 
     # BW compat fixes
     if 'nest' in kwargs.keys():
-        raise IOError("nest is no longer a valid keyword, see docs. \n Now use nested=True or nested=False")
-
+        raise IOError(
+            "nest is no longer a valid keyword, see docs. \n "
+            "Now use nested=True or nested=False")
 
     if 'nested' in kwargs.keys():
         if kwargs['nested'] is 1:
-            print("WARNING, use of nested=1, deprecated converting to nested=True")
+            print(
+                "WARNING, use of nested=1, deprecated converting to "
+                "nested=True")
             kwargs['nested'] = True
 
     if 'nested' in kwargs.keys():
         if kwargs['nested'] is 0:
-            print("WARNING, use of nested=0, deprecated converting to nested=False")
+            print(
+                "WARNING, use of nested=0, deprecated converting to "
+                "nested=False")
             kwargs['nested'] = False
 
     OPS.update(kwargs)
@@ -822,22 +834,20 @@ def read_header(pathname, **kwargs):
             print "%s ==> %s" % (o, OPS[o])
 
     # Define utility functions for reading binary file
-    skip = lambda n = 8 : bf.seek(n, 1)
-    getbin = lambda dtype, n = 1 : bf.read(dtype, (n,))
-
+    skip = lambda n = 8: bf.seek(n, 1)
+    getbin = lambda dtype, n = 1: bf.read(dtype, (n,))
 
     h = Structure()
 
-
     if OPS.headerfile:
-        filename = os.path.join(pathname, OPS.headerfile);
+        filename = os.path.join(pathname, OPS.headerfile)
 
     elif OPS.nested is True:
         filename = os.path.join(pathname, 'header_nest')
-        h['nested'] = True;
+        h['nested'] = True
     else:
         filename = os.path.join(pathname, 'header')
-        h['nested'] = False;
+        h['nested'] = False
 
     # Open header file in binary format
     if not os.path.exists(filename):
@@ -846,7 +856,8 @@ def read_header(pathname, **kwargs):
         try:
             bf = BinaryFile(filename, order="fortran")
         except:
-            raise IOError("Error opening: {0} with BinaryFile class".format(filename))
+            raise IOError(
+                "Error opening: {0} with BinaryFile class".format(filename))
 
     # Get available_dates from dates file in same directory as header
     if OPS.datefile:
@@ -866,10 +877,8 @@ def read_header(pathname, **kwargs):
     fd = sorted(list(set(fd)))
     h['available_dates'] = [d.strip('\n') for d in fd]
 
-
     # which version format is header file:
     version = _get_header_version(bf)
-
 
     # required containers
     junk = []  # for catching unused output
@@ -882,13 +891,14 @@ def read_header(pathname, **kwargs):
     h['compoint'] = []
 
     # Define Header format and create Dictionary Keys
-    I = {0:'_0', 1:'ibdate', 2:'ibtime', 3:'flexpart', \
-         4:'_1', 5:'loutstep', 6:'loutaver', 7:'loutsample', \
-         8:'_2', 9:'outlon0', 10:'outlat0', 11:'numxgrid', \
-         12:'numygrid', 13:'dxout', 14:'dyout', 15:'_3', 16:'numzgrid', \
+    I = {0: '_0', 1: 'ibdate', 2: 'ibtime', 3: 'flexpart',
+         4: '_1', 5: 'loutstep', 6: 'loutaver', 7: 'loutsample',
+         8: '_2', 9: 'outlon0', 10: 'outlat0', 11: 'numxgrid',
+         12: 'numygrid', 13: 'dxout', 14: 'dyout', 15: '_3', 16: 'numzgrid',
          }
     # format for binary reading first part of the header file
-    Dfmt = ['i', 'i', 'i', '13S', '2i', 'i', 'i', 'i', '2i', 'f', 'f', 'i', 'i', 'f', 'f', '2i', 'i']
+    Dfmt = ['i', 'i', 'i', '13S', '2i', 'i', 'i', 'i', '2i', 'f', 'f', 'i',
+            'i', 'f', 'f', '2i', 'i']
     if bf:
         a = [bf.read(fmt) for fmt in Dfmt]
         for j in range(len(a)):
@@ -907,25 +917,29 @@ def read_header(pathname, **kwargs):
         # temp dictionaries
         for i in range(h['nspec']):
             if 'V6' in version:
-
-                h['wetdep'].append(''.join([bf.read('c') for i in range(10)]).strip())
+                h['wetdep'].append(
+                    ''.join([bf.read('c') for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 junk.append(bf.read('i'))
-                h['drydep'].append(''.join([bf.read('c') for i in range(10)]).strip())
+                h['drydep'].append(
+                    ''.join([bf.read('c') for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 h['nz_list'].append(getbin('i'))
-                h['species'].append(''.join([getbin('c') for i in range(10)]).strip())
+                h['species'].append(
+                    ''.join([getbin('c') for i in range(10)]).strip())
 
             else:
-
                 junk.append(bf.read('i'))
-                h['wetdep'].append(''.join([bf.read('c') for i in range(10)]).strip())
+                h['wetdep'].append(
+                    ''.join([bf.read('c') for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 junk.append(bf.read('i'))
-                h['drydep'].append(''.join([bf.read('c') for i in range(10)]).strip())
+                h['drydep'].append(
+                    ''.join([bf.read('c') for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 h['nz_list'].append(bf.read('i'))
-                h['species'].append(''.join([bf.read('c') for i in range(10)]).strip())
+                h['species'].append(
+                    ''.join([bf.read('c') for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
 
         if 'V6' in version:
@@ -940,14 +954,14 @@ def read_header(pathname, **kwargs):
         before_readp = bf.tell()
 
         # initialise release fields
-        I = {2:'kindz', 3:'xp1', 4:'yp1', 5:'xp2', \
-           6:'yp2', 7:'zpoint1', 8:'zpoint2', 9:'npart', 10:'mpart'}
+        I = {2: 'kindz', 3: 'xp1', 4: 'yp1', 5: 'xp2',
+             6: 'yp2', 7: 'zpoint1', 8: 'zpoint2', 9: 'npart', 10: 'mpart'}
 
         for k, v in I.iteritems():
-            h[v] = np.zeros(h['numpoint'])  # create zero-filled lists in H dict
+            # create zero-filled lists in H dict
+            h[v] = np.zeros(h['numpoint'])
 
         h['xmass'] = np.zeros((h['numpoint'], h['nspec']))
-
 
         if 'V6' in version:
             skip()
@@ -959,7 +973,8 @@ def read_header(pathname, **kwargs):
 
                 h['ireleasestart'].append(bf.read('i'))
                 h['ireleaseend'].append(bf.read('i'))
-                h['kindz'][i] = bf.read('h')  # This is an int16, might need to to change something
+                # This is an int16, might need to to change something
+                h['kindz'][i] = bf.read('h')
                 junk.append(bf.read('2i'))
 
                 h['xp1'][i] = bf.read('f')
@@ -979,13 +994,15 @@ def read_header(pathname, **kwargs):
                 l = bf.read('i')  # get compoint length?
                 gt = bf.tell() + l  # create 'goto' point
                 sp = ''
-                while re.search("\w", bf.read('c')):  # collect the characters for the compoint
+                # collect the characters for the compoint
+                while re.search("\w", bf.read('c')):
                     bf.seek(-1, 1)
                     sp = sp + bf.read('c')
 
                 bf.seek(gt)  # skip ahead to gt point
 
-                h['compoint'].append(sp)  # species names in dictionary for each nspec
+                # species names in dictionary for each nspec
+                h['compoint'].append(sp)
                 # h['compoint'].append(''.join([bf.read('c') for i in range(45)]))
 
                 junk.append(bf.read('i'))
@@ -1002,12 +1019,11 @@ def read_header(pathname, **kwargs):
                     """
                     bf.seek(before_readp)
                     if 'V6' in version:
-                        bf.seek(157 * h['numpoint'], 1);
+                        bf.seek(157 * h['numpoint'], 1)
                     else:
-                        bf.seek(119 * h['numpoint'] + (h['nspec'] * 36) * h['numpoint'] + 4, 1)
+                        bf.seek(119 * h['numpoint'] + (
+                            h['nspec'] * 36) * h['numpoint'] + 4, 1)
                     break
-
-
 
         if 'V6' in version:
             h['method'] = bf.read('i')
@@ -1048,15 +1064,11 @@ def read_header(pathname, **kwargs):
 
         bf.close()
 
-
-
-
     #############  ADDITIONS ###########
     # attributes to header that can be added after reading below here
     h['pathname'] = pathname
     h['decayconstant'] = 0
     h.path = pathname
-
 
     # Calculate Height (outheight + topography)
     # There is an offset issue here related to the 0-indexing. Be careful.
@@ -1074,7 +1086,8 @@ def read_header(pathname, **kwargs):
 
         for iz in range(nz):
             if OPS.ltopo == 1:
-                Heightnn[ix, :, iz] = [h['outheight'][iz] + oro[ix, y] for y in range(ny)]
+                Heightnn[ix, :, iz] = [h['outheight'][iz] + oro[ix, y]
+                                       for y in range(ny)]
             else:
                 Heightnn[ix, :, iz] = h['outheight'][iz]
 
@@ -1086,20 +1099,22 @@ def read_header(pathname, **kwargs):
 
     # Convert ireleasestart and ireleaseend to datetimes, fix issue #10
     start_day = datetime.datetime.strptime(str(h['ibdate']), '%Y%m%d')
-    H, M, S , = [int(str(h['ibtime']).zfill(6)[i:i + 2]) for i in range(0, 6, 2)]
+    H, M, S, = [int(str(h['ibtime']).zfill(6)[i:i + 2])
+                for i in range(0, 6, 2)]
     start_time = datetime.timedelta(hours=H, minutes=M, seconds=S)
     h['simulationstart'] = start_day + start_time
 
     if OPS.readp:
         releasestart, releaseend = [], []
         for i in range(h.numpointspec):
-            releasestart.append(h.simulationstart + \
-                                 datetime.timedelta(seconds=int(h.ireleasestart[i])))
-            releaseend.append(h.simulationstart + \
-                               datetime.timedelta(seconds=int(h.ireleaseend[i])))
+            releasestart.append(h.simulationstart +
+                                datetime.timedelta(seconds=int(h.ireleasestart[i])))
+            releaseend.append(h.simulationstart +
+                              datetime.timedelta(seconds=int(h.ireleaseend[i])))
         h.releasestart = releasestart
         h.releaseend = releaseend[:h.numpointspec]
-        h.releasetimes = [b - ((b - a) / 2) for a, b in zip(h.releasestart, h.releaseend)]
+        h.releasetimes = [b - ((b - a) / 2)
+                          for a, b in zip(h.releasestart, h.releaseend)]
 
     # Add datetime objects for dates
     available_dates_dt = []
@@ -1109,7 +1124,8 @@ def read_header(pathname, **kwargs):
     h.available_dates_dt = available_dates_dt
     h.first_date = available_dates_dt[0]
     h.last_date = available_dates_dt[-1]
-    h.ageclasses = np.array([act - h.simulationstart for act in h.available_dates_dt])
+    h.ageclasses = np.array(
+        [act - h.simulationstart for act in h.available_dates_dt])
     h.numageclasses = len(h.ageclasses)
 
     # Add other helpful attributes
@@ -1171,8 +1187,6 @@ def read_header(pathname, **kwargs):
             if h.ind_receptor == 2:
                 h.output_unit = 's'
 
-
-
     # Add layer thickness
     layerthickness = [h.outheight[0]]
     for i, lh in enumerate(h.outheight[1:]):
@@ -1183,7 +1197,6 @@ def read_header(pathname, **kwargs):
     h.fp_version = h.flexpart
     h.junk = junk  # the extra bits that were read... more for debugging
 
-
     print('Read {0} Header: {1}'.format(h.fp_version, filename))
 
     return h
@@ -1193,14 +1206,15 @@ readheader = read_header
 readheaderV8 = read_header
 readheaderV6 = read_header
 
+
 def _readV6(bf, h):
     """
     Version 6, 7X read routines...
 
     """
-        # Utility functions
-    skip = lambda n = 8 : bf.seek(n, 1)
-    getbin = lambda dtype, n = 1 : bf.read(dtype, (n,))
+    # Utility functions
+    skip = lambda n = 8: bf.seek(n, 1)
+    getbin = lambda dtype, n = 1: bf.read(dtype, (n,))
 
     if bf:
         # bf.read('i')
@@ -1213,7 +1227,8 @@ def _readV6(bf, h):
             # h['ireleaseend'].append( ss_start + datetime.timedelta(seconds=float(i2)) )
             h['ireleasestart'].append(i1)
             h['ireleaseend'].append(i2)
-            h['kindz'][i] = getbin('i')  # This is an int16, might need to to change something
+            # This is an int16, might need to to change something
+            h['kindz'][i] = getbin('i')
             skip()  # get xp, yp,...
 
             h['xp1'][i] = getbin('f')
@@ -1236,7 +1251,8 @@ def _readV6(bf, h):
             sp = sp.join(getbin('c', l))
             bf.seek(gt)  # skip ahead to gt point
 
-            h['compoint'].append(sp)  # species names in dictionary for each nspec
+            # species names in dictionary for each nspec
+            h['compoint'].append(sp)
             # h['compoint'].append(''.join([getbin('c') for i in range(45)]))
             skip()
             # r1=getbin('i')
@@ -1246,6 +1262,5 @@ def _readV6(bf, h):
                 Dfmt = ['i', 'f', '2i', 'f', '2i', 'f', 'i']
                 a = [bf.read(fmt) for fmt in Dfmt]
                 h['xmass'][i, v] = a[1]
-
 
     return
