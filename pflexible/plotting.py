@@ -1,4 +1,4 @@
-#### FLEXPART Plotting Functions  ########
+# ### FLEXPART Plotting Functions  ########
 
 import pdb
 
@@ -25,16 +25,14 @@ def _plot_dropm():
         return 0
 
 
-
-
-def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14], \
-              FIGURE=None, map_region=None, projection=None, coords=None):
+def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14],
+                  FIGURE=None, map_region=None, projection=None, coords=None):
     """ plot FLEXPART trajectory (or set of trajectories) characteristics
         R is a dictionary returned from pflexible.read_trajectories
 
         varindex is a list of the variables to plot from the trajectories
     """
-    if FIGURE == None:
+    if FIGURE is None:
         FIGURE = mp.get_FIGURE(getm=False)
 
     try:
@@ -49,7 +47,6 @@ def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14], \
     except:
         print 'ax not removed'
 
-
     T = R['Trajectories']
     labels = R['labels']
     t = T[np.where(T[:, 0] == numrelease), :][0]
@@ -59,7 +56,8 @@ def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14], \
         sp = fig.add_subplot(numplot, 1, i + 1)
         sp.plot(t[:, 1], t[:, varindex[i]])
         ax = plt.gca()
-        if i + 1 != numplot: plt.setp(ax, xticklabels=[])
+        if i + 1 != numplot:
+            plt.setp(ax, xticklabels=[])
         plt.ylabel(labels[varindex[i]])
         plt.grid('on')
 
@@ -67,18 +65,19 @@ def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14], \
 
 
 def plot_releases(R, FIGURE=None, threedim=False,
-                    map_region=None, projection=None, coords=None,
-                    overlay=True,
-                    draw_circles=True,
-                    draw_labels=True,
-                    cbar2=True,
-                    MapPar=None):
+                  map_region=None, projection=None, coords=None,
+                  overlay=True,
+                  draw_circles=True,
+                  draw_labels=True,
+                  cbar2=True,
+                  MapPar=None):
     """ plot the llon,llat,elv1 of the releases.
 
     Usage::
         >F = plot_releases(R)
 
-    See the :func:`read_releases` function for information on how to generate "R"
+    See the :func:`read_releases` function for information on how to
+    generate "R"
     """
 
     if threedim:
@@ -94,42 +93,41 @@ def plot_releases(R, FIGURE=None, threedim=False,
 
         return fig
     else:
-        # # Set up the FIGURE
-        if FIGURE == None:
-            FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
-                               coords=coords, MapPar=MapPar)
-        # #Get fig info and make active
+        # Set up the FIGURE
+        if FIGURE is None:
+            FIGURE = mp.get_FIGURE(map_region=map_region,
+                                   projection=projection,
+                                   coords=coords, MapPar=MapPar)
+        # Get fig info and make active
         fig = FIGURE.fig
         m = FIGURE.m
         ax = FIGURE.ax
         plt.figure(fig.number)
         plt.axes(ax)
 
-
-        # # prepare the data
+        # prepare the data
         lon = R.lllon
         lat = R.lllat
         zlevel = R.elv1
         zsize = np.ones(len(lon)) * 30
         marker = 'o'
 
-
-        # # clear the previous track
+        # clear the previous track
         if 'circles' in FIGURE.keys():
             del FIGURE['circles']
         if overlay is False:
             del ax.collections[FIGURE.indices.collections:]
             del ax.texts[FIGURE.indices.texts:]
 
-        # # plot the track
+        # plot the track
         cx, cy = m(lon, lat)
         if draw_circles:
             cmap = plt.get_cmap('gist_gray')
             circles = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
-                              marker=marker, edgecolor=None,
-                              zorder=10, alpha=0.85)
-            # # m.scatter has no color bar,
-            # # so create a ghost 'scatter' instance:
+                                marker=marker, edgecolor=None,
+                                zorder=10, alpha=0.85)
+            # m.scatter has no color bar,
+            # so create a ghost 'scatter' instance:
             pos = ax.get_position()
             l, b, w, h = getattr(pos, 'bounds', pos)
             jnkfig = plt.figure()
@@ -142,11 +140,11 @@ def plot_releases(R, FIGURE=None, threedim=False,
                 FIGURE.circles = circles
             except:
                 pass
-            # # make the figure active again
-            plt.figure(fig.number);
-            # # draw the legend and title
-            # # check if a colorbar legend exists (this will cause
-            # # problems for subplot routines!)
+            # make the figure active again
+            plt.figure(fig.number)
+            # draw the legend and title
+            # check if a colorbar legend exists (this will cause
+            # problems for subplot routines!)
             if cbar2 is True:
                 cax = plt.axes([l + w + 0.12, b, 0.02, h - 0.035])
             else:
@@ -155,7 +153,7 @@ def plot_releases(R, FIGURE=None, threedim=False,
             p_leg = mpl.font_manager.FontProperties(size='6')
             cax.set_title('altitude\n(m)', fontproperties=p_leg)
 
-            # # delete the ghost instance
+            # delete the ghost instance
             plt.close(jnkfig.number)
             del jnkax, jnkfig, jnkmap
 
@@ -166,7 +164,7 @@ def plot_releases(R, FIGURE=None, threedim=False,
             p_cax = mpl.font_manager.FontProperties(size='8',
                                                     style='italic',
                                                     weight='bold',
-                                                   )
+                                                    )
 
         FIGURE.fig = fig
         FIGURE.m = m
@@ -175,12 +173,12 @@ def plot_releases(R, FIGURE=None, threedim=False,
 
 
 def plot_spectra(inspectra,
-                    plt_title='', fig_title='',
-                    y_label=None,
-                    spectra_label='bins',
-                    FIGURE=None, y_datarange=None,
-                    cum=False, labels=[],
-                    bars=False, debug=False):
+                 plt_title='', fig_title='',
+                 y_label=None,
+                 spectra_label='bins',
+                 FIGURE=None, y_datarange=None,
+                 cum=False, labels=[],
+                 bars=False, debug=False):
     """ plot a spectra
 
     Usage::
@@ -211,16 +209,17 @@ def plot_spectra(inspectra,
       =============         ========================================
 
     .. todo::
-        There's a lot of redundancy in the storage of attributes, maybe there is a
+        There's a lot of redundancy in the storage of attributes,
+        maybe there is a
         better way to handle this.
 
 
     """
-    # # make tick lables smaller
+    # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
-    if FIGURE == None:
+    if FIGURE is None:
         FIGURE = Structure()
         fig = plt.figure(figsize=(8, 6))
         FIGURE.fig = fig
@@ -229,7 +228,6 @@ def plot_spectra(inspectra,
     else:
         fig = FIGURE.fig
         ax = FIGURE.ax
-
 
     try:
         numageclasses = inspectra.numageclass
@@ -241,9 +239,10 @@ def plot_spectra(inspectra,
         inspectra = inspectra[:, 1:]
 
     if cum == 'norm':
-        # # Normalize the data so it fills to 100%
+        # Normalize the data so it fills to 100%
         # spectra = np.zeros(inspectra.shape)
-        spectra = (inspectra.transpose() / np.sum(inspectra, axis=1)).transpose()
+        spectra = (
+            inspectra.transpose() / np.sum(inspectra, axis=1)).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
         # sums = np.sum(inspectra,axis=1)
         # for i,elem in enumerate(inspectra):
@@ -273,16 +272,17 @@ def plot_spectra(inspectra,
             if bars:
                 ax.bar(releasetimes, spectra[:, i], 0.03, color=facecolors[-1])
             else:
-                ax.fill_between(releasetimes, np.zeros(len(spectra[:, i])), spectra[:, i],
+                ax.fill_between(releasetimes, np.zeros(len(spectra[:, i])),
+                                spectra[:, i],
                                 color=facecolors[-1], label='%s' % lbl)
         else:
             if bars:
-                ax.bar(releasetimes, spectra[:, i], 0.03, color=facecolors[-1], bottom=spectra[:, i - 1])
+                ax.bar(releasetimes, spectra[:, i], 0.03, color=facecolors[-1],
+                       bottom=spectra[:, i - 1])
             else:
                 ax.fill_between(releasetimes, spectra[:, i - 1], spectra[:, i],
                                 color=facecolors[-1], label='%s' % (lbl))
                 # facecolors.append(jet(norm(Nc[i+1])))
-
 
     # ax.set_yscale('log')
     if y_datarange:
@@ -302,7 +302,7 @@ def plot_spectra(inspectra,
     fig.autofmt_xdate()
     # for xl in ax.get_xticklabels():
     #    plt.setp(xl,size='x-small')
-    # # ListedColormap
+    # ListedColormap
     pos = ax.get_position()
     l, b, w, h = getattr(pos, 'bounds', pos)
     # polygons = ax.collections
@@ -321,11 +321,14 @@ def plot_spectra(inspectra,
     # norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     cb2 = mpl.colorbar.ColorbarBase(ax2,
                                     cmap=cmap,
-    #                                norm=norm,
-    #                                # to use 'extend', you must
-    #                                # specify two extra boundaries:
+                                    #                                norm=norm,
+                                    # to
+                                    # use 'extend', you must
+                                    #                                #
+                                    # specify two extra boundaries:
                                     boundaries=bounds,
-    #                                extend='both',
+                                    #
+                                    # extend='both',
                                     # values=range(H.numageclasses+1),
                                     ticks=bounds,  # optional
                                     spacing='proportional',
@@ -333,7 +336,8 @@ def plot_spectra(inspectra,
     if spectra_label:
         cb2.set_label(spectra_label, size='x-small')
     if labels:
-        ax2.set_xticklabels(labels, va='center', ha='left', rotation=0, size='xx-small')
+        ax2.set_xticklabels(labels, va='center', ha='left', rotation=0,
+                            size='xx-small')
 
     if debug:
         plt.show()
@@ -385,7 +389,8 @@ def plot_agespectra(H, agespectra,
       =============         ========================================
 
     .. todo::
-        There's a lot of redundancy in the storage of attributes, maybe there is a
+        There's a lot of redundancy in the storage of attributes,
+        maybe there is a
         better way to handle this.
 
     .. note::
@@ -396,11 +401,11 @@ def plot_agespectra(H, agespectra,
 
 
     """
-    # # make tick lables smaller
+    # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
-    if FIGURE == None:
+    if FIGURE is None:
         FIGURE = Structure()
         fig = plt.figure()
         FIGURE.fig = fig
@@ -417,6 +422,7 @@ def plot_agespectra(H, agespectra,
 
     if continental:
         from nilu.pflexpart import emissions as em
+
         spectra_label = "Continents"
         spectra_type = "Continent"
         conts = em.Continents()
@@ -469,16 +475,17 @@ def plot_agespectra(H, agespectra,
             if bars:
                 ax.bar(releasetimes, spectra[:, i], 0.03, color=facecolors[-1])
             else:
-                ax.fill_between(releasetimes, np.zeros(len(spectra[:, i])), spectra[:, i],
+                ax.fill_between(releasetimes, np.zeros(len(spectra[:, i])),
+                                spectra[:, i],
                                 color=facecolors[-1], label='%s' % i)
         else:
             if bars:
-                ax.bar(releasetimes, spectra[:, i], 0.03, color=facecolors[-1], bottom=spectra[:, i - 1])
+                ax.bar(releasetimes, spectra[:, i], 0.03, color=facecolors[-1],
+                       bottom=spectra[:, i - 1])
             else:
                 ax.fill_between(releasetimes, spectra[:, i - 1], spectra[:, i],
                                 color=facecolors[-1], label='%s' % (i))
                 # facecolors.append(jet(norm(Nc[i+1])))
-
 
     # ax.set_yscale('log')
     if y_datarange:
@@ -495,7 +502,7 @@ def plot_agespectra(H, agespectra,
     fig.autofmt_xdate()
     # for xl in ax.get_xticklabels():
     #    plt.setp(xl,size='x-small')
-    # # ListedColormap
+    # ListedColormap
     pos = ax.get_position()
     l, b, w, h = getattr(pos, 'bounds', pos)
     # polygons = ax.collections
@@ -514,11 +521,11 @@ def plot_agespectra(H, agespectra,
     # norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     cb2 = mpl.colorbar.ColorbarBase(ax2,
                                     cmap=cmap,
-    #                                norm=norm,
-    #                                # to use 'extend', you must
-    #                                # specify two extra boundaries:
+                                    # norm=norm,
+                                    # to use 'extend', you must
+                                    # specify two extra boundaries:
                                     boundaries=bounds,
-    #                                extend='both',
+                                    # extend='both',
                                     # values=range(H.numageclasses+1),
                                     ticks=bounds,  # optional
                                     spacing='proportional',
@@ -546,15 +553,12 @@ def plot_clusters(H, T, rel_i=0,
     # Set legend properties:
     p_legend = mpl.font_manager.FontProperties(size='8')
 
-
-
     # extract only releases of interest
     rel += 1  # account for zero indexing
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
-    if FIGURE == None:
+    if FIGURE is None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
-
 
     try:
         ax = FIGURE.ax
@@ -563,7 +567,7 @@ def plot_clusters(H, T, rel_i=0,
     except:
         print 'problem getting ax,m, or fig.'
 
-    # # Remove prior retroplume
+    # Remove prior retroplume
     if not overlay:
         if len(ax.artists) > 1:
             try:
@@ -606,7 +610,7 @@ def plot_clusters(H, T, rel_i=0,
             # print x,y, t[1]
             if draw_labels:
                 ax.text(x, y, txt[1])
-            # plt.colorbar(ax)
+                # plt.colorbar(ax)
     # ax.legend(ax.artists,(o.get_label() for o in ax.artists), prop=p_legend )
     FIGURE.ax = ax
     FIGURE.fig = fig
@@ -616,11 +620,11 @@ def plot_clusters(H, T, rel_i=0,
 
 
 def plot_trajectory_ellipses(H, T, rel_i=0,
-                  ncluster=0, sizescale=10000,
-                  map_region=None, projection=None, coords=None,
-                  FIGURE=None, overlay=False, opacity=0.7,
-                  draw_circles=True, draw_labels=True,
-                  MapPar=None):
+                             ncluster=0, sizescale=10000,
+                             map_region=None, projection=None, coords=None,
+                             FIGURE=None, overlay=False, opacity=0.7,
+                             draw_circles=True, draw_labels=True,
+                             MapPar=None):
     """
     Plots trajectories from FLEXPART output.
 
@@ -635,7 +639,7 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
     # extract only releases of interest according to rel_i
     rel = rel_i + 1  # account for zero indexing
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
-    if FIGURE == None:
+    if FIGURE is None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
 
@@ -646,7 +650,7 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
     except:
         print 'problem getting ax,m, or fig.'
 
-    # # Remove prior retroplume
+    # Remove prior retroplume
     if overlay:
         if len(ax.artists) > 1:
             try:
@@ -686,18 +690,18 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
 
     return FIGURE
 
-def plot_markers(H, lon, lat, zsize=None, zlevel=None,
-                    FIGURE=None,
-                    map_region=None, projection=None, coords=None,
-                    overlay=True,
-                    draw_circles=True,
-                    draw_labels=False,
-                    cbar2=True,
-                    cbar2_title=None,
-                    MapPar=None,
-                    color='blue', edgecolor='none',
-                    zorder=10, alpha=0.85):
 
+def plot_markers(H, lon, lat, zsize=None, zlevel=None,
+                 FIGURE=None,
+                 map_region=None, projection=None, coords=None,
+                 overlay=True,
+                 draw_circles=True,
+                 draw_labels=False,
+                 cbar2=True,
+                 cbar2_title=None,
+                 MapPar=None,
+                 color='blue', edgecolor='none',
+                 zorder=10, alpha=0.85):
     """Plot a group of x,y pairs, with optional size and color information.
 
     Usage::
@@ -705,7 +709,8 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
         > FIG = plot_trajectory(H,RT,rel_id,*kwargs)
 
     .. note::
-        You can substitude "None" for the :class:`Header` instance if you haven't
+        You can substitude "None" for the :class:`Header` instance if you
+        haven't
         created one
 
 
@@ -739,7 +744,8 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
         Who knows?! Could probably handle the overlaying better.
 
     .. note::
-        Just set H to "None" if you haven't already created a "Header" instance.
+        Just set H to "None" if you haven't already created a "Header"
+        instance.
 
 
     """
@@ -747,18 +753,18 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
     if H:
         pass
 
-    # # Set up the FIGURE
-    if FIGURE == None:
+    # Set up the FIGURE
+    if FIGURE is None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
-    # #Get fig info and make active
+    # Get fig info and make active
     fig = FIGURE.fig
     m = FIGURE.m
     ax = FIGURE.fig.axes[0]
     plt.figure(fig.number)
     plt.axes(ax)
 
-    # # prepare the data
+    # prepare the data
     cx, cy = m(lon, lat)
     if zlevel is None:
         zlevel = np.ones(len(lon)) * 10.
@@ -766,31 +772,30 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
         zsize = np.ones(len(lon)) * 1
     marker = 'o'
 
-
-    # # clear the previous track
+    # clear the previous track
     if 'circles' in FIGURE.keys():
         del FIGURE['circles']
     if overlay is False:
         del ax.collections[FIGURE.indices.collections:]
         del ax.texts[FIGURE.indices.texts:]
 
-    # # plot the track
+    # plot the track
     if draw_circles:
         cmap = plt.get_cmap('jet')
         circles = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
-                          marker=marker, edgecolor=edgecolor,
-                          zorder=zorder, alpha=alpha)
+                            marker=marker, edgecolor=edgecolor,
+                            zorder=zorder, alpha=alpha)
 
         try:
             FIGURE.circles = circles
         except:
             pass
-        # # make the figure active again
+        # make the figure active again
         plt.figure(fig.number)
-        # # draw the legend and title
-        # # CREATE COLORBAR
-        # # does a colorbar already exist?
-        # # Get the current axes, and properties for use later
+        # draw the legend and title
+        # CREATE COLORBAR
+        # does a colorbar already exist?
+        # Get the current axes, and properties for use later
         ax0 = fig.axes[0]
         pos = ax0.get_position()
         l, b, w, h = pos.bounds
@@ -801,14 +806,16 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
                 cb2.update_normal(circles)
             except:
                 cax2 = plt.axes([l + w + 0.08, b, 0.02, h])
-        # # using im2, not im (hack to prevent colors from being
-        # # too compressed at the low end on the colorbar - results
-        # # from highly nonuniform colormap)
-                cb2 = fig.colorbar(circles, cax=cax2)  # , format='%3.2g') # draw colorbar
+                # using im2, not im (hack to prevent colors from being
+                # too compressed at the low end on the colorbar - results
+                # from highly nonuniform colormap)
+                cb2 = fig.colorbar(circles,
+                                   cax=cax2)  # , format='%3.2g') # draw
+                # colorbar
                 FIGURE.cax2 = cax2
                 FIGURE.cb2 = cb2
-        # # check if a colorbar legend exists (this will cause
-        # # problems for subplot routines!)
+                # check if a colorbar legend exists (this will cause
+                # problems for subplot routines!)
             p_leg = mpl.font_manager.FontProperties(size='6')
             if cbar2_title:
                 cax2.set_title(cbar2_title, fontproperties=p_leg)
@@ -816,16 +823,15 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
                 cax2.set_title('altitude\n(m)', fontproperties=p_leg)
         else:
             pass
-        # cax2 = plt.axes([l+w+0.03, b, 0.025, h-0.2])
-        #    cb2 = fig.colorbar(jnkmap,cax=cax2) # draw colorbar
+            # cax2 = plt.axes([l+w+0.03, b, 0.025, h-0.2])
+            # cb2 = fig.colorbar(jnkmap,cax=cax2) # draw colorbar
 
-        # # delete the ghost instance
-        # plt.close(jnkfig.number)
-        # del jnkax, jnkfig, jnkmap
+            # delete the ghost instance
+            # plt.close(jnkfig.number)
+            # del jnkax, jnkfig, jnkmap
 
     plt.axes(ax)
     plt.setp(ax, xticks=[], yticks=[])
-
 
     FIGURE.fig = fig
     FIGURE.m = m
@@ -836,6 +842,7 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
     except:
         pass
     return FIGURE
+
 
 def plot_trajectory(H, T, rel_i, FIGURE=None,
                     map_region=None, projection=None, coords=None,
@@ -852,7 +859,8 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
         > FIG = plot_trajectory(H,RT,rel_id,*kwargs)
 
     .. note::
-        You can substitude "None" for the :class:`Header` instance if you haven't
+        You can substitude "None" for the :class:`Header` instance if you
+        haven't
         created one
 
 
@@ -889,7 +897,8 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
         Who knows?! Could probably handle the overlaying better.
 
     .. note::
-        Just set H to "None" if you haven't already created a "Header" instance.
+        Just set H to "None" if you haven't already created a "Header"
+        instance.
 
 
     """
@@ -897,25 +906,25 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     if H:
         pass
 
-    # # Set up the FIGURE
-    if FIGURE == None:
+    # Set up the FIGURE
+    if FIGURE is None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
-    # #Get fig info and make active
+    # Get fig info and make active
     fig = FIGURE.fig
     m = FIGURE.m
     ax = FIGURE.fig.axes[0]
     plt.figure(fig.number)
     plt.axes(ax)
 
-    # # prepare the data
+    # prepare the data
     trjs = T['Trajectories']
     rel = rel_i + 1  # # account for zero indexing
 
-    # #extract only releases of interest
+    # extract only releases of interest
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
 
-    # # Get the data for the days_back we're interested in
+    # Get the data for the days_back we're interested in
     day_labels = _gen_daylabels(t[:days_back, 1])
     lon = t[:days_back, 2]
     lat = t[:days_back, 3]
@@ -923,32 +932,31 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     zsize = np.ones(len(lon)) * 50
     marker = 'o'
 
-
-    # # clear the previous track
+    # clear the previous track
     if 'circles' in FIGURE.keys():
         del FIGURE['circles']
     if overlay is False:
         del ax.collections[FIGURE.indices.collections:]
         del ax.texts[FIGURE.indices.texts:]
 
-    # # plot the track
+    # plot the track
     cx, cy = m(lon, lat)
     if draw_circles:
         cmap = plt.get_cmap('gist_gray')
         circles = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
-                          marker=marker, edgecolor=None,
-                          zorder=10, alpha=0.85)
+                            marker=marker, edgecolor=None,
+                            zorder=10, alpha=0.85)
 
         try:
             FIGURE.circles = circles
         except:
             pass
-        # # make the figure active again
+        # make the figure active again
         plt.figure(fig.number)
-        # # draw the legend and title
-        # # CREATE COLORBAR
-        # # does a colorbar already exist?
-        # # Get the current axes, and properties for use later
+        # draw the legend and title
+        # CREATE COLORBAR
+        # does a colorbar already exist?
+        # Get the current axes, and properties for use later
         ax0 = fig.axes[1]
         pos = ax0.get_position()
         l, b, w, h = pos.bounds
@@ -959,14 +967,16 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                 cb2.update_normal(circles)
             except:
                 cax2 = plt.axes([l + w + 0.08, b, 0.02, h])
-        # # using im2, not im (hack to prevent colors from being
-        # # too compressed at the low end on the colorbar - results
-        # # from highly nonuniform colormap)
-                cb2 = fig.colorbar(circles, cax=cax2)  # , format='%3.2g') # draw colorbar
+                # using im2, not im (hack to prevent colors from being
+                # too compressed at the low end on the colorbar - results
+                # from highly nonuniform colormap)
+                cb2 = fig.colorbar(circles,
+                                   cax=cax2)  # , format='%3.2g') # draw
+                # colorbar
                 FIGURE.cax2 = cax2
                 FIGURE.cb2 = cb2
-        # # check if a colorbar legend exists (this will cause
-        # # problems for subplot routines!)
+        # check if a colorbar legend exists (this will cause
+        # problems for subplot routines!)
         else:
             cax2 = plt.axes([l + w + 0.03, b, 0.025, h - 0.2])
             cb2 = fig.colorbar(jnkmap, cax=cax2)  # draw colorbar
@@ -976,9 +986,9 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
             cax.set_title(cbar2_title, fontproperties=p_leg)
         else:
             cax2.set_title('altitude\n(m)', fontproperties=p_leg)
-        # # delete the ghost instance
-        # plt.close(jnkfig.number)
-        # del jnkax, jnkfig, jnkmap
+            # delete the ghost instance
+            # plt.close(jnkfig.number)
+            # del jnkax, jnkfig, jnkmap
 
     plt.axes(ax)
     plt.setp(ax, xticks=[], yticks=[])
@@ -987,16 +997,16 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
         p_cax = mpl.font_manager.FontProperties(size='10',
                                                 style='italic',
                                                 weight='bold',
-                                               )
-
-
+                                                )
 
         for i, (p, x, y) in enumerate(zip(day_labels, cx, cy)):
             if x > m.llcrnrx and x < m.urcrnrx:
                 if y > m.llcrnry and y < m.urcrnry:
-                    ax.text(x, y + y * .02, '{0}'.format(p), va='bottom', ha='left',
+                    ax.text(x, y + y * .02, '{0}'.format(p), va='bottom',
+                            ha='left',
                             fontproperties=p_cax, zorder=11,
-                            color='white', bbox=dict(facecolor='green', alpha=0.5)
+                            color='white',
+                            bbox=dict(facecolor='green', alpha=0.5)
                             )
 
     FIGURE.fig = fig
@@ -1007,16 +1017,16 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     return FIGURE
 
 
-def plot_at_level(H, D, level=1, \
-                   ID=' ', \
-                   map_region=5, projection='lcc', \
-                   overlay=False,
-                   datainfo_str=None, log=True,
-                   data_range=None, coords=None, FIGURE=None,
-                   plot_title=None,
-                   units=None,
-                   **kwargs
-                   ):
+def plot_at_level(H, D, level=1,
+                  ID=' ',
+                  map_region=5, projection='lcc',
+                  overlay=False,
+                  datainfo_str=None, log=True,
+                  data_range=None, coords=None, FIGURE=None,
+                  plot_title=None,
+                  units=None,
+                  **kwargs
+                  ):
     """
     TODO:
     -make units a function of H['species']
@@ -1039,7 +1049,7 @@ def plot_at_level(H, D, level=1, \
     dmin = data.min()
     # print dmax,dmin
 
-    if data_range == None:
+    if data_range is None:
         data_range = [dmin, dmax]
 
     if H.direction == 'backward' and H.options['readp']:
@@ -1047,42 +1057,43 @@ def plot_at_level(H, D, level=1, \
         zp2 = H['zpoint2'][rel_i]
         if datainfo_str is None:
             # need to find a way to set m.a.s.l. or hPa here
-            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f, Z2: %.2f (%s)\n""" \
+            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f,
+            Z2: %.2f (%s)\n""" \
                            % (dmax, units, zp1, zp2, H.alt_unit)
         if plot_title is None:
             plot_title = """
         %s Sensitivity at %s %s: %s\n
         Release Start: %s, Release End: %s""" % \
-            (ID, level_desc, H['alt_unit'], species, H['releasestart'][rel_i], H['releaseend'][rel_i])
+                         (ID, level_desc, H['alt_unit'], species,
+                          H['releasestart'][rel_i], H['releaseend'][rel_i])
     else:
         if datainfo_str is None:
             datainfo_str = """ Max Value: %.2g %s """ % (dmax, units)
         if plot_title is None:
-            plot_title = """ %s Sensitivity at %s %s: %s \n %s """ % (ID, level_desc, H['alt_unit'], species, timestamp)
+            plot_title = """ %s Sensitivity at %s %s: %s \n %s """ % (
+                ID, level_desc, H['alt_unit'], species, timestamp)
 
-    FIGURE = plot_sensitivity(H, data, \
-                           data_range=data_range, \
-                           rel_i=rel_i, log=log,
-                           map_region=map_region, projection=projection,
-                           units=units, datainfo_str=datainfo_str,
-                           overlay=overlay,
-                           coords=coords, FIGURE=FIGURE, **kwargs)
-
+    FIGURE = plot_sensitivity(H, data,
+                              data_range=data_range,
+                              rel_i=rel_i, log=log,
+                              map_region=map_region, projection=projection,
+                              units=units, datainfo_str=datainfo_str,
+                              overlay=overlay,
+                              coords=coords, FIGURE=FIGURE, **kwargs)
 
     FIGURE.ax.set_title(plot_title, fontsize=10)
     return FIGURE
 
+
 plot_footprint = plot_at_level
 
-def plot_totalcolumn(H, D=None, \
-                   ID=' ', \
-                   map_region=5, projection='lcc', \
-                   data_range=None, coords=None,
-                   FIGURE=None, overlay=False,
-                   datainfo_str=None, **kwargs):
 
-
-
+def plot_totalcolumn(H, D=None,
+                     ID=' ',
+                     map_region=5, projection='lcc',
+                     data_range=None, coords=None,
+                     FIGURE=None, overlay=False,
+                     datainfo_str=None, **kwargs):
     if D is None:
         D = H.D[(0, 0)]
 
@@ -1096,40 +1107,38 @@ def plot_totalcolumn(H, D=None, \
     timestamp = D.timestamp
     data = D.slabs[0]
 
-
-    if data_range == None:
+    if data_range is None:
         dmax = data.max()
         dmin = data.min()
         data_range = [dmin, dmax]
     else:
-        dmin, dmax , = data_range
+        dmin, dmax, = data_range
         # print dmin,dmax
-
 
     if H.direction == 'backward':
         rel_i = D.rel_i
         zp1 = H['zpoint1'][rel_i]
         zp2 = H['zpoint2'][rel_i]
         if datainfo_str is None:
-            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f, Z2: %.2f (%s)\n""" % \
-                               (dmax, units, zp1, zp2, H.alt_unit)
+            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f,
+            Z2: %.2f (%s)\n""" % (dmax, units, zp1, zp2, H.alt_unit)
         plot_title = """
         %s Total Column Sensitivity: %s\n
         Release Start: %s, Release End: %s""" % \
-                               (ID, species, H['releasestart'][rel_i], H['releaseend'][rel_i])
+                     (ID, species, H['releasestart'][rel_i],
+                      H['releaseend'][rel_i])
     else:
         if datainfo_str is None:
             datainfo_str = """ Max Value: %.2g %s""" % (dmax, units)
         plot_title = """
         %s Total Column Sensitivity: %s\n %s """ % (ID, species, timestamp)
 
-
-    FIGURE = plot_sensitivity(H, data, \
-                           data_range=data_range, \
-                           rel_i=rel_i, map_region=map_region, \
-                           projection=projection, units=units, \
-                           datainfo_str=datainfo_str, coords=coords, \
-                           FIGURE=FIGURE, overlay=overlay, **kwargs)
+    FIGURE = plot_sensitivity(H, data,
+                              data_range=data_range,
+                              rel_i=rel_i, map_region=map_region,
+                              projection=projection, units=units,
+                              datainfo_str=datainfo_str, coords=coords,
+                              FIGURE=FIGURE, overlay=overlay, **kwargs)
 
     FIGURE.ax.set_title(plot_title, fontsize=10)
 
@@ -1182,7 +1191,8 @@ def plot_sourcecontribution(H, D,
       datainfo_str          A string for labeling the scale bar.
       cax_title             A string to pass to plot_sensitivity for colorbar
                             title (units will be passed as format argument)
-      k                     Release index to plot from the data array (aka rel_i)
+      k                     Release index to plot from the data array (aka
+      rel_i)
       s                     Species index
       map_region                A map_region specified in mapping.py
       projection            [deprecated] use pre-defined map_regions.
@@ -1194,7 +1204,8 @@ def plot_sourcecontribution(H, D,
         A lot!! There are some problems here and it is sensitive to options.
 
     .. note::
-        k and rel_i are used throughout pflexible, should be more consistent in future.
+        k and rel_i are used throughout pflexible, should be more consistent
+        in future.
 
 
     """
@@ -1239,66 +1250,71 @@ def plot_sourcecontribution(H, D,
     dmax = data.max()
     dmin = data.min()
 
-    if data_range == None:
+    if data_range is None:
         data_range = [dmin, dmax]
 
     if H.direction == 'backward':
         zp1 = H['zpoint1'][rel_i]
         zp2 = H['zpoint2'][rel_i]
         if datainfo_str is None:
-            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f , Z2: %.2f (%s)\n""" % \
-                                (dmax, units, zp1, zp2, H.alt_unit)
+            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f ,
+            Z2: %.2f (%s)\n""" % \
+                           (dmax, units, zp1, zp2, H.alt_unit)
         plot_title = """
         %s Total Column Sensitivity: %s\n
         Release Start: %s, Release End: %s""" % \
-                       (ID, species, H['releasestart'][rel_i], H['releaseend'][rel_i])
+                     (ID, species, H['releasestart'][rel_i],
+                      H['releaseend'][rel_i])
     else:
         if datainfo_str is None:
-            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f , Z2: %.2f (%s)\n""" % \
-                                (dmax, units, zp1, zp2, H.alt_unit)
+            datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f ,
+            Z2: %.2f (%s)\n""" % \
+                           (dmax, units, zp1, zp2, H.alt_unit)
         plot_title = """
         %s Total Column Sensitivity: %s\n %s""" % (ID, species, timestamp)
 
-    FIGURE = plot_sensitivity(H, data, \
-                           data_range=data_range, \
-                           rel_i=rel_i, map_region=map_region, \
-                           units=units, \
-                           datainfo_str=datainfo_str, coords=coords, \
-                           FIGURE=FIGURE,
-                           cax_title=cax_title,
-                           overlay=overlay, **kwargs)
+    FIGURE = plot_sensitivity(H, data,
+                              data_range=data_range,
+                              rel_i=rel_i, map_region=map_region,
+                              units=units,
+                              datainfo_str=datainfo_str, coords=coords,
+                              FIGURE=FIGURE,
+                              cax_title=cax_title,
+                              overlay=overlay, **kwargs)
     FIGURE.ax.set_title(plot_title, fontsize=10)
     return FIGURE
 
-def plot_sensitivity(H, data, \
-             data_range=None, \
-             units='ns m^2 / kg', \
-             datainfo_str=None, \
-             plottitle=None, \
-             rel_i=None,
-             map_region=None, projection=None,
-             dropm=None, coords=None,
-             overlay=False,
-             transform=True,
-             log=True,
-             FIGURE=None,
-             MapPar=None,
-             FigPar=None,
-             cax_title=None,
-             autofit=False, method='contourf', lsmask=False):
-    # autofit=False,method='imshow'):
+
+def plot_sensitivity(H, data,
+                     data_range=None,
+                     units='ns m^2 / kg',
+                     datainfo_str=None,
+                     plottitle=None,
+                     rel_i=None,
+                     map_region=None, projection=None,
+                     dropm=None, coords=None,
+                     overlay=False,
+                     transform=True,
+                     log=True,
+                     FIGURE=None,
+                     MapPar=None,
+                     FigPar=None,
+                     cax_title=None,
+                     autofit=False, method='contourf', lsmask=False):
     """ plot_sensitivity: core function for plotting FLEXPART output.
 
     Usage::
 
         > FIG = plot_sensitivity(H,data,*kwargs)
 
-    This returns the FIGURE object, and plots the sensitivity from the data contained in the "D"
+    This returns the FIGURE object, and plots the sensitivity from the data
+    contained in the "D"
     array.
 
     Inputs
       H = a :class:`Header` instance for a FLEXPART run.
-      data = a 2d data array containing the sensitivity values to plot, this can be extracted from a
+      data = a 2d data array containing the sensitivity values to plot,
+      this can be extracted from a
       grid instance (see :func:`readgridV8` and :func:`get_slabs`)
 
     Returns
@@ -1344,16 +1360,16 @@ def plot_sensitivity(H, data, \
         lsmask = True seems to only work with certain projections (POLARCAT)
 
     .. note::
-        This is the primary main function for creating plots of flexpart output.
+        This is the primary main function for creating plots of flexpart
+        output.
         Most the other routines are simply wrappers to this function, passing
         arguments in with some predefined settings. For more information on the
-        mechanics of this function, see the mapping.py module and the matplotlib
+        mechanics of this function, see the mapping.py module and the
+        matplotlib
         basemap toolkit.
 
 
     """
-
-
 
     methods = ['imshow', 'pcolormesh', 'contourf', 'contour', 'None']
     assert method in methods, "method keyword must be one of: %s" % methods
@@ -1369,23 +1385,24 @@ def plot_sensitivity(H, data, \
                                MapPar=MapPar, FigPar=FigPar)
     else:
         if FIGURE.m is None:
-            FIGURE = mp.get_FIGURE(fig=FIGURE.fig, ax=FIGURE.ax, map_region=map_region,
-                               projection=projection, coords=coords,
-                               MapPar=MapPar, FigPar=FigPar)
+            FIGURE = mp.get_FIGURE(fig=FIGURE.fig, ax=FIGURE.ax,
+                                   map_region=map_region,
+                                   projection=projection, coords=coords,
+                                   MapPar=MapPar, FigPar=FigPar)
 
     if overlay is False:
         del FIGURE.ax.images[FIGURE.indices.images:]
         del FIGURE.ax.collections[FIGURE.indices.collections:]
         del FIGURE.ax.lines[FIGURE.indices.lines:]
 
-    if dropm != None:
+    if dropm is not None:
         try:
             del m
             plt.close('all')
         except:
             print 'could not drop m'
 
-    # # make tick lables smaller
+    # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
@@ -1393,24 +1410,29 @@ def plot_sensitivity(H, data, \
     m = FIGURE.m
     ax = FIGURE.ax
 
-    # # make the figure current
+    # make the figure current
     plt.figure(fig.number)
     plt.axes(ax)
 
-    # # set up transformations for the data array
+    # set up transformations for the data array
     if method == 'imshow':
         if m.projection not in ['cyl', 'merc', 'mill']:
-            lats = np.arange(H.outlat0, (H.outlat0 + (H.numygrid * H.dyout)), H.dyout)[:-1]
-            lons = np.arange(H.outlon0, (H.outlon0 + (H.numxgrid * H.dxout)), H.dxout)[:-1]
+            lats = np.arange(H.outlat0, (H.outlat0 + (H.numygrid * H.dyout)),
+                             H.dyout)[:-1]
+            lons = np.arange(H.outlon0, (H.outlon0 + (H.numxgrid * H.dxout)),
+                             H.dxout)[:-1]
             data = data[:-1, :-1]
         else:
-            lats = np.arange(H.outlat0, (H.outlat0 + (H.numygrid * H.dyout)), H.dyout)
-            lons = np.arange(H.outlon0, (H.outlon0 + (H.numxgrid * H.dxout)), H.dxout)
+            lats = np.arange(H.outlat0, (H.outlat0 + (H.numygrid * H.dyout)),
+                             H.dyout)
+            lons = np.arange(H.outlon0, (H.outlon0 + (H.numxgrid * H.dxout)),
+                             H.dxout)
 
-        # # transform to nx x ny regularly spaced native projection grid
+        # transform to nx x ny regularly spaced native projection grid
         if transform:
-            dx = 2.*np.pi * m.rmajor / len(lons)
-            nx = int((m.xmax - m.xmin) / dx) + 1; ny = int((m.ymax - m.ymin) / dx) + 1
+            dx = 2. * np.pi * m.rmajor / len(lons)
+            nx = int((m.xmax - m.xmin) / dx) + 1
+            ny = int((m.ymax - m.ymin) / dx) + 1
             if nx is 1:
                 topodat = data
             else:
@@ -1419,11 +1441,12 @@ def plot_sensitivity(H, data, \
             topodat = data
 
     if method != 'imshow':
-        # # Check to see if a cyclic wraparound is required
-
-        lons = np.arange(H.outlon0, H.outlon0 + (H.dxout * H.numxgrid), H.dxout)
-        lats = np.arange(H.outlat0, H.outlat0 + (H.dyout * H.numygrid), H.dyout)
-        # # if required add polar coordinates
+        # Check to see if a cyclic wraparound is required
+        lons = np.arange(H.outlon0, H.outlon0 + (H.dxout * H.numxgrid),
+                         H.dxout)
+        lats = np.arange(H.outlat0, H.outlat0 + (H.dyout * H.numygrid),
+                         H.dyout)
+        # if required add polar coordinates
         if 'npstere' in m.projection:
             if lats[-1] != 90.:
                 npole = np.ones(len(lons)).T * data[0, :]
@@ -1438,48 +1461,49 @@ def plot_sensitivity(H, data, \
         if m.projection == 'merc':
             topodat = data
 
-    # # get min/max range
-    if data_range != None:
+    # get min/max range
+    if data_range is not None:
         dat_min = data_range[0]
         dat_max = data_range[1]
     else:
         dat_min, dat_max = data_range(data)
 
-
     if log:
         clevs = _log_clevs(dat_min, dat_max)
 
     else:
-        clevs = [i for i in np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
+        clevs = [i for i in
+                 np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
 
-    # # draw land sea mask
+    # draw land sea mask
     # m.fillcontinents(zorder=0)
     if lsmask:
-        m.drawlsmask(ocean_color='grey', zorder= -10)
+        m.drawlsmask(ocean_color='grey', zorder=-10)
 
-    # # Plot Release Location if points were read
+    # Plot Release Location if points were read
     if H.options['readp']:
         if rel_i:
             releaselocation = (H.xpoint[rel_i], H.ypoint[rel_i])
             xpt, ypt = m(releaselocation[0], releaselocation[1])
-            # # Remove prior location point
+            # Remove prior location point
             try:
                 del ax.lines[-1]
             except:
                 pass
-            location, = m.plot([xpt], [ypt], 'bx', linewidth=6, markersize=20, zorder=1000)
+            location, = m.plot([xpt], [ypt], 'bx', linewidth=6, markersize=20,
+                               zorder=1000)
 
-    # # Plot the footprint
+    # Plot the footprint
 
-    # # Set up the IMAGE
-    # # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
+    # Set up the IMAGE
+    # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
     # colmap = plt.get_cmap('jet')
     colmap = _gen_flexpart_colormap()
     colmap.set_over(color='k', alpha=0.8)
-    # # Plotting METHODS (pcolormesh now default, imshow is smoother)
+    # Plotting METHODS (pcolormesh now default, imshow is smoother)
     # print topodat.max(), topodat.min(), topodat.shape
     if method == 'imshow':
-        im = m.imshow(topodat, cmap=colmap, zorder= -1,
+        im = m.imshow(topodat, cmap=colmap, zorder=-1,
                       norm=mpl.colors.LogNorm(vmin=clevs[0],
                                               vmax=clevs[-1]))
 
@@ -1489,9 +1513,10 @@ def plot_sensitivity(H, data, \
                           norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                   vmax=clevs[-1]))
     if method == 'contourf':
-        # # Trying some fancier scaling
+        # Trying some fancier scaling
         # cnts,bins = np.histogram(topodat,bins=100)
-        # topodat = np.ma.masked_where(topodat< .05* np.average((0,bins[1])),topodat)
+        # topodat = np.ma.masked_where(topodat< .05* np.average((0,
+        # bins[1])),topodat)
         nx, ny = m(*np.meshgrid(lons, lats))
         im = m.contourf(nx, ny, topodat, cmap=colmap, levels=clevs,
                         norm=mpl.colors.LogNorm(vmin=clevs[0],
@@ -1500,45 +1525,42 @@ def plot_sensitivity(H, data, \
     if method == 'contour':
         nx, ny = m(*np.meshgrid(lons, lats))
         im = m.contour(nx, ny, topodat, cmap=colmap,
-                        norm=mpl.colors.LogNorm(vmin=clevs[0],
-                                                vmax=clevs[-1]))
+                       norm=mpl.colors.LogNorm(vmin=clevs[0],
+                                               vmax=clevs[-1]))
 
-    # # Get the current axes, and properties for use later
+    # Get the current axes, and properties for use later
     pos = ax.get_position()
     l, b, w, h = pos.bounds
 
-    # # CREATE COLORBAR
-    # # Note, with upgrades to matplotlib and basemap had to make some
-    # # changes here... no more 'ghost' axes
-    # # does a colorbar already exist?
+    # CREATE COLORBAR
+    # Note, with upgrades to matplotlib and basemap had to make some
+    # changes here... no more 'ghost' axes
+    # does a colorbar already exist?
     try:
         cb = FIGURE.cb
         cax = FIGURE.cax
         cb.update_normal(im)
     except:
-    # # make a copy of the image object, change
-    # # colormap to linear version of the precip colormap.
-    # pdb.set_trace()
-    # im2 = copy.copy(im)
-    # im2.set_cmap(colmap)
-    # # create new axis for colorbar.
+        # make a copy of the image object, change
+        # colormap to linear version of the precip colormap.
+        # pdb.set_trace()
+        # im2 = copy.copy(im)
+        # im2.set_cmap(colmap)
+        # create new axis for colorbar.
         h = 0.5 * h
         l = l + w + .03
         b = 0.5 - (h / 2)
         w = 0.025
         cax = plt.axes([l, b, w, h])
-    # # using im2, not im (hack to prevent colors from being
-    # # too compressed at the low end on the colorbar - results
-    # # from highly nonuniform colormap)
+        # using im2, not im (hack to prevent colors from being
+        # too compressed at the low end on the colorbar - results
+        # from highly nonuniform colormap)
         cb = fig.colorbar(im, cax=cax)  # , format='%3.2g') # draw colorbar
         FIGURE.cax = cax
         FIGURE.cb = cb
     # cb.update_normal(im2)
 
-
-
-
-    # # set colorbar label and ticks
+    # set colorbar label and ticks
     # pdb.set_trace()
     p_cax = mpl.font_manager.FontProperties(size='6')
     clabels = list(clevs[::10])  # #clevs, by 10 steps
@@ -1546,7 +1568,7 @@ def plot_sensitivity(H, data, \
     # cax.set_yticks(np.linspace(clabels[0],clabels[-1],len(clabels)))
     cax.set_yticks(np.linspace(0, 1, len(clabels)))
     cax.set_yticklabels(['%3.2g' % cl for cl in clabels])
-                        # fontproperties=p_cax)
+    # fontproperties=p_cax)
     if H.direction == 'forward':
         cax.set_title('%s' % units,
                       fontproperties=p_cax)
@@ -1557,16 +1579,16 @@ def plot_sensitivity(H, data, \
             cax.set_title('sensitivity\n({0})'.format(units),
                           fontproperties=p_cax)
 
-    # # make the original axes current again
+    # make the original axes current again
     plt.axes(ax)
 
-    # # write text information block on plot
-    # # first try to remove prior text by accessing
-    # # the last text element added to the axes from
-    # # the prior iteration.
-    # # This is tricky when using together with plot_clusters...
-    # # need to figure out how to resolve the indexing
-    # # of what texts, collections, etc to delete, when iterating.
+    # write text information block on plot
+    # first try to remove prior text by accessing
+    # the last text element added to the axes from
+    # the prior iteration.
+    # This is tricky when using together with plot_clusters...
+    # need to figure out how to resolve the indexing
+    # of what texts, collections, etc to delete, when iterating.
     try:
         del ax.texts[FIGURE.indices.texts:]
         del ax.artists[FIGURE.indices.artists:]
@@ -1574,34 +1596,34 @@ def plot_sensitivity(H, data, \
         pass
     if datainfo_str:
         plt.text(l, b + 1000,
-             datainfo_str,
-             fontsize=10,
-             bbox=dict(boxstyle="round",
-                     ec=(1., 0.5, 0.5),
-                     fc=(1., 0.8, 0.8),
-                     alpha=0.8
-                     )
-             )
+                 datainfo_str,
+                 fontsize=10,
+                 bbox=dict(boxstyle="round",
+                           ec=(1., 0.5, 0.5),
+                           fc=(1., 0.8, 0.8),
+                           alpha=0.8
+                           )
+                 )
 
     FIGURE.ax = ax
     FIGURE.m = m
     FIGURE.fig = fig
 
-    if plottitle != None:
+    if plottitle is not None:
         # plt.title(plottitle,fontproperties=p_cax)
-    # plt = plt
+        # plt = plt
         FIGURE.ax.set_title(plottitle, fontsize=10)
     return FIGURE
 
 
-def plot_curtain(H, data, \
+def plot_curtain(H, data,
                  nx=None,
                  ny=None,
-                 data_range=None, \
-                 units='ppbv', \
-                 datainfo_str=None, \
+                 data_range=None,
+                 units='ppbv',
+                 datainfo_str=None,
                  asl=True,
-                 plottitle=None, \
+                 plottitle=None,
                  log=True,
                  FIGURE=None,
                  cax_title=None,
@@ -1613,12 +1635,14 @@ def plot_curtain(H, data, \
 
         > FIG = plot_sensitivity(H,data,*kwargs)
 
-    This returns the FIGURE object, and plots the sensitivity from the data contained in the "D"
+    This returns the FIGURE object, and plots the sensitivity from the data
+    contained in the "D"
     array.
 
     Inputs
       H = a :class:`Header` instance for a FLEXPART run.
-      data = a 2d data array containing the sensitivity values to plot, this can be extracted from a
+      data = a 2d data array containing the sensitivity values to plot,
+      this can be extracted from a
       grid instance (see :func:`readgridV8` and :func:`get_slabs`)
 
     Returns
@@ -1665,16 +1689,16 @@ def plot_curtain(H, data, \
         lsmask = True seems to only work with certain projections (POLARCAT)
 
     .. note::
-        This is the primary main function for creating plots of flexpart output.
+        This is the primary main function for creating plots of flexpart
+        output.
         Most the other routines are simply wrappers to this function, passing
         arguments in with some predefined settings. For more information on the
-        mechanics of this function, see the mapping.py module and the matplotlib
+        mechanics of this function, see the mapping.py module and the
+        matplotlib
         basemap toolkit.
 
 
     """
-
-
 
     methods = ['imshow', 'pcolormesh', 'contourf', 'contour', 'None']
     assert method in methods, "method keyword must be one of: %s" % methods
@@ -1682,23 +1706,21 @@ def plot_curtain(H, data, \
     if FIGURE is None:
         FIGURE = Structure()
 
-
         fig = plt.figure(**figPar)
         ax = fig.add_subplot(111)
 
         FIGURE['fig'] = fig
         FIGURE['ax'] = ax
 
-
     fig = FIGURE.fig
     ax = FIGURE.ax
 
-    # # make the figure current
+    # make the figure current
     plt.figure(fig.number)
     plt.axes(ax)
 
-    # # get min/max range
-    if data_range != None:
+    # get min/max range
+    if data_range is not None:
         dat_min = data_range[0]
         dat_max = data_range[1]
     else:
@@ -1707,85 +1729,85 @@ def plot_curtain(H, data, \
     if log:
         clevs = _log_clevs(dat_min, dat_max)
     else:
-        clevs = [i for i in np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
+        clevs = [i for i in
+                 np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
 
-    # # Set up the IMAGE
-    # # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
+    # Set up the IMAGE
+    # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool',
+    # 'spectral']
     colmap = _gen_flexpart_colormap()
     colmap.set_over(color='k', alpha=0.8)
     topodat = data
 
-
     if method == 'imshow':
-        im = plt.imshow(np.flipud(topodat), cmap=colmap, zorder= -1,
-                      norm=mpl.colors.LogNorm(vmin=clevs[0],
-                                              vmax=clevs[-1]))
+        im = plt.imshow(np.flipud(topodat), cmap=colmap, zorder=-1,
+                        norm=mpl.colors.LogNorm(
+                            vmin=clevs[0], vmax=clevs[-1]))
 
     if method == 'pcolormesh':
         im = plt.pcolormesh(nx, ny, topodat, cmap=colmap,
-                          norm=mpl.colors.LogNorm(vmin=clevs[0],
-                                                  vmax=clevs[-1]))
+                            norm=mpl.colors.LogNorm(
+                                vmin=clevs[0], vmax=clevs[-1]))
     if method == 'contourf':
         im = plt.contourf(nx, ny, topodat, cmap=colmap, levels=clevs,
-                        norm=mpl.colors.LogNorm(vmin=clevs[0],
-                                                vmax=clevs[-1]))
+                          norm=mpl.colors.LogNorm(
+                              vmin=clevs[0], vmax=clevs[-1]))
 
     if method == 'contour':
         im = plt.contour(nx, ny, topodat, cmap=colmap,
-                        norm=mpl.colors.LogNorm(vmin=clevs[0],
-                                                vmax=clevs[-1]))
+                         norm=mpl.colors.LogNorm(
+                             vmin=clevs[0], vmax=clevs[-1]))
 
-    # # Get the current axes, and properties for use later
+    # Get the current axes, and properties for use later
     pos = ax.get_position()
     l, b, w, h = pos.bounds
 
-    # # CREATE COLORBAR
-    # # Note, with upgrades to matplotlib and basemap had to make some
-    # # changes here... no more 'ghost' axes
-    # # does a colorbar already exist?
+    # CREATE COLORBAR
+    # Note, with upgrades to matplotlib and basemap had to make some
+    # changes here... no more 'ghost' axes
+    # does a colorbar already exist?
     try:
         cb = FIGURE.cb
         cax = FIGURE.cax
         cb.update_normal(im)
     except:
-    # # make a copy of the image object, change
-    # # colormap to linear version of the precip colormap.
-    # # create new axis for colorbar.
+        # make a copy of the image object, change
+        # colormap to linear version of the precip colormap.
+        # create new axis for colorbar.
         h = 0.8 * h
         l = l + w + .02
         b = 0.5 - (h / 2)
         w = 0.025
         cax = plt.axes([l, b, w, h])
-    # # using im2, not im (hack to prevent colors from being
-    # # too compressed at the low end on the colorbar - results
-    # # from highly nonuniform colormap)
+        # using im2, not im (hack to prevent colors from being
+        # too compressed at the low end on the colorbar - results
+        # from highly nonuniform colormap)
         cb = fig.colorbar(im, cax=cax)  # , format='%3.2g') # draw colorbar
         FIGURE.cax = cax
         FIGURE.cb = cb
 
-
-    # # set colorbar label and ticks
+    # set colorbar label and ticks
     p_cax = mpl.font_manager.FontProperties(size='6')
     clabels = list(clevs[::10])  # #clevs, by 10 steps
     clabels.append(clevs[-1])  # # add the last label
     # cax.set_yticks(np.linspace(clabels[0],clabels[-1],len(clabels)))
     cax.set_yticks(np.linspace(0, 1, len(clabels)))
     cax.set_yticklabels(['%3.2g' % cl for cl in clabels])
-                        # fontproperties=p_cax)
+    # fontproperties=p_cax)
 
     if cax_title:
         cax.set_title(cax_title.format(units), fontproperties=p_cax)
     else:
         cax.set_title('sensitivity\n({0})'.format(units),
-                          fontproperties=p_cax)
+                      fontproperties=p_cax)
 
-    # # make the original axes current again
+    # make the original axes current again
     plt.axes(ax)
     plt.grid(True)
     FIGURE.ax = ax
     FIGURE.fig = fig
 
-    if plottitle != None:
+    if plottitle is not None:
         FIGURE.ax.set_title(plottitle, fontsize=10)
 
     return FIGURE
@@ -1796,12 +1818,11 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
 
     """
 
-
     fig = FIGURE.fig
     m = FIGURE.m
     ax = FIGURE.ax
 
-    # # make the figure current
+    # make the figure current
     plt.figure(fig.number)
     plt.axes(ax)
 
@@ -1816,7 +1837,7 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
         cnt = datelabels.index(date)
     else:
         cnt = 0
-    # # FOR OPENDAP OVERLAY
+    # FOR OPENDAP OVERLAY
     slp_ = slpin[cnt, :, :]
     u_ = uin[cnt, :, :]
     v_ = vin[cnt, :, :]
@@ -1843,18 +1864,19 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
     # pos = FIG.ax.get_position()
     # l, b, w, h = pos.bounds
 
-    CS = m.contour(x, y, slpgrid, clevs, linewidths=1, colors='k', animated=True)
+    CS = m.contour(x, y, slpgrid, clevs, linewidths=1, colors='k',
+                   animated=True)
     # CS = FIG.m.contourf(x,y,slpgrid,clevs,cmap=plt.cm.RdBu_r,animated=True,alpha=0.7)
-   # CS = FIG.m.contour(x,y,slp[0,:,:],clevs,linewidths=0.5,colors='k',animated=True)
-#            CS = FIG.m.contourf(x,y,slp[0,:,:],clevs,cmap=plt.cm.RdBu_r,animated=True,alpha=0.7)
+    # CS = FIG.m.contour(x,y,slp[0,:,:],clevs,linewidths=0.5,colors='k',animated=True)
+    #            CS = FIG.m.contourf(x,y,slp[0,:,:],clevs,cmap=plt.cm.RdBu_r,animated=True,alpha=0.7)
     # plt.clabel(CS,inline=1,fontsize=10)
     # plot wind vectors over maplt.
-    urot, vrot, xx, yy = m.transform_vector(ugrid, vgrid, newlons, latitudes, 51, 51,
-                                         returnxy=True, masked=True)
+    urot, vrot, xx, yy = m.transform_vector(
+        ugrid, vgrid, newlons, latitudes, 51, 51,
+        returnxy=True, masked=True)
     Q = m.quiver(xx, yy, urot, vrot, scale=500)
-#            # make quiver key.
+    # make quiver key.
     qk = plt.quiverkey(Q, 0.1, 0.1, 20, '20 m/s', labelpos='W')
-
 
     FIGURE.ax = ax
     FIGURE.m = m
