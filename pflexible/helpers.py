@@ -2,10 +2,19 @@
 
 import datetime
 import struct
+import traceback
 
+import numpy as np
 from matplotlib.dates import date2num
 import matplotlib.image as image
 from matplotlib.patches import Ellipse
+
+# Matplotlib
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+from .flexpart_read import read_header, read_trajectories
+from .grid_read import read_grid, fill_grids
 
 
 class BinaryFile(object):
@@ -303,7 +312,7 @@ class Header(Structure):
         """ see :func:`fill_backward` """
         fill_grids(self, add_attributes=True, **kwargs)
 
-    def add_trajectory(self, **kwargs):
+    def add_trajectory(self):
         """ see :func:`read_trajectories` """
         self.trajectory = read_trajectories(self)
 
@@ -537,7 +546,7 @@ def _datarange(H, G, index=None):
             fpmax = zpmax
         # print fpmax
     tcmax = np.max(G)
-    return ((0, fpmax), (0, tfcmax))
+    return ((0, fpmax), (0, tcmax))
 
 
 def _genEllipse(data, m, sizescale=20000,
@@ -595,9 +604,10 @@ def _genEllipse(data, m, sizescale=20000,
 
 def _shout(string, verbose=True):
     """ write a string to stdout if 'verbose' flag given """
+    import sys
     w = sys.stdout.write
     if string[-1] != '\n':
-        string = string + '\n'
+        string += '\n'
     if verbose:
         w(string)
 
