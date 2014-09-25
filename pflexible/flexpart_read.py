@@ -1,10 +1,13 @@
 #### Functions for reading FLEXPART output #####
 
+import os
 import re
 import datetime
 from math import pi, sqrt, cos
 
 import numpy as np
+
+from .helpers import BinaryFile, Structure, closest, _getfile_lines
 
 
 def read_command(path, headerrows=7):
