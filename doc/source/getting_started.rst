@@ -134,6 +134,8 @@ giving it a namespace "pf" -- this is the preferred approach. The next few lines
 "OUTPUT_DIR" (you probably already changed these).::
 
     import pflexible as pf
+    SOURCE_DIR = '/path/to/flexpart/source'
+    OUTPUT_DIR = '/path/to/flexpart/output'
 
 The next line creates a :class:`Header` class "H", by passing the path
 of the directory (not header path) containing the FLEXPART run.::
