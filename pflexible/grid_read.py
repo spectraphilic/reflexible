@@ -2,8 +2,12 @@
 
 import itertools
 import datetime
+import os
 
 import numpy as np
+
+from .FortFlex import sumgrid
+from .helpers import BinaryFile, Structure, _shout
 
 
 def _readgrid_noFF(H, **kwargs):
@@ -237,7 +241,8 @@ def _readgrid_noFF(H, **kwargs):
                     dat_cnt = 0
                     nage = 0
                     # read data:
-                    # datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],nspec,nageclass),np.float)
+                    # datagrid=np.zeros((numxgrid,numygrid,numzgrid[nspec-1],
+                    #                    nspec,nageclass),np.float)
                     datagrid = np.zeros(
                         (numxgrid, numygrid, numzgrid, 1, 1), np.float)
                     # f = file(filename, 'rb')
@@ -439,16 +444,18 @@ def _read_headerFF(pathname, h=None,
     see FortFlex.f and the f2py directory
     """
     try:
-        from FortFlex import readheader
+        from .FortFlex import readheader
     except:
         print "Error with FortFlex.readheader, use read_header"
 
-    headervars = ['numxgrid', 'numygrid', 'numzgrid', 'outlon0', 'outlat0', 'compoint',
-                  'dxout', 'dyout', 'outheight', 'ibdate', 'ibtime', 'loutstep',
-                  'nspec', 'nageclass', 'lage', 'ireleasestart', 'ireleaseend',
-                  'numpoint', 'xpoint', 'ypoint', 'zpoint1', 'zpoint2', 'heightnn', 'area',
-                  'maxpoint', 'maxspec', 'maxageclass', 'nxmax', 'nymax', 'nzmax',
-                  'npart', 'kind', 'lage', 'loutaver', 'loutsample', 'yyyymmdd', 'hhmmss', 'method']
+    headervars = ['numxgrid', 'numygrid', 'numzgrid', 'outlon0', 'outlat0',
+                  'compoint', 'dxout', 'dyout', 'outheight', 'ibdate',
+                  'ibtime', 'loutstep', 'nspec', 'nageclass', 'lage',
+                  'ireleasestart', 'ireleaseend', 'numpoint',
+                  'xpoint', 'ypoint', 'zpoint1', 'zpoint2', 'heightnn', 'area',
+                  'maxpoint', 'maxspec', 'maxageclass', 'nxmax', 'nymax',
+                  'nzmax', 'npart', 'kind', 'lage', 'loutaver', 'loutsample',
+                  'yyyymmdd', 'hhmmss', 'method']
     if h is None:
         h = Structure()
 
@@ -538,8 +545,6 @@ def read_grid(H, **kwargs):
 
     """
 
-    if H.version == 'V9':
-        return readgridV9(H, **kwargs)
     if H.version == 'V8':
         return readgridV8(H, **kwargs)
     if H.version == 'V6':
@@ -660,13 +665,13 @@ def readgridV8(H, **kwargs):
     # import the FortFlex / Fortran module
     try:
         if OPS.version == 'V6':
-            from FortFlex import readgrid_v6 as readgrid
-            from FortFlex import sumgrid
+            from .FortFlex import readgrid_v6 as readgrid
+            from .FortFlex import sumgrid
             useFortFlex = True
             print 'using FortFlex VERSION 6'
         else:
             print('Assumed V8 Flexpart')
-            from FortFlex import readgrid, sumgrid
+            from .FortFlex import readgrid, sumgrid
             useFortFlex = True
     except:
         # get the original module (no memory allocation)
@@ -923,8 +928,8 @@ def readgridV6(H, **kwargs):
     # Determine what module to read, try to use FortFlex, then dumpgrid, lastly pure Python
     # import the FortFlex / Fortran module
     try:
-        from FortFlex import readgrid_v6 as readgrid
-        from FortFlex import sumgrid
+        from .FortFlex import readgrid_v6 as readgrid
+        from .FortFlex import sumgrid
         useFortFlex = True
         OPS.useFortFlex = useFortFlex
         print 'using FortFlex VERSION 6'
@@ -1179,7 +1184,7 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
 def read_emissions(emissionsfile, E=None, maxemissions=1):
     """ Use reademissions.so module to read emissions file """
     try:
-        from FortFlex import reademissions
+        from .FortFlex import reademissions
     except:
         raise ImportError(
             "Cannot find FortFlex module or missing reademissions")
