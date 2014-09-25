@@ -2,7 +2,7 @@
 
 import pdb
 
-# Matplotlib
+import numpy as np
 import matplotlib as mpl
 # mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -11,6 +11,8 @@ try:
     from mpl_toolkits.basemap import shiftgrid, addcyclic
 except ImportError:
     from matplotlib.toolkits.basemap import shiftgrid, addcyclic
+
+from .helpers import Structure
 
 
 def _plot_dropm():
