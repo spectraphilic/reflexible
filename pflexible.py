@@ -2852,7 +2852,7 @@ def plot_spectra(inspectra,
 
     # Set up plotting environment colors
     Nc = np.array([float(i) / numageclasses for i in range(numageclasses)])
-    norm = mpl.colors.normalize(Nc.min(), Nc.max())
+    norm = mpl.colors.Normalize(Nc.min(), Nc.max())
     # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
     plt.hold('on')
