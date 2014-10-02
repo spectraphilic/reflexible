@@ -101,12 +101,11 @@ directly::
 
     FD = pf.read_grid(H,time_ret=0,nspec_ret=0)
     
-For optimal performance, this function will use the FortFlex module. However, as a fall
-back there is a pure python method, but it is significantly slower. If you receive a message
-about using the Pure Python approach it is highly recommended to build the FortFlex module.
-If you are having problems compiling :mod:`FortFlex <pflexible.FortFlex>`, see 
-the section in the Installation instructions. 
-   
+For optimal performance, this function will use the FortFlex module. However,
+this depends on having a Fortran compiler (gfortran) installed in your machine,
+so as a fall back there is a pure python method, but it is significantly slower.
+If you receive a message about using the Pure Python approach it is highly
+recommended to build the FortFlex module.
 
 .. note::
   See the :func:`read_grid <pflexible.read_grid>` function 
