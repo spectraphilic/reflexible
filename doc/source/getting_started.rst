@@ -94,7 +94,7 @@ are several alternative ways we can read the data. A special method exists for b
 that collects all the data from the 20-days back in time (by default) and creates accumulated
 totals of the sensitivity::
 
-    H.fill_backwards()
+    H.fill_backward()
     
 Alternatively, we may only want to read specific grids, in which case we can call the function
 directly::

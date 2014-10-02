@@ -4,7 +4,6 @@
 #from distutils.extension import Extension
 from setuptools import setup
 from setuptools import Extension
-#from Cython.Distutils import build_ext
 import numpy
 
 # pflexible version
@@ -21,8 +20,8 @@ setup(
   url = 'http://niflheim.nilu.no/~burkhart/pflexible',
   description = 'A Python interface to FLEXPART data.',
   license = 'Creative Commons',
-  ext_modules = [Extension('pflexible.pflexcy', ['pflexible/pflexcy.c'],
-                           include_dirs=[numpy.get_include()])],
+  # ext_modules = [Extension('pflexible.pflexcy', ['pflexible/pflexcy.c'],
+  #                          include_dirs=[numpy.get_include()])],
   packages = ['pflexible'],
   py_modules = ['mapping'],  # XXX that should be converted into a package too?
 )

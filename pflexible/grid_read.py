@@ -6,8 +6,10 @@ import os
 
 import numpy as np
 
+import pflexible as pf
 from .FortFlex import sumgrid
-from .helpers import BinaryFile, Structure, _shout
+from .helpers import _shout
+
 
 
 def _readgrid_noFF(H, **kwargs):
@@ -247,7 +249,7 @@ def _readgrid_noFF(H, **kwargs):
                         (numxgrid, numygrid, numzgrid, 1, 1), np.float)
                     # f = file(filename, 'rb')
                     # print filename
-                    f2 = BinaryFile(filename, order='fortran')
+                    f2 = pf.BinaryFile(filename, order='fortran')
                     skip(4)
                     G['itime'] = getbin('i')
                     print H['available_dates'][date_i]
@@ -358,8 +360,10 @@ def _readgridBF(H, filename):
 
     # Import pflexcy.so (cython compiled version of dumpgrid)
     try:
-
-        from sdspflexcy import dumpdatagrid, dumpdepogrid
+        # Using Pyximport for compiling on-the flight.
+        # See: http://docs.cython.org/src/userguide/source_files_and_compilation.html#pyximport
+        import pyximport; pyximport.install()
+        from pflexcy import dumpdatagrid, dumpdepogrid
         print 'using pflexcy'
     except:
         print """WARNING: Using PURE Python to readgrid, execution will be slow.
@@ -379,7 +383,7 @@ def _readgridBF(H, filename):
         (H.numxgrid, H.numygrid, H.numzgrid, H.numpointspec, nage), np.float)
     # f = file(filename,'rb')
     # print filename
-    f2 = BinaryFile(filename, order='fortran')
+    f2 = pf.BinaryFile(filename, order='fortran')
     # read data:
     skip(4)
     itime = getbin('i')
@@ -457,7 +461,7 @@ def _read_headerFF(pathname, h=None,
                   'nzmax', 'npart', 'kind', 'lage', 'loutaver', 'loutsample',
                   'yyyymmdd', 'hhmmss', 'method']
     if h is None:
-        h = Structure()
+        h = pf.Structure()
 
     if verbose:
         print """Reading Header with:
@@ -564,7 +568,7 @@ def readgridV8(H, **kwargs):
 
     """
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = Structure()
+    OPS = pf.Structure()
     OPS.unit = H.unit
     OPS.getwet = False
     OPS.getdry = False
@@ -588,8 +592,8 @@ def readgridV8(H, **kwargs):
 
     # set up the return dictionary (FLEXDATA updates fd, fd is returned)
     FLEXDATA = {}
-    fd = Structure()
-    fd.options = Structure()
+    fd = pf.Structure()
+    fd.options = pf.Structure()
 
     # What direction is the run?
     unit = OPS.unit
@@ -704,7 +708,7 @@ def readgridV8(H, **kwargs):
         print datestring
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
 
-            FLEXDATA[(s, datestring)] = Structure()
+            FLEXDATA[(s, datestring)] = pf.Structure()
             spec_fid = '_' + str(s + 1).zfill(3)
 
             if unit_i != 4:
@@ -833,7 +837,7 @@ def readgridV6(H, **kwargs):
 
     """
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = Structure()
+    OPS = pf.Structure()
     OPS.unit = 'time'
     OPS.nspec_ret = 0
     OPS.pspec_ret = 0
@@ -852,8 +856,8 @@ def readgridV6(H, **kwargs):
 
     # set up the return dictionary (FLEXDATA updates fd, fd is returned)
     FLEXDATA = {}
-    fd = Structure()
-    fd.options = Structure()
+    fd = pf.Structure()
+    fd.options = pf.Structure()
     # add the requests to the fd object to be returned
     fd.options.update(OPS)
 
@@ -975,7 +979,7 @@ def readgridV6(H, **kwargs):
         FLEXDATA[datestring] = {}
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
             total_footprint = False
-            FLEXDATA[(s, datestring)] = Structure()
+            FLEXDATA[(s, datestring)] = pf.Structure()
             # spec_fid = '_'+str(s+1).zfill(3)
 
             if unit_i != 4:
@@ -1131,12 +1135,12 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
         # then we need to read the grids
         FD = read_grid(H, time_ret=-1, nspec_ret=species)
 
-    C = Structure()
+    C = pf.Structure()
 
     if H.direction == 'backward':
 
         for s, k in itertools.product(species, range(H.numpointspec)):
-            C[(s, k)] = Structure()
+            C[(s, k)] = pf.Structure()
             C[(s, k)].grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
             C[(s, k)]['itime'] = None
             C[(s, k)]['timestamp'] = H.releasetimes[k]
@@ -1189,7 +1193,7 @@ def read_emissions(emissionsfile, E=None, maxemissions=1):
         raise ImportError(
             "Cannot find FortFlex module or missing reademissions")
     if not E:
-        E = Structure()
+        E = pf.Structure()
         # set defaults for global 0.5 degree emissions
         defaults = {'nxmax': 720, 'nymax': 360, 'outlon0': -180,
                     'outlat0': -90, 'numxgrid': 720, 'numygrid': 360,
@@ -1247,7 +1251,7 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
     """
     Heightnn = H['Heightnn']
     area = H['area']
-    Slabs = Structure()
+    Slabs = pf.Structure()
     grid_shape = G.shape
     if len(grid_shape) is 4:
         if index is None:
