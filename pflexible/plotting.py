@@ -6,18 +6,228 @@ import numpy as np
 import matplotlib as mpl
 # mpl.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
 # Basemap
 try:
     from mpl_toolkits.basemap import shiftgrid, addcyclic
 except ImportError:
     from matplotlib.toolkits.basemap import shiftgrid, addcyclic
 
-from .helpers import Structure
+import mapping as mp
+
+from .data_structures import Structure
+from .helpers import closest
+
+import pflexible as pf
+
+
+# Helpers for plotting routines
+
+def _log_clevs(dat_min, dat_max):
+    """
+    ## create logorithmic color scale
+    ## method uses strings to get the magnitude of variable
+    #ss = "%1.2e" % (dat_max)
+    #dmx = int('%s%s' % (ss[-3],int(ss[-2:])))
+    #dmx=float(len(str(int(np.ceil(dat_max)))))
+    #if data_range is None:
+    #     dmn = int(np.round(np.log((1e-10*(dat_max-dat_min)))))
+    #    ss = "%1.2e" % (1e-10*(dat_max-dat_min))
+    #else:
+    #    ss = "%1.2e" % (dat_min)
+    #dmn = int('%s%s' % (ss[-3],int(ss[-2:])))
+    """
+
+    if dat_max > 0:
+        dmx = int(np.round(np.log10(dat_max))) + 1
+    else:
+        # print 'dat_max not positive'
+        # print dat_max
+        dmx = 1
+
+    if dat_min > 0:
+        dmn = int(np.round(np.log10(dat_min)))
+    elif dat_min == 0. or np.isnan(dat_min):
+        # print 'dat_min not positive'
+        # print dat_min
+        dmn = dmx - 3
+
+    # create equally spaced range
+    if dmx == dmn:
+        dmx = dmn + 1
+    clevs = np.logspace(dmn, dmx, 100)
+
+    return clevs
+
+
+def _gen_flexpart_colormap(ctbfile=None, colors=None):
+    """
+    Generate the ast colormap for FLEXPART
+    """
+    from matplotlib.colors import ListedColormap
+    if ctbfile:
+        try:
+            colors = np.loadtxt(ctbfile)
+        except:
+            print "WARNING: cannot load ctbfile. using colors"
+    if colors:
+        name = 'user_colormap'
+    if not colors:
+        # AST Colorset for FLEXPART
+        colors = [
+            1.0000000e+00, 1.0000000e+00, 1.0000000e+00,
+            9.9607843e-01, 9.1372549e-01, 1.0000000e+00,
+            9.8431373e-01, 8.2352941e-01, 1.0000000e+00,
+            9.6470588e-01, 7.1764706e-01, 1.0000000e+00,
+            9.3333333e-01, 6.0000000e-01, 1.0000000e+00,
+            8.9019608e-01, 4.4705882e-01, 1.0000000e+00,
+            8.3137255e-01, 2.0000000e-01, 1.0000000e+00,
+            7.5686275e-01, 0.0000000e+00, 1.0000000e+00,
+            6.6274510e-01, 0.0000000e+00, 1.0000000e+00,
+            5.4901961e-01, 0.0000000e+00, 1.0000000e+00,
+            4.0784314e-01, 0.0000000e+00, 1.0000000e+00,
+            2.4705882e-01, 0.0000000e+00, 1.0000000e+00,
+            7.4509804e-02, 0.0000000e+00, 1.0000000e+00,
+            0.0000000e+00, 2.8235294e-01, 1.0000000e+00,
+            0.0000000e+00, 4.8627451e-01, 1.0000000e+00,
+            0.0000000e+00, 6.3137255e-01, 1.0000000e+00,
+            0.0000000e+00, 7.4509804e-01, 1.0000000e+00,
+            0.0000000e+00, 8.4705882e-01, 1.0000000e+00,
+            0.0000000e+00, 9.3725490e-01, 1.0000000e+00,
+            0.0000000e+00, 1.0000000e+00, 9.7647059e-01,
+            0.0000000e+00, 1.0000000e+00, 8.9411765e-01,
+            0.0000000e+00, 1.0000000e+00, 8.0000000e-01,
+            0.0000000e+00, 1.0000000e+00, 6.9019608e-01,
+            0.0000000e+00, 1.0000000e+00, 5.6470588e-01,
+            0.0000000e+00, 1.0000000e+00, 4.0000000e-01,
+            0.0000000e+00, 1.0000000e+00, 0.0000000e+00,
+            3.9607843e-01, 1.0000000e+00, 0.0000000e+00,
+            5.6470588e-01, 1.0000000e+00, 0.0000000e+00,
+            6.9019608e-01, 1.0000000e+00, 0.0000000e+00,
+            7.9607843e-01, 1.0000000e+00, 0.0000000e+00,
+            8.9411765e-01, 1.0000000e+00, 0.0000000e+00,
+            9.7647059e-01, 1.0000000e+00, 0.0000000e+00,
+            1.0000000e+00, 9.4509804e-01, 0.0000000e+00,
+            1.0000000e+00, 8.7450980e-01, 0.0000000e+00,
+            1.0000000e+00, 7.9215686e-01, 0.0000000e+00,
+            1.0000000e+00, 7.0588235e-01, 0.0000000e+00,
+            1.0000000e+00, 6.0392157e-01, 0.0000000e+00,
+            1.0000000e+00, 4.8235294e-01, 0.0000000e+00,
+            1.0000000e+00, 3.1372549e-01, 0.0000000e+00,
+            1.0000000e+00, 0.0000000e+00, 1.4901961e-01,
+            1.0000000e+00, 0.0000000e+00, 3.3333333e-01,
+            1.0000000e+00, 0.0000000e+00, 4.4705882e-01,
+            1.0000000e+00, 0.0000000e+00, 5.3725490e-01,
+            1.0000000e+00, 0.0000000e+00, 6.1176471e-01,
+            9.7647059e-01, 0.0000000e+00, 6.6666667e-01,
+            8.9411765e-01, 0.0000000e+00, 6.6666667e-01,
+            7.9607843e-01, 0.0000000e+00, 6.3921569e-01,
+            6.9019608e-01, 0.0000000e+00, 5.9215686e-01,
+            5.6470588e-01, 0.0000000e+00, 5.0980392e-01,
+            3.9607843e-01, 0.0000000e+00, 3.8039216e-01]
+        colors = np.reshape(colors, (-1, 3))
+        name = 'flexpart_cmap'
+    cmap = ListedColormap(colors, name)
+    return cmap
+
+
+def _gen_MapPar_fromHeader(H):
+    """
+    Define some default map parameters from the Header File.
+    """
+
+    MapPar = pf.Structure()
+    MapPar.llcrnrlat = H.outlat0
+    MapPar.llcrnrlon = H.outlon0
+    MapPar.urcrnrlat = H.outlat0 + (H.dyout * H.numygrid)
+    MapPar.urcrnrlon = H.outlon0 + (H.dxout * H.numxgrid - 1)
+    for k in MapPar.keys():
+        print k, MapPar[k]
+
+    return MapPar
+
+
+def _gen_altitude_color(p, altlim=(0, 5000), cmap_id='jet'):
+    """
+    Generates color based on altlim = (min,max)
+    """
+    norm = mpl.colors.Normalize(vmin=altlim[0], vmax=altlim[1])
+    cmap = plt.cm.get_cmap(cmap_id)
+    # p = p/altmax
+    cm = cmap(norm(p))
+    # print p, cm
+    return cm
+
+
+def _gen_daylabels(P, H=None, dt=86400):
+    """
+    Uses H.loutstep to calculate 'days back' for plotting on clusters and trajectories.
+    """
+    if isinstance(P, int):
+
+        if H:
+            dt = abs(H.loutstep)
+        return str(1 + int(abs(P)) / dt)
+    else:
+        return [str(1 + int(abs(p)) / dt) for p in P]
+
+
+def _genEllipse(data, m, sizescale=20000,
+                altlim=None):
+    """
+
+    Generates ellipses based on input array 'data'. Requires basemap instance, 'm'. NOTE::
+
+        data = [itime,x,y,z,[size]]
+
+        r,c = data.shape
+
+        if c == 5:
+            size function of data[:,4]
+        else:
+            size = 1*sizescale
+
+    uses functions:
+
+        * _gen_altitude_color
+        * _gen_daylabels
+
+    for labeling/color of ellipses
+
+    """
+    r, c = data.shape
+    if altlim is None:
+        altlim = (np.min(data[:, 3]), np.max(data[:, 3]))
+
+    if c == 5:
+
+        ell = [(Ellipse(xy=np.array(m(p[1], p[2])),
+                        width=p[4] * sizescale, height=p[4] * sizescale,
+                        angle=360,
+                        facecolor=_gen_altitude_color(
+                            p[3],
+                            altlim=altlim,
+                            cmap_id='gray'),
+                        label=_gen_daylabels(p[0])),
+                np.array(m(p[1], p[2]))) for p in data]
+        # np.array( m(p[1],p[2])) ) for p in data]
+    else:
+        ell = [(Ellipse(xy=np.array(m(p[1], p[2])),
+                        width=1e4 * sizescale, height=1e4 * sizescale,
+                        angle=360,
+                        facecolor=_gen_altitude_color(
+                            p[3],
+                            altlim=altlim,
+                            cmap_id='gray'),
+                        label=_gen_daylabels(p[0])),
+                np.array(m(p[1], p[2]))) for p in data]
+
+    return ell
 
 
 def _plot_dropm():
     try:
-        del FIGURE.m
+        del figure.m
         plt.close('all')
         del m
         "m dropped"
@@ -28,19 +238,19 @@ def _plot_dropm():
 
 
 def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14],
-                  FIGURE=None, map_region=None, projection=None, coords=None):
+                  figure=None, map_region=None, projection=None, coords=None):
     """ plot FLEXPART trajectory (or set of trajectories) characteristics
         R is a dictionary returned from pflexible.read_trajectories
 
         varindex is a list of the variables to plot from the trajectories
     """
-    if FIGURE is None:
-        FIGURE = mp.get_FIGURE(getm=False)
+    if figure is None:
+        figure = mp.get_figure(getm=False)
 
     try:
-        ax = FIGURE.ax
-        fig = FIGURE.fig
-        m = FIGURE.m
+        ax = figure.ax
+        fig = figure.fig
+        m = figure.m
     except:
         print 'problem getting ax,m, or fig.'
 
@@ -63,10 +273,10 @@ def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14],
         plt.ylabel(labels[varindex[i]])
         plt.grid('on')
 
-    return FIGURE
+    return figure
 
 
-def plot_releases(R, FIGURE=None, threedim=False,
+def plot_releases(R, figure=None, threedim=False,
                   map_region=None, projection=None, coords=None,
                   overlay=True,
                   draw_circles=True,
@@ -95,15 +305,15 @@ def plot_releases(R, FIGURE=None, threedim=False,
 
         return fig
     else:
-        # Set up the FIGURE
-        if FIGURE is None:
-            FIGURE = mp.get_FIGURE(map_region=map_region,
+        # Set up the figure
+        if figure is None:
+            figure = mp.get_figure(map_region=map_region,
                                    projection=projection,
                                    coords=coords, MapPar=MapPar)
         # Get fig info and make active
-        fig = FIGURE.fig
-        m = FIGURE.m
-        ax = FIGURE.ax
+        fig = figure.fig
+        m = figure.m
+        ax = figure.ax
         plt.figure(fig.number)
         plt.axes(ax)
 
@@ -115,11 +325,11 @@ def plot_releases(R, FIGURE=None, threedim=False,
         marker = 'o'
 
         # clear the previous track
-        if 'circles' in FIGURE.keys():
-            del FIGURE['circles']
+        if 'circles' in figure.keys():
+            del figure['circles']
         if overlay is False:
-            del ax.collections[FIGURE.indices.collections:]
-            del ax.texts[FIGURE.indices.texts:]
+            del ax.collections[figure.indices.collections:]
+            del ax.texts[figure.indices.texts:]
 
         # plot the track
         cx, cy = m(lon, lat)
@@ -139,7 +349,7 @@ def plot_releases(R, FIGURE=None, threedim=False,
                                    edgecolor=None)
 
             try:
-                FIGURE.circles = circles
+                figure.circles = circles
             except:
                 pass
             # make the figure active again
@@ -168,17 +378,17 @@ def plot_releases(R, FIGURE=None, threedim=False,
                                                     weight='bold',
                                                     )
 
-        FIGURE.fig = fig
-        FIGURE.m = m
-        FIGURE.ax = ax
-        return FIGURE
+        figure.fig = fig
+        figure.m = m
+        figure.ax = ax
+        return figure
 
 
 def plot_spectra(inspectra,
                  plt_title='', fig_title='',
                  y_label=None,
                  spectra_label='bins',
-                 FIGURE=None, y_datarange=None,
+                 figure=None, y_datarange=None,
                  cum=False, labels=[],
                  bars=False, debug=False):
     """ plot a spectra
@@ -189,7 +399,7 @@ def plot_spectra(inspectra,
 
 
     Returns
-      A "mapping.py" ``FIGURE`` object.
+      A "mapping.py" ``figure`` object.
 
     Arguments
 
@@ -200,7 +410,7 @@ def plot_spectra(inspectra,
       =============         ========================================
       runid                 an ID for the title
       yunits                units for the y-axis [None]
-      FIGURE                A "FIGURE" object[None] (see mapping.py)
+      figure                A "figure" object[None] (see mapping.py)
       data_range            y-axis data range
       web_version           Set to True if using the make_webpages
                             function. see: :func:`read_agespectrum`
@@ -221,15 +431,15 @@ def plot_spectra(inspectra,
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
-    if FIGURE is None:
-        FIGURE = Structure()
+    if figure is None:
+        figure = Structure()
         fig = plt.figure(figsize=(8, 6))
-        FIGURE.fig = fig
+        figure.fig = fig
         ax = fig.add_subplot(111)  # ,pos=[0.1,0.2,.8,.7])
-        FIGURE.ax = ax
+        figure.ax = ax
     else:
-        fig = FIGURE.fig
-        ax = FIGURE.ax
+        fig = figure.fig
+        ax = figure.ax
 
     try:
         numageclasses = inspectra.numageclass
@@ -255,15 +465,15 @@ def plot_spectra(inspectra,
         spectra = inspectra
 
     # Set up plotting environment colors
-    Nc = np.array([float(i) / numageclasses for i in range(numageclasses)])
-    norm = mpl.colors.normalize(Nc.min(), Nc.max())
+    nc = np.array([float(i) / numageclasses for i in range(numageclasses)])
+    norm = mpl.colors.normalize(nc.min(), nc.max())
     # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
     plt.hold('on')
     facecolors = []
     # for i in range(0,H.numageclasses-1):
     for i in range(numageclasses):
-        facecolors.append(jet(norm(Nc[i])))
+        facecolors.append(jet(norm(nc[i])))
         if labels:
             lbl = labels[i]
         else:
@@ -297,9 +507,9 @@ def plot_spectra(inspectra,
         ax.set_ylabel('%s' % y_label, rotation=90, ha='center', size='small')
 
     if plt_title:
-        plt.title('%s' % (plt_title), size='small')
+        plt.title('%s' % plt_title, size='small')
     if fig_title:
-        fig.suptitle('Emissions by %s' % (spectra_type), size='small')
+        fig.suptitle('Emissions by %s' % spectra_type, size='small')
 
     fig.autofmt_xdate()
     # for xl in ax.get_xticklabels():
@@ -347,16 +557,16 @@ def plot_spectra(inspectra,
     # make main axes current
     fig.add_subplot(ax)
 
-    FIGURE.ax = ax
-    FIGURE.fig = fig
+    figure.ax = ax
+    figure.fig = fig
 
-    return FIGURE
+    return figure
 
 
 def plot_agespectra(H, agespectra,
                     plt_title='', y_label=None,
                     cbar_labels=None,
-                    FIGURE=None, y_datarange=None,
+                    figure=None, y_datarange=None,
                     web_version=False, continental=False, cum=False,
                     bars=False, debug=False):
     """ plot an agespectra
@@ -369,7 +579,7 @@ def plot_agespectra(H, agespectra,
     the header "H".
 
     Returns
-      A "mapping.py" ``FIGURE`` object.
+      A "mapping.py" ``figure`` object.
 
     Arguments
 
@@ -380,7 +590,7 @@ def plot_agespectra(H, agespectra,
       =============         ========================================
       runid                 an ID for the title
       yunits                units for the y-axis [None]
-      FIGURE                A "FIGURE" object[None] (see mapping.py)
+      figure                A "figure" object[None] (see mapping.py)
       data_range            y-axis data range
       web_version           Set to True if using the make_webpages
                             function. see: :func:`read_agespectrum`
@@ -403,19 +613,41 @@ def plot_agespectra(H, agespectra,
 
 
     """
+    def _cum_spec(inspectra, cum=True):
+        """ helper function for the plot_spectra routines """
+
+        if cum == 'norm':
+            # Normalize the data so it fills to 100%
+            # spectra = np.zeros(inspectra.shape)
+            spectra = (
+                inspectra.transpose() /
+                np.sum(
+                    inspectra,
+                    axis=1)).transpose()
+            spectra = np.cumsum(spectra[:, :], axis=1)
+            # sums = np.sum(inspectra,axis=1)
+            # for i,elem in enumerate(inspectra):
+            #    spectra[i,:] = elem/sums[i]
+        elif cum is True and cum != 'norm':
+            spectra = np.cumsum(inspectra[:, :], axis=1)
+        else:
+            spectra = inspectra
+
+        return spectra
+
     # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
-    if FIGURE is None:
-        FIGURE = Structure()
+    if figure is None:
+        figure = Structure()
         fig = plt.figure()
-        FIGURE.fig = fig
+        figure.fig = fig
         ax = fig.add_subplot(111)
-        FIGURE.ax = ax
+        figure.ax = ax
     else:
-        fig = FIGURE.fig
-        ax = FIGURE.ax
+        fig = figure.fig
+        ax = figure.ax
 
     if web_version:
         inspectra = agespectra.agespectrum[:, 4:]
@@ -433,8 +665,7 @@ def plot_agespectra(H, agespectra,
         spectra_label = "Ageclasses (Days)"
         spectra_type = "Ageclass"
 
-    if not H:
-        H = Structure()
+    if H is None:
         try:
             numageclasses = inspectra.numageclass
             releasetimes = inspectra.agespectrum[:, 0]
@@ -486,7 +717,7 @@ def plot_agespectra(H, agespectra,
                        bottom=spectra[:, i - 1])
             else:
                 ax.fill_between(releasetimes, spectra[:, i - 1], spectra[:, i],
-                                color=facecolors[-1], label='%s' % (i))
+                                color=facecolors[-1], label='%s' % (i,))
                 # facecolors.append(jet(norm(Nc[i+1])))
 
     # ax.set_yscale('log')
@@ -500,7 +731,7 @@ def plot_agespectra(H, agespectra,
         ax.set_ylabel('%s' % y_label, rotation=90, ha='center', size='small')
 
     plt.title('%s' % (plt_title), size='small')
-    fig.suptitle('Emissions by %s' % (spectra_type), size='small')
+    fig.suptitle('Emissions by %s' % (spectra_type,), size='small')
     fig.autofmt_xdate()
     # for xl in ax.get_xticklabels():
     #    plt.setp(xl,size='x-small')
@@ -539,13 +770,13 @@ def plot_agespectra(H, agespectra,
     if debug:
         plt.show()
 
-    return FIGURE
+    return figure
 
 
 def plot_clusters(H, T, rel_i=0,
                   ncluster=0, sizescale=10000,
                   map_region=None, projection=None, coords=None,
-                  FIGURE=None, overlay=False, opacity=0.7,
+                  figure=None, overlay=False, opacity=0.7,
                   draw_circles=True, draw_labels=True,
                   MapPar=None):
     """ plots the clusters """
@@ -558,14 +789,14 @@ def plot_clusters(H, T, rel_i=0,
     # extract only releases of interest
     rel += 1  # account for zero indexing
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
-    if FIGURE is None:
-        FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
+    if figure is None:
+        figure = mp.get_figure(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
 
     try:
-        ax = FIGURE.ax
-        fig = FIGURE.fig
-        m = FIGURE.m
+        ax = figure.ax
+        fig = figure.fig
+        m = figure.m
     except:
         print 'problem getting ax,m, or fig.'
 
@@ -614,17 +845,17 @@ def plot_clusters(H, T, rel_i=0,
                 ax.text(x, y, txt[1])
                 # plt.colorbar(ax)
     # ax.legend(ax.artists,(o.get_label() for o in ax.artists), prop=p_legend )
-    FIGURE.ax = ax
-    FIGURE.fig = fig
-    FIGURE.m = m
+    figure.ax = ax
+    figure.fig = fig
+    figure.m = m
 
-    return FIGURE
+    return figure
 
 
 def plot_trajectory_ellipses(H, T, rel_i=0,
                              ncluster=0, sizescale=10000,
                              map_region=None, projection=None, coords=None,
-                             FIGURE=None, overlay=False, opacity=0.7,
+                             figure=None, overlay=False, opacity=0.7,
                              draw_circles=True, draw_labels=True,
                              MapPar=None):
     """
@@ -641,14 +872,14 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
     # extract only releases of interest according to rel_i
     rel = rel_i + 1  # account for zero indexing
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
-    if FIGURE is None:
-        FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
+    if figure is None:
+        figure = mp.get_figure(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
 
     try:
-        ax = FIGURE.ax
-        fig = FIGURE.fig
-        m = FIGURE.m
+        ax = figure.ax
+        fig = figure.fig
+        m = figure.m
     except:
         print 'problem getting ax,m, or fig.'
 
@@ -685,16 +916,16 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
         if draw_labels:
             ax.text(x, y, txt[1])
     plt.draw()
-    FIGURE.ax = ax
-    FIGURE.fig = fig
-    FIGURE.m = m
-    FIGURE.circles = ells
+    figure.ax = ax
+    figure.fig = fig
+    figure.m = m
+    figure.circles = ells
 
-    return FIGURE
+    return figure
 
 
 def plot_markers(H, lon, lat, zsize=None, zlevel=None,
-                 FIGURE=None,
+                 figure=None,
                  map_region=None, projection=None, coords=None,
                  overlay=True,
                  draw_circles=True,
@@ -717,7 +948,7 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
 
 
     Returns
-      A :mod:`mapping` "FIGURE" object.
+      A :mod:`mapping` "figure" object.
 
     Arguments
 
@@ -727,7 +958,7 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
       keyword               Description [default]
       =============         =============================================
       rel_i                 **required** release index
-      FIGURE                A "FIGURE" object[None] (see mapping.py)
+      figure                A "figure" object[None] (see mapping.py)
       projection            A projection pre-defined in :mod:`mapping`
       coords                A set of lon,lat coords for autosetting
                             map map_region (not really working).
@@ -755,14 +986,14 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
     if H:
         pass
 
-    # Set up the FIGURE
-    if FIGURE is None:
-        FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
+    # Set up the figure
+    if figure is None:
+        figure = mp.get_figure(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
     # Get fig info and make active
-    fig = FIGURE.fig
-    m = FIGURE.m
-    ax = FIGURE.fig.axes[0]
+    fig = figure.fig
+    m = figure.m
+    ax = figure.fig.axes[0]
     plt.figure(fig.number)
     plt.axes(ax)
 
@@ -775,11 +1006,11 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
     marker = 'o'
 
     # clear the previous track
-    if 'circles' in FIGURE.keys():
-        del FIGURE['circles']
+    if 'circles' in figure.keys():
+        del figure['circles']
     if overlay is False:
-        del ax.collections[FIGURE.indices.collections:]
-        del ax.texts[FIGURE.indices.texts:]
+        del ax.collections[figure.indices.collections:]
+        del ax.texts[figure.indices.texts:]
 
     # plot the track
     if draw_circles:
@@ -789,7 +1020,7 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
                             zorder=zorder, alpha=alpha)
 
         try:
-            FIGURE.circles = circles
+            figure.circles = circles
         except:
             pass
         # make the figure active again
@@ -803,8 +1034,8 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
         l, b, w, h = pos.bounds
         if cbar2:
             try:
-                cb2 = FIGURE.cb2
-                cax2 = FIGURE.cax2
+                cb2 = figure.cb2
+                cax2 = figure.cax2
                 cb2.update_normal(circles)
             except:
                 cax2 = plt.axes([l + w + 0.08, b, 0.02, h])
@@ -814,8 +1045,8 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
                 cb2 = fig.colorbar(circles,
                                    cax=cax2)  # , format='%3.2g') # draw
                 # colorbar
-                FIGURE.cax2 = cax2
-                FIGURE.cb2 = cb2
+                figure.cax2 = cax2
+                figure.cb2 = cb2
                 # check if a colorbar legend exists (this will cause
                 # problems for subplot routines!)
             p_leg = mpl.font_manager.FontProperties(size='6')
@@ -835,18 +1066,18 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
     plt.axes(ax)
     plt.setp(ax, xticks=[], yticks=[])
 
-    FIGURE.fig = fig
-    FIGURE.m = m
-    FIGURE.ax = ax
+    figure.fig = fig
+    figure.m = m
+    figure.ax = ax
     try:
-        FIGURE.cax2 = cax2
-        FIGURE.cb2 = cb2
+        figure.cax2 = cax2
+        figure.cb2 = cb2
     except:
         pass
-    return FIGURE
+    return figure
 
 
-def plot_trajectory(H, T, rel_i, FIGURE=None,
+def plot_trajectory(H, T, rel_i, figure=None,
                     map_region=None, projection=None, coords=None,
                     overlay=True,
                     draw_circles=True,
@@ -867,7 +1098,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
 
 
     Returns
-      A :mod:`mapping` "FIGURE" object.
+      A :mod:`mapping` "figure" object.
 
     Arguments
 
@@ -877,7 +1108,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
       keyword               Description [default]
       =============         =============================================
       rel_i                 **required** release index
-      FIGURE                A "FIGURE" object[None] (see mapping.py)
+      figure                A "figure" object[None] (see mapping.py)
       projection            A projection pre-defined in :mod:`mapping`
       coords                A set of lon,lat coords for autosetting
                             map map_region (not really working).
@@ -908,14 +1139,14 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     if H:
         pass
 
-    # Set up the FIGURE
-    if FIGURE is None:
-        FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
+    # Set up the figure
+    if figure is None:
+        figure = mp.get_figure(map_region=map_region, projection=projection,
                                coords=coords, MapPar=MapPar)
     # Get fig info and make active
-    fig = FIGURE.fig
-    m = FIGURE.m
-    ax = FIGURE.fig.axes[0]
+    fig = figure.fig
+    m = figure.m
+    ax = figure.fig.axes[0]
     plt.figure(fig.number)
     plt.axes(ax)
 
@@ -935,11 +1166,11 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     marker = 'o'
 
     # clear the previous track
-    if 'circles' in FIGURE.keys():
-        del FIGURE['circles']
+    if 'circles' in figure.keys():
+        del figure['circles']
     if overlay is False:
-        del ax.collections[FIGURE.indices.collections:]
-        del ax.texts[FIGURE.indices.texts:]
+        del ax.collections[figure.indices.collections:]
+        del ax.texts[figure.indices.texts:]
 
     # plot the track
     cx, cy = m(lon, lat)
@@ -950,7 +1181,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                             zorder=10, alpha=0.85)
 
         try:
-            FIGURE.circles = circles
+            figure.circles = circles
         except:
             pass
         # make the figure active again
@@ -964,8 +1195,8 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
         l, b, w, h = pos.bounds
         if cbar2:
             try:
-                cb2 = FIGURE.cb2
-                cax2 = FIGURE.cax2
+                cb2 = figure.cb2
+                cax2 = figure.cax2
                 cb2.update_normal(circles)
             except:
                 cax2 = plt.axes([l + w + 0.08, b, 0.02, h])
@@ -975,8 +1206,8 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                 cb2 = fig.colorbar(circles,
                                    cax=cax2)  # , format='%3.2g') # draw
                 # colorbar
-                FIGURE.cax2 = cax2
-                FIGURE.cb2 = cb2
+                figure.cax2 = cax2
+                figure.cb2 = cb2
         # check if a colorbar legend exists (this will cause
         # problems for subplot routines!)
         else:
@@ -1011,12 +1242,12 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                             bbox=dict(facecolor='green', alpha=0.5)
                             )
 
-    FIGURE.fig = fig
-    FIGURE.m = m
-    FIGURE.ax = ax
-    FIGURE.cax2 = cax2
-    FIGURE.cb2 = cb2
-    return FIGURE
+    figure.fig = fig
+    figure.m = m
+    figure.ax = ax
+    figure.cax2 = cax2
+    figure.cb2 = cb2
+    return figure
 
 
 def plot_at_level(H, D, level=1,
@@ -1024,7 +1255,7 @@ def plot_at_level(H, D, level=1,
                   map_region=5, projection='lcc',
                   overlay=False,
                   datainfo_str=None, log=True,
-                  data_range=None, coords=None, FIGURE=None,
+                  data_range=None, coords=None, figure=None,
                   plot_title=None,
                   units=None,
                   **kwargs
@@ -1075,16 +1306,16 @@ def plot_at_level(H, D, level=1,
             plot_title = """ %s Sensitivity at %s %s: %s \n %s """ % (
                 ID, level_desc, H['alt_unit'], species, timestamp)
 
-    FIGURE = plot_sensitivity(H, data,
+    figure = plot_sensitivity(H, data,
                               data_range=data_range,
                               rel_i=rel_i, log=log,
                               map_region=map_region, projection=projection,
                               units=units, datainfo_str=datainfo_str,
                               overlay=overlay,
-                              coords=coords, FIGURE=FIGURE, **kwargs)
+                              coords=coords, figure=figure, **kwargs)
 
-    FIGURE.ax.set_title(plot_title, fontsize=10)
-    return FIGURE
+    figure.ax.set_title(plot_title, fontsize=10)
+    return figure
 
 
 plot_footprint = plot_at_level
@@ -1094,7 +1325,7 @@ def plot_totalcolumn(H, D=None,
                      ID=' ',
                      map_region=5, projection='lcc',
                      data_range=None, coords=None,
-                     FIGURE=None, overlay=False,
+                     figure=None, overlay=False,
                      datainfo_str=None, **kwargs):
     if D is None:
         D = H.D[(0, 0)]
@@ -1135,16 +1366,16 @@ def plot_totalcolumn(H, D=None,
         plot_title = """
         %s Total Column Sensitivity: %s\n %s """ % (ID, species, timestamp)
 
-    FIGURE = plot_sensitivity(H, data,
+    figure = plot_sensitivity(H, data,
                               data_range=data_range,
                               rel_i=rel_i, map_region=map_region,
                               projection=projection, units=units,
                               datainfo_str=datainfo_str, coords=coords,
-                              FIGURE=FIGURE, overlay=overlay, **kwargs)
+                              figure=figure, overlay=overlay, **kwargs)
 
-    FIGURE.ax.set_title(plot_title, fontsize=10)
+    figure.ax.set_title(plot_title, fontsize=10)
 
-    return FIGURE
+    return figure
 
 
 def plot_sourcecontribution(H, D,
@@ -1154,7 +1385,7 @@ def plot_sourcecontribution(H, D,
                             data_range=None, coords=None,
                             datainfo_str=None,
                             units=None,
-                            FIGURE=None,
+                            figure=None,
                             overlay=False,
                             cax_title=None,
                             **kwargs):
@@ -1178,7 +1409,7 @@ def plot_sourcecontribution(H, D,
 
 
     Returns
-      A "mapping.py" ``FIGURE`` object.
+      A "mapping.py" ``figure`` object.
 
     Arguments
 
@@ -1199,7 +1430,7 @@ def plot_sourcecontribution(H, D,
       map_region                A map_region specified in mapping.py
       projection            [deprecated] use pre-defined map_regions.
       overlay               Force removal of previous figure elements.
-      FIGURE                A FIGURE instance from mapping module get_FIGURE
+      figure                A figure instance from mapping module get_figure
       =============         ================================================
 
     .. todo::
@@ -1275,16 +1506,16 @@ def plot_sourcecontribution(H, D,
         plot_title = """
         %s Total Column Sensitivity: %s\n %s""" % (ID, species, timestamp)
 
-    FIGURE = plot_sensitivity(H, data,
+    figure = plot_sensitivity(H, data,
                               data_range=data_range,
                               rel_i=rel_i, map_region=map_region,
                               units=units,
                               datainfo_str=datainfo_str, coords=coords,
-                              FIGURE=FIGURE,
+                              figure=figure,
                               cax_title=cax_title,
                               overlay=overlay, **kwargs)
-    FIGURE.ax.set_title(plot_title, fontsize=10)
-    return FIGURE
+    figure.ax.set_title(plot_title, fontsize=10)
+    return figure
 
 
 def plot_sensitivity(H, data,
@@ -1298,7 +1529,7 @@ def plot_sensitivity(H, data,
                      overlay=False,
                      transform=True,
                      log=True,
-                     FIGURE=None,
+                     figure=None,
                      MapPar=None,
                      FigPar=None,
                      cax_title=None,
@@ -1309,7 +1540,7 @@ def plot_sensitivity(H, data,
 
         > FIG = plot_sensitivity(H,data,*kwargs)
 
-    This returns the FIGURE object, and plots the sensitivity from the data
+    This returns the figure object, and plots the sensitivity from the data
     contained in the "D"
     array.
 
@@ -1320,7 +1551,7 @@ def plot_sensitivity(H, data,
       grid instance (see :func:`readgridV8` and :func:`get_slabs`)
 
     Returns
-      A "mapping.py" ``FIGURE`` object.
+      A "mapping.py" ``figure`` object.
 
     Arguments
 
@@ -1349,7 +1580,7 @@ def plot_sensitivity(H, data,
                             in same coordinates as projection, try to transform
                             the data to the basemap projection.
       log                   Create a logarithmic color scale.
-      FIGURE                A FIGURE instance from mapping module get_FIGURE
+      figure                A figure instance from mapping module get_figure
       MapPar                A Structure of paramters to be passed to the
                             basemap class when creating an instance.
       method                The method to use for plotting array data. May be
@@ -1376,30 +1607,29 @@ def plot_sensitivity(H, data,
     methods = ['imshow', 'pcolormesh', 'contourf', 'contour', 'None']
     assert method in methods, "method keyword must be one of: %s" % methods
 
-    if FIGURE is None:
+    if figure is None:
         if map_region is None:
             if MapPar is None:
                 if autofit:
                     MapPar = _gen_MapPar_fromHeader(H)
 
-        FIGURE = mp.get_FIGURE(map_region=map_region,
+        figure = mp.get_figure(map_region=map_region,
                                projection=projection, coords=coords,
                                MapPar=MapPar, FigPar=FigPar)
     else:
-        if FIGURE.m is None:
-            FIGURE = mp.get_FIGURE(fig=FIGURE.fig, ax=FIGURE.ax,
+        if figure.m is None:
+            figure = mp.get_figure(fig=figure.fig, ax=figure.ax,
                                    map_region=map_region,
                                    projection=projection, coords=coords,
                                    MapPar=MapPar, FigPar=FigPar)
 
     if overlay is False:
-        del FIGURE.ax.images[FIGURE.indices.images:]
-        del FIGURE.ax.collections[FIGURE.indices.collections:]
-        del FIGURE.ax.lines[FIGURE.indices.lines:]
+        del figure.ax.images[figure.indices.images:]
+        del figure.ax.collections[figure.indices.collections:]
+        del figure.ax.lines[figure.indices.lines:]
 
     if dropm is not None:
         try:
-            del m
             plt.close('all')
         except:
             print 'could not drop m'
@@ -1408,9 +1638,9 @@ def plot_sensitivity(H, data,
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
-    fig = FIGURE.fig
-    m = FIGURE.m
-    ax = FIGURE.ax
+    fig = figure.fig
+    m = figure.m
+    ax = figure.ax
 
     # make the figure current
     plt.figure(fig.number)
@@ -1539,8 +1769,8 @@ def plot_sensitivity(H, data,
     # changes here... no more 'ghost' axes
     # does a colorbar already exist?
     try:
-        cb = FIGURE.cb
-        cax = FIGURE.cax
+        cb = figure.cb
+        cax = figure.cax
         cb.update_normal(im)
     except:
         # make a copy of the image object, change
@@ -1558,8 +1788,8 @@ def plot_sensitivity(H, data,
         # too compressed at the low end on the colorbar - results
         # from highly nonuniform colormap)
         cb = fig.colorbar(im, cax=cax)  # , format='%3.2g') # draw colorbar
-        FIGURE.cax = cax
-        FIGURE.cb = cb
+        figure.cax = cax
+        figure.cb = cb
     # cb.update_normal(im2)
 
     # set colorbar label and ticks
@@ -1592,8 +1822,8 @@ def plot_sensitivity(H, data,
     # need to figure out how to resolve the indexing
     # of what texts, collections, etc to delete, when iterating.
     try:
-        del ax.texts[FIGURE.indices.texts:]
-        del ax.artists[FIGURE.indices.artists:]
+        del ax.texts[figure.indices.texts:]
+        del ax.artists[figure.indices.artists:]
     except:
         pass
     if datainfo_str:
@@ -1607,15 +1837,15 @@ def plot_sensitivity(H, data,
                            )
                  )
 
-    FIGURE.ax = ax
-    FIGURE.m = m
-    FIGURE.fig = fig
+    figure.ax = ax
+    figure.m = m
+    figure.fig = fig
 
     if plottitle is not None:
         # plt.title(plottitle,fontproperties=p_cax)
         # plt = plt
-        FIGURE.ax.set_title(plottitle, fontsize=10)
-    return FIGURE
+        figure.ax.set_title(plottitle, fontsize=10)
+    return figure
 
 
 def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0,
@@ -1738,7 +1968,7 @@ def plot_curtain(H, data,
                  asl=True,
                  plottitle=None,
                  log=True,
-                 FIGURE=None,
+                 figure=None,
                  cax_title=None,
                  method='contourf',
                  figPar=None):
@@ -1748,7 +1978,7 @@ def plot_curtain(H, data,
 
         > FIG = plot_sensitivity(H,data,*kwargs)
 
-    This returns the FIGURE object, and plots the sensitivity from the data
+    This returns the figure object, and plots the sensitivity from the data
     contained in the "D"
     array.
 
@@ -1759,7 +1989,7 @@ def plot_curtain(H, data,
       grid instance (see :func:`readgridV8` and :func:`get_slabs`)
 
     Returns
-      A "mapping.py" ``FIGURE`` object.
+      A "mapping.py" ``figure`` object.
 
     Arguments
 
@@ -1789,7 +2019,7 @@ def plot_curtain(H, data,
                             in same coordinates as projection, try to transform
                             the data to the basemap projection.
       log                   Create a logarithmic color scale.
-      FIGURE                A FIGURE instance from mapping module get_FIGURE
+      figure                A figure instance from mapping module get_figure
       MapPar                A Structure of paramters to be passed to the
                             basemap class when creating an instance.
       method                The method to use for plotting array data. May be
@@ -1816,17 +2046,17 @@ def plot_curtain(H, data,
     methods = ['imshow', 'pcolormesh', 'contourf', 'contour', 'None']
     assert method in methods, "method keyword must be one of: %s" % methods
 
-    if FIGURE is None:
-        FIGURE = Structure()
+    if figure is None:
+        figure = Structure()
 
         fig = plt.figure(**figPar)
         ax = fig.add_subplot(111)
 
-        FIGURE['fig'] = fig
-        FIGURE['ax'] = ax
+        figure['fig'] = fig
+        figure['ax'] = ax
 
-    fig = FIGURE.fig
-    ax = FIGURE.ax
+    fig = figure.fig
+    ax = figure.ax
 
     # make the figure current
     plt.figure(fig.number)
@@ -1880,8 +2110,8 @@ def plot_curtain(H, data,
     # changes here... no more 'ghost' axes
     # does a colorbar already exist?
     try:
-        cb = FIGURE.cb
-        cax = FIGURE.cax
+        cb = figure.cb
+        cax = figure.cax
         cb.update_normal(im)
     except:
         # make a copy of the image object, change
@@ -1896,8 +2126,8 @@ def plot_curtain(H, data,
         # too compressed at the low end on the colorbar - results
         # from highly nonuniform colormap)
         cb = fig.colorbar(im, cax=cax)  # , format='%3.2g') # draw colorbar
-        FIGURE.cax = cax
-        FIGURE.cb = cb
+        figure.cax = cax
+        figure.cb = cb
 
     # set colorbar label and ticks
     p_cax = mpl.font_manager.FontProperties(size='6')
@@ -1917,23 +2147,23 @@ def plot_curtain(H, data,
     # make the original axes current again
     plt.axes(ax)
     plt.grid(True)
-    FIGURE.ax = ax
-    FIGURE.fig = fig
+    figure.ax = ax
+    figure.fig = fig
 
     if plottitle is not None:
-        FIGURE.ax.set_title(plottitle, fontsize=10)
+        figure.ax.set_title(plottitle, fontsize=10)
 
-    return FIGURE
+    return figure
 
 
-def plot_METDATA(METDATA, FIGURE, date=None, level=None):
+def plot_METDATA(METDATA, figure, date=None, level=None):
     """ plots met data returned from :module:`pflexible.mapping.get_OpenDAP`
 
     """
 
-    fig = FIGURE.fig
-    m = FIGURE.m
-    ax = FIGURE.ax
+    fig = figure.fig
+    m = figure.m
+    ax = figure.ax
 
     # make the figure current
     plt.figure(fig.number)
@@ -1991,8 +2221,8 @@ def plot_METDATA(METDATA, FIGURE, date=None, level=None):
     # make quiver key.
     qk = plt.quiverkey(Q, 0.1, 0.1, 20, '20 m/s', labelpos='W')
 
-    FIGURE.ax = ax
-    FIGURE.m = m
-    FIGURE.fig = fig
+    figure.ax = ax
+    figure.m = m
+    figure.fig = fig
 
-    return FIGURE
+    return figure
