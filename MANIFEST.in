@@ -1,9 +1,12 @@
-include *.c
-include README
+include setup.py
+include MANIFEST.in
+include *.txt *.rst *.md
+include VERSION
 include AUTHORS
 include LICENSE
-exclude MANIFEST.in
 exclude DISTRIBUTE
+
+recursive-include pflexible *.py *.pyx *.pxd *.c *.h
 recursive-include f2py_build FortFlex.f build_FortFlex.sh README
-prune doc/
-prune dist/
+recursive-include pflexible/tests *.py
+recursive-include doc/source *.rst *.txt *.py *.pdf *.css *.png

@@ -73,11 +73,14 @@ discussions.
 Installation and setting the PYTHONPATH
 =======================================
 
-If all is working correctly, and you have all the required dependencies, the it
-should simply be a matter of running setup.py::
+If all is working correctly, and you have all the required dependencies, then
+it should simply be a matter of running setup.py::
+
+    python setup.py build
+
+and then install it (you might need to be superuser here)::
 
     python setup.py install
-
 
 Depending on where you checked out the pflexible module to, you need to make
 sure it is accessbile in your PYTHONPATH environment variable. The dependencies
@@ -94,28 +97,6 @@ also need to be available in the paths defined here.
     %export PYTHONPATH=$PYTHONPATH:/xnilu_wrk/jfb/hg
 
    And *hopefully* everything works!.
-
-.. _building-FortFlex:
-
-----
-
-Building FortFlex
-=================
- 
-FortFlex is a Fortran module that allows highly efficient reading of the raw FLEXPART output.
-Building FortFlex is simple, and required only running a script within the ``f2py_build`` directory of 
-the pflexible distribution::
-
-    cd f2py_build
-    chmod +x build_FortFlex.sh
-    ./build_FortFlex.sh
-    
-Assuming you have all dependencies for f2py (gfortran, etc.) this will build and copy a new module into
-pflexible package called FortFlex.so that will automatically be used by the ``pf.read_grid`` routines.
-
-If you have built the ``FortFlex.so`` module independently, be sure to copy it into the same directory as
-``pflexible.py`` or somewhere on your *PYTHONPATH*. **NOTE** I am trying to replace this dependency 
-(or at least make more builds available, if you have suggestions, please contact me).
 
 
 .. toctree::

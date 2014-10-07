@@ -47,8 +47,8 @@ The documentation is hosted at
 
 There are a few 'gotchas' when using the module. First, you will likely
 have to recompile (f2py) the FortFlex.f file and create a FortFlex.so module
-for whatever computer you're using. The one presently is compiled for 
-64bit Linux (Ubuntu 12.04). For more information see the f2py directory and the build_FortFlex.sh script.
+for whatever computer you're using. For this you need a Fortran compiler
+(gfortran) installed, so sometimes that can be an issue.
 
 An alternative 'BinaryFile' class has been created so one can work with pure
 Python. Alone, it is significantly slower than the FortFlex module, however,

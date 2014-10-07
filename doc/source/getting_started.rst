@@ -94,19 +94,18 @@ are several alternative ways we can read the data. A special method exists for b
 that collects all the data from the 20-days back in time (by default) and creates accumulated
 totals of the sensitivity::
 
-    H.fill_backwards()
+    H.fill_backward()
     
 Alternatively, we may only want to read specific grids, in which case we can call the function
 directly::
 
     FD = pf.read_grid(H,time_ret=0,nspec_ret=0)
     
-For optimal performance, this function will use the FortFlex module. However, as a fall
-back there is a pure python method, but it is significantly slower. If you receive a message
-about using the Pure Python approach it is highly recommended to build the FortFlex module.
-If you are having problems compiling :mod:`FortFlex <pflexible.FortFlex>`, see 
-the section in the Installation instructions. 
-   
+For optimal performance, this function will use the FortFlex module. However,
+this depends on having a Fortran compiler (gfortran) installed in your machine,
+so as a fall back there is a pure python method, but it is significantly slower.
+If you receive a message about using the Pure Python approach it is highly
+recommended to build the FortFlex module.
 
 .. note::
   See the :func:`read_grid <pflexible.read_grid>` function 
@@ -134,6 +133,8 @@ giving it a namespace "pf" -- this is the preferred approach. The next few lines
 "OUTPUT_DIR" (you probably already changed these).::
 
     import pflexible as pf
+    SOURCE_DIR = '/path/to/flexpart/test_data'
+    OUTPUT_DIR = '/path/to/flexpart/output'
 
 The next line creates a :class:`Header` class "H", by passing the path
 of the directory (not header path) containing the FLEXPART run.::

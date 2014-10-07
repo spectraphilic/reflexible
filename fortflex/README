@@ -1,3 +1,7 @@
+###################################
+### XXX This is undergoing a big reestructuration, so this README needs to be updated
+##################################
+
 If you are a first time user of pflexible, you probably just need to run the build_FortFlex.sh script in this directory:
 
 chmod +x build_FortFlex.sh
