@@ -40,7 +40,7 @@ LICENSE
     This script follows creative commons usage.
 
 """
-print WELCOME
+#print WELCOME
 
 from .version import __version__
 
