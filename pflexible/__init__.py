@@ -1,4 +1,4 @@
-"""
+WELCOME = """
 SYNOPSIS
 ========
 
@@ -40,6 +40,7 @@ LICENSE
     This script follows creative commons usage.
 
 """
+print WELCOME
 
 from .version import __version__
 
