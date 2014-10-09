@@ -335,3 +335,92 @@ class Header(Structure):
 
         return closest(dateval, self['available_dates_dt'])
 
+
+class FDC(object):
+    """ Brief explanation of what represents this class.
+    """
+    def __init__(self):
+        self._grid = None
+        self._gridfile = None
+        self._itime = None
+        self._timestamp = None
+        self._species = None
+        self._rel_i = None
+        self._spec_i = None
+
+    @property
+    def grid(self):
+        """I'm the 'grid' property."""
+        return self._grid
+
+    @grid.setter
+    def grid(self, value):
+        """Example of setter.  Add additional code here if desired."""
+        self._grid = value
+
+    @property
+    def gridfile(self):
+        """I'm the 'gridfile' property."""
+        return self._gridfile
+
+    @gridfile.setter
+    def gridfile(self, value):
+        self._gridfile = value
+
+    @property
+    def itime(self):
+        """I'm the 'itime' property."""
+        return self._itime
+
+    @itime.setter
+    def itime(self, value):
+        self._itime = value
+
+    @property
+    def timestamp(self):
+        """I'm the 'timestamp' property."""
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = value
+
+    @property
+    def species(self):
+        """I'm the 'species' property."""
+        return self._species
+
+    @species.setter
+    def species(self, value):
+        self._species = value
+
+    @property
+    def rel_i(self):
+        """I'm the 'rel_i' property."""
+        return self._rel_i
+
+    @rel_i.setter
+    def rel_i(self, value):
+        self._rel_i = value
+
+    @property
+    def spec_i(self):
+        """I'm the 'spec_i' property."""
+        return self._spec_i
+
+    @spec_i.setter
+    def spec_i(self, value):
+        self._spec_i = value
+
+    # Read-only properties
+    @property
+    def shape(self):
+        return self._grid.shape
+
+    @property
+    def max(self):
+        return self.grid.max()
+
+    @property
+    def min(self):
+        return self.grid.min()
