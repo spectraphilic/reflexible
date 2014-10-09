@@ -226,6 +226,7 @@ def _genEllipse(data, m, sizescale=20000,
 
 
 def _plot_dropm():
+    # XXX This is clearly a destructor.  Should be moved into a possible plotting class.
     try:
         del figure.m
         plt.close('all')
@@ -723,7 +724,7 @@ def plot_agespectra(H, agespectra,
     # ax.set_yscale('log')
     if y_datarange:
         # print 'setting data range'
-        ax.set_ylim(y_range)
+        ax.set_ylim(y_datarange)
     else:
         ax.set_ylim((0, spectra.max()))
     ax.grid(True)
@@ -781,7 +782,6 @@ def plot_clusters(H, T, rel_i=0,
                   MapPar=None):
     """ plots the clusters """
     trjs = T['Trajectories']
-    labels = T['labels']
 
     # Set legend properties:
     p_legend = mpl.font_manager.FontProperties(size='8')
@@ -1216,7 +1216,7 @@ def plot_trajectory(H, T, rel_i, figure=None,
 
         p_leg = mpl.font_manager.FontProperties(size='6')
         if cbar2_title:
-            cax.set_title(cbar2_title, fontproperties=p_leg)
+            cax2.set_title(cbar2_title, fontproperties=p_leg)
         else:
             cax2.set_title('altitude\n(m)', fontproperties=p_leg)
             # delete the ghost instance
@@ -1486,9 +1486,9 @@ def plot_sourcecontribution(H, D,
     if data_range is None:
         data_range = [dmin, dmax]
 
+    zp1 = H['zpoint1'][rel_i]
+    zp2 = H['zpoint2'][rel_i]
     if H.direction == 'backward':
-        zp1 = H['zpoint1'][rel_i]
-        zp2 = H['zpoint2'][rel_i]
         if datainfo_str is None:
             datainfo_str = """ Max Value: %.2g %s\n Release Z1: %.2f ,
             Z2: %.2f (%s)\n""" % \
