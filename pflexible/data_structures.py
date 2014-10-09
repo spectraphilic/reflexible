@@ -419,8 +419,8 @@ class FDC(object):
 
     @property
     def max(self):
-        return self.grid.max()
+        return self._grid.max()
 
     @property
     def min(self):
-        return self.grid.min()
+        return self._grid.min()
