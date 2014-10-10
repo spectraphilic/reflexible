@@ -412,6 +412,25 @@ class FDC(object):
     def spec_i(self, value):
         self._spec_i = value
 
+    @property
+    def dry(self):
+        """I'm the 'dry' property."""
+        return self._dry
+
+    @dry.setter
+    def dry(self, value):
+        self._dry = value
+
+    @property
+    def slabs(self):
+        """I'm the 'slabs' property."""
+        return self._slabs
+
+    @slabs.setter
+    def slabs(self, value):
+        self._slabs = value
+
+
     # Read-only properties
     @property
     def shape(self):
