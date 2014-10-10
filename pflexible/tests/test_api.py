@@ -5,23 +5,30 @@ import pflexible as pf
 
 class Test_API(TestCase):
 
-    def test_(self):
-        H = pf.Header(pf.Fwd1_data)
-        assert sorted(H.keys()) == sorted([
-            'zpoint2', 'zpoint1', 'maxpoint', 'compoint', 'nxmax',
-            'maxageclass', 'jjjjmmdd', 'releasestart', 'loutsample',
-            'latitude', 'nspec', 'numzgrid', 'nz_list', 'dxout', 'hhmmss',
-            'maxspec', '_3', '_2', '_1', '_0', 'output_unit', 'Area',
-            'available_dates_dt', 'lconvection', 'ibtime', 'plot_unit',
-            'ind_receptor', 'xpoint', 'fp_version', 'ireleasestart',
-            'version', 'dyout', 'numpointspec', 'nymax', 'mpart', 'oro',
-            'path', 'releaseend', 'numxgrid', 'ireleaseend', 'drydep',
-            'last_date', 'ibdate', 'pathname', 'loutstep', 'ind_source',
-            'numpoint', 'options', 'outheight', 'nested', 'Heightnn', 'unit',
-            'area', 'simulationstart', 'first_date', 'lage', 'nageclass',
-            'direction', 'decayconstant', 'numygrid', 'longitude', 'xp2',
-            'xp1', 'nzmax', 'outlon0', 'wetdep', 'lsubgrid', 'species',
-            'npart', 'nx', 'ny', 'nz', 'ypoint', 'outlat0', 'junk',
-            'releasetimes', 'ageclasses', 'layerthickness', 'loutaver',
-            'kindz', 'flexpart', 'numageclasses', 'xmass', 'alt_unit',
-            'yp2', 'yp1', 'available_dates'])
+    H = pf.Header(pf.Fwd1_data)
+    fdkeys = [
+            'dry', 'grid', 'gridfile', 'itime', 'max', 'min', 'rel_i',
+            'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
+
+    def test_fill_backward(self):
+        self.H.fill_backward(nspec=(0,))
+        ckeys = self.H.C[(0,2)].keys()
+        assert sorted(ckeys) == self.fdkeys
+        fdkeys = self.H.FD[(0, '20070121220000')].keys()
+        assert sorted(fdkeys) == self.fdkeys
+
+    def test_read_grid(self):
+        FD = pf.read_grid(self.H, time_ret=0, nspec_ret=0)
+        fdkeys = sorted(FD.keys())
+        assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
+        fdkeys_ = sorted(FD[(0, '20070121100000')].keys())
+        assert fdkeys_ == [
+            'dry', 'grid', 'gridfile', 'itime', 'max', 'min', 'rel_i',
+            'shape', 'spec_i', 'species', 'timestamp', 'wet']
+
+    def test_read_trajectories(self):
+        T = pf.read_trajectories(self.H)
+        tkeys = sorted(T.keys())
+        assert tkeys == [
+            'RELEASE_TEST1', 'Trajectories', 'date', 'info', 'labels',
+            'version']
