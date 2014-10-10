@@ -1,16 +1,12 @@
 from unittest import TestCase
-import os.path
 
 import pflexible as pf
-
-this_dir = os.path.dirname(__file__)
-data_src = os.path.join(this_dir, "../../uio_examples/Fwd1/outputs/")
 
 
 class Test_API(TestCase):
 
     def test_(self):
-        H = pf.Header(data_src)
+        H = pf.Header(pf.tests.Fwd1_data)
         assert sorted(H.keys()) == sorted([
             'zpoint2', 'zpoint1', 'maxpoint', 'compoint', 'nxmax',
             'maxageclass', 'jjjjmmdd', 'releasestart', 'loutsample',
