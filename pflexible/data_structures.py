@@ -340,13 +340,14 @@ class FDC(object):
     """ Brief explanation of what represents this class.
     """
     def __init__(self):
-        self._grid = None
-        self._gridfile = None
-        self._itime = None
-        self._timestamp = None
-        self._species = None
-        self._rel_i = None
-        self._spec_i = None
+        self._keys = [
+            'grid', 'gridfile', 'itime', 'timestamp', 'species', 'rel_i',
+            'spec_i', 'dry', 'wet', 'slabs', 'shape', 'max', 'min']
+        for key in self._keys:
+            setattr(self, "_" + key, None)
+
+    def keys(self):
+        return self._keys
 
     @property
     def grid(self):
@@ -413,6 +414,15 @@ class FDC(object):
         self._spec_i = value
 
     @property
+    def wet(self):
+        """I'm the 'wet' property."""
+        return self._wet
+
+    @wet.setter
+    def wet(self, value):
+        self._wet = value
+
+    @property
     def dry(self):
         """I'm the 'dry' property."""
         return self._dry
@@ -429,7 +439,6 @@ class FDC(object):
     @slabs.setter
     def slabs(self, value):
         self._slabs = value
-
 
     # Read-only properties
     @property

@@ -22,9 +22,7 @@ class Test_API(TestCase):
         fdkeys = sorted(FD.keys())
         assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
         fdkeys_ = sorted(FD[(0, '20070121100000')].keys())
-        assert fdkeys_ == [
-            'dry', 'grid', 'gridfile', 'itime', 'max', 'min', 'rel_i',
-            'shape', 'spec_i', 'species', 'timestamp', 'wet']
+        assert fdkeys_ == self.fdkeys
 
     def test_read_trajectories(self):
         T = pf.read_trajectories(self.H)

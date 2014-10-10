@@ -708,7 +708,7 @@ def readgridV8(H, **kwargs):
         print datestring
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
 
-            FLEXDATA[(s, datestring)] = pf.Structure()
+            FLEXDATA[(s, datestring)] = fdc = pf.FDC()
             spec_fid = '_' + str(s + 1).zfill(3)
 
             if unit_i != 4:
@@ -785,30 +785,25 @@ def readgridV8(H, **kwargs):
                 # them in fill_backward as well, yes I know... something is
                 # poorly designed ;(
 
-                FLEXDATA[(s, datestring)]['grid'] = D  # zplot
+                fdc.grid = D  # zplot
 
-                FLEXDATA[(s, datestring)]['itime'] = itime
+                fdc.itime = itime
 
-                FLEXDATA[(s, datestring)]['shape'] = zplot.shape
-
-                FLEXDATA[(s, datestring)]['max'] = zplot.max()
-
-                FLEXDATA[(s, datestring)]['min'] = zplot.min()
-                FLEXDATA[(s, datestring)]['timestamp'] = \
+                fdc.timestamp = \
                     datetime.datetime.strptime(datestring, '%Y%m%d%H%M%S')
-                FLEXDATA[(s, datestring)]['species'] = H['species'][s]
-                FLEXDATA[(s, datestring)]['gridfile'] = filename
-                FLEXDATA[(s, datestring)]['rel_i'] = rel_i
-                FLEXDATA[(s, datestring)]['spec_i'] = s
+                fdc.species = H['species'][s]
+                fdc.gridfile = filename
+                fdc.rel_i = rel_i
+                fdc.spec_i = s
                 if OPS.getwet:
-                    FLEXDATA[(s, datestring)]['wet'] = wet
+                    fdc.wet = wet
                 else:
-                    FLEXDATA[(s, datestring)]['wet'] = None
+                    fdc.wet = None
 
                 if OPS.getdry:
-                    FLEXDATA[(s, datestring)]['dry'] = dry
+                    fdc.dry = dry
                 else:
-                    FLEXDATA[(s, datestring)]['dry'] = None
+                    fdc.dry = None
 
             else:
                 _shout('***ERROR: file %s not found! \n' % filename)
@@ -979,7 +974,7 @@ def readgridV6(H, **kwargs):
         FLEXDATA[datestring] = {}
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
             total_footprint = False
-            FLEXDATA[(s, datestring)] = pf.Structure()
+            FLEXDATA[(s, datestring)] = fdc = pf.FDC()
             # spec_fid = '_'+str(s+1).zfill(3)
 
             if unit_i != 4:
@@ -1044,17 +1039,14 @@ def readgridV6(H, **kwargs):
                 # If you're changing things here, you might want to change
                 # them in fill_backward as well, yes I know... something is
                 # poorly designed ;(
-                FLEXDATA[(s, datestring)]['grid'] = D  # zplot
-                FLEXDATA[(s, datestring)]['itime'] = itime
-                FLEXDATA[(s, datestring)]['shape'] = zplot.shape
-                FLEXDATA[(s, datestring)]['max'] = zplot.max()
-                FLEXDATA[(s, datestring)]['min'] = zplot.min()
-                FLEXDATA[(s, datestring)]['timestamp'] = datetime.datetime.strptime(
+                fdc.grid = D  # zplot
+                fdc.itime = itime
+                fdc.timestamp = datetime.datetime.strptime(
                     datestring, '%Y%m%d%H%M%S')
-                FLEXDATA[(s, datestring)]['species'] = H['species'][s]
-                FLEXDATA[(s, datestring)]['gridfile'] = filename
-                FLEXDATA[(s, datestring)]['rel_i'] = rel_i
-                FLEXDATA[(s, datestring)]['spec_i'] = s
+                fdc.species = H['species'][s]
+                fdc.gridfile = filename
+                fdc.rel_i = rel_i
+                fdc.spec_i = s
 
             else:
                 _shout('***ERROR: file %s not found! \n' % filename)
@@ -1140,14 +1132,14 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
     if H.direction == 'backward':
 
         for s, k in itertools.product(species, range(H.numpointspec)):
-            C[(s, k)] = pf.Structure()
-            C[(s, k)].grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
-            C[(s, k)]['itime'] = None
-            C[(s, k)]['timestamp'] = H.releasetimes[k]
-            C[(s, k)]['species'] = H['species'][s]
-            C[(s, k)]['gridfile'] = 'multiple'
-            C[(s, k)]['rel_i'] = k
-            C[(s, k)]['spec_i'] = s
+            C[(s, k)] = c = pf.FDC()
+            c.grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
+            c.itime = None
+            c.timestamp = H.releasetimes[k]
+            c.species = H['species'][s]
+            c.gridfile = 'multiple'
+            c.rel_i = k
+            c.spec_i = s
 
         # read data grids and attribute/sum sensitivity
         print species
@@ -1158,7 +1150,7 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
                 for k in range(H.numpointspec):
                     # cycle through each release point
                     contribution = FD[(s, d)].grid[:, :, :, k]
-                    C[(s, k)].grid = C[(s, k)].grid + contribution
+                    C[(s, k)].grid += contribution
 
     # added this, not sure if it makes sense to have this for 'forward'
     # however, adding 'C' does not add to memory, as it points to same
@@ -1172,11 +1164,6 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
     for s, k in C:
         # add total column
         C[(s, k)].slabs = get_slabs(H, C[(s, k)].grid)
-        # shape, min, max based on total column
-        if H.direction == 'backward':
-            C[(s, k)]['shape'] = C[(s, k)].grid[0].shape
-        C[(s, k)]['max'] = C[(s, k)].grid[0].max()
-        C[(s, k)]['min'] = C[(s, k)].grid[0].min()
 
     if add_attributes:
         H.C = C
