@@ -6,7 +6,7 @@ import pflexible as pf
 class Test_API(TestCase):
 
     def test_(self):
-        H = pf.Header(pf.tests.Fwd1_data)
+        H = pf.Header(pf.Fwd1_data)
         assert sorted(H.keys()) == sorted([
             'zpoint2', 'zpoint1', 'maxpoint', 'compoint', 'nxmax',
             'maxageclass', 'jjjjmmdd', 'releasestart', 'loutsample',

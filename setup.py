@@ -35,6 +35,8 @@ setup(
   license = 'Creative Commons',
   # ext_modules = [Extension('pflexible.pflexcy', ['pflexible/pflexcy.c'],
   #                          include_dirs=[numpy.get_include()])],
-  packages = ['pflexible'],
-  py_modules = ['mapping'],  # XXX that should be converted into a package too?
+  packages = [
+      'pflexible',
+      #'pflexible.tests',   # not included because tests need data samples
+      ],
 )

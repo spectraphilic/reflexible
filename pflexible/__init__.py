@@ -1,13 +1,8 @@
 WELCOME = """
-SYNOPSIS
-========
-
-    pflexible [-h] [-v,--verbose] [--version]
-
 DESCRIPTION
 ===========
 
-    pflexible: A python module for working with FLEXPART Output.
+    pflexible: A python package for working with FLEXPART Output.
 
 
 EXAMPLES
@@ -15,9 +10,12 @@ EXAMPLES
 
     #TODO:
 
-    A lot! This is just a starting point. See the doc strings
-    for information about the various functions.
+    A lot! This is just a starting point. See
+    http://pflexible.readthedocs.org for a gentle introduction to the package
+    and the doc strings for more information about the various functions.
 
+    Also, have a look at the different tests in pflexible/tests for more hints
+    on how to use the package.
 
 AUTHOR
 ======
@@ -37,20 +35,22 @@ CONTRIBUTORS
 LICENSE
 =======
 
-    This script follows creative commons usage.
+    This package follows creative commons usage.
 
 """
 #print WELCOME
 
-from .version import __version__
-import subprocess
 import os
-import sys
-import numpy
+
+from .version import __version__
+
+
+this_dir = __path__[0]
 
 
 def _get_hg_description(path_):
     """ Get the output of hg summary when executed in a given path. """
+    import subprocess
 
     # make an absolute path if required, for example when running in a clone
     if not os.path.isabs(path_):
@@ -69,11 +69,13 @@ def _get_hg_description(path_):
     except subprocess.CalledProcessError:  # not in hg repo
         pass
 
-_hg_description = _get_hg_description(__path__[0])
+_hg_description = _get_hg_description(this_dir)
 
 
 def print_versions():
     """Print all the versions for packages that pflexible relies on."""
+    import numpy
+    import sys
     print("-=" * 38)
     print("pflexible version: %s" % __version__)
     if _hg_description:
@@ -86,6 +88,12 @@ def print_versions():
     print("Byte-ordering:     %s" % sys.byteorder)
     print("-=" * 38)
 
+
+# Some data sources (for testing purposes mainly)
+Bwd1_data = os.path.join(this_dir, "../uio_examples/Bwd1/outputs")
+Fwd1_data = os.path.join(this_dir, "../uio_examples/Fwd1/outputs")
+Fwd2_data = os.path.join(this_dir, "../uio_examples/Fwd2/outputs")
+HelloWorld_data = os.path.join(this_dir, "../uio_examples/HelloWorld/outputs")
 
 
 # Import the public functions here

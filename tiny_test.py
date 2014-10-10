@@ -1,18 +1,18 @@
 import pflexible as pf
 
-H = pf.Header('../test_data/')
+H = pf.Header(pf.Fwd1_data)
 print H.keys()
 
 print "Calling fill_backward():"
-H.fill_backward(nspec=(0,1))
+H.fill_backward(nspec=(0,))
 
 # H.C should be available by now
 print "H.C.keys():"
-print H.C[(0,1)].keys()  # this does not work yet
+print H.C[(0,2)].keys()
 
 # H.FD should be available by now
 print "H.FD.keys():"
-print H.FD[(0, '20100527210000')].keys()  # this does not work yet
+print H.FD[(0, '20070121220000')].keys()
 
 print "Calling read_grid():"
 FD = pf.read_grid(H, time_ret=0,nspec_ret=0)
