@@ -68,6 +68,38 @@ function. I have created a "Header" class that can be used for some
 typical analysis. See the examples directory, and don't forget to read the
 source code and the [getting started](http://pflexible.readthedocs.org/en/latest/getting_started.html) documentation. 
 
+## Testing pflexible
+
+pflexible comes with a suite of test units that you can run in a series of
+ways after you compiled the extensions and before you install it::
+
+  PYTHONPATH=. python -c "import pflexible; pflexible.test()"
+
+or::
+
+  PYTHONPATH=. python pflexible/tests/all.py
+
+or using the excellent py.test (recommended for developers)::
+
+  PYTHONPATH=. py.test
+
+## Reporting problems
+
+When you run into problems it is always nice that when you are filing a ticket
+you would add the information about the versions you are using.  You can do
+that via the `pf.print_versions()`.  Here it is an output example::
+
+  $ python -c "import pflexible; pflexible.print_versions()"
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  pflexible version: 0.10.0
+  NumPy version:     1.9.0
+  Python version:    2.7.8 |Anaconda 2.1.0 (64-bit)| (default, Aug 21 2014, 18:22:21)
+  [GCC 4.4.7 20120313 (Red Hat 4.4.7-1)]
+  Platform:          linux2-x86_64
+  Byte-ordering:     little
+  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
 ## Key Tools
 
 The primary workflow and usefulness of pflexible comes from the read_header and read_grid
