@@ -286,7 +286,7 @@ class Header(Structure):
 
     def read_grid(self, **kwargs):
         """ see :func:`read_grid` """
-        self.FD = pf.read_gridread_grid(self, **kwargs)
+        self.FD = pf.read_grid(self, **kwargs)
 
     def fill_backward(self, **kwargs):
         """ see :func:`fill_backward` """
