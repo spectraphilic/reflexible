@@ -503,7 +503,7 @@ def read_grid(H, **kwargs):
     Returns:
 
         A grid dictionary key by tuples with (species,available_dates), where species is
-        and integer. See grid.keys()
+        an integer. See grid.keys().
 
         FLEXDATA[(s,datestring)]['grid']
         FLEXDATA[(s,datestring)]['itime']
@@ -548,7 +548,6 @@ def read_grid(H, **kwargs):
         most arguments are able to be extracted from the header "H"
 
     """
-
     if H.version == 'V8':
         return readgridV8(H, **kwargs)
     if H.version == 'V6':
@@ -567,8 +566,12 @@ def readgridV8(H, **kwargs):
     This is the 'V8' version of the function.
 
     """
+    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    FLEXDATA = {}
+    fd = pf.Structure()
+
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = pf.Structure()
+    fd.options = OPS = pf.Structure()
     OPS.unit = H.unit
     OPS.getwet = False
     OPS.getdry = False
@@ -589,11 +592,6 @@ def readgridV8(H, **kwargs):
     # add keyword overrides and options to header
     OPS.update(kwargs)
     # H.update(OPS)
-
-    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
-    FLEXDATA = {}
-    fd = pf.Structure()
-    fd.options = pf.Structure()
 
     # What direction is the run?
     unit = OPS.unit
@@ -697,7 +695,6 @@ def readgridV8(H, **kwargs):
 
     # add the requests to the fd object to be returned
     OPS.unit = unit
-    fd.options.update(OPS)
 
     #--------------------------------------------------
     # Loop over all times, given in field H['available_dates']
@@ -832,8 +829,12 @@ def readgridV6(H, **kwargs):
     This is the 'V6' version of the function.
 
     """
+    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    FLEXDATA = {}
+    fd = pf.Structure()
+
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = pf.Structure()
+    fd.options = OPS = pf.Structure()
     OPS.unit = 'time'
     OPS.nspec_ret = 0
     OPS.pspec_ret = 0
@@ -846,16 +847,8 @@ def readgridV6(H, **kwargs):
     OPS.calcfoot = False
     OPS.verbose = False
     OPS.BinaryFile = False
-    # add keyword overides and options to header
+    # add keyword overrides and options to header
     OPS.update(kwargs)
-    # H.update(OPS)
-
-    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
-    FLEXDATA = {}
-    fd = pf.Structure()
-    fd.options = pf.Structure()
-    # add the requests to the fd object to be returned
-    fd.options.update(OPS)
 
     # What direction is the run?
     unit = OPS.unit
