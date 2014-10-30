@@ -1075,7 +1075,7 @@ def monthly_footprints(H):
     return footprints
 
 
-def fill_grids(H, nspec=0, FD=None, add_attributes=False):
+def fill_grids(H, nspec=0, FD=None):
     """ for backward runs, calculates the 20-day sensitivity at each release point.
 
     Usage::
@@ -1165,11 +1165,9 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
         # add total column
         C[(s, k)].slabs = get_slabs(H, C[(s, k)].grid)
 
-    if add_attributes:
-        H.C = C
-        H.FD = FD
-    else:
-        return C
+    H.C = C
+    H.FD = FD
+    return C
 
 
 def read_emissions(emissionsfile, E=None, maxemissions=1):

@@ -290,7 +290,7 @@ class Header(Structure):
 
     def fill_backward(self, **kwargs):
         """ see :func:`fill_backward` """
-        pf.fill_grids(self, add_attributes=True, **kwargs)
+        pf.fill_grids(self, **kwargs)
 
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
