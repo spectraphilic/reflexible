@@ -704,7 +704,6 @@ def readgridV8(H, **kwargs):
         datestring = get_dates[date_i]
         print datestring
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
-
             FLEXDATA[(s, datestring)] = fdc = pf.FDC()
             spec_fid = '_' + str(s + 1).zfill(3)
 
@@ -965,9 +964,7 @@ def readgridV6(H, **kwargs):
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
         print datestring
-        FLEXDATA[datestring] = {}
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
-            total_footprint = False
             FLEXDATA[(s, datestring)] = fdc = pf.FDC()
             # spec_fid = '_'+str(s+1).zfill(3)
 
@@ -979,7 +976,6 @@ def readgridV6(H, **kwargs):
             else:
                 # grid total footprint
                 print "Total footprint"
-                total_footprint = True
                 filename = os.path.join(H['pathname'],
                                         prefix[(unit_i) + (H.nested * 5)])
                 H.zdims = 1
@@ -1009,9 +1005,6 @@ def readgridV6(H, **kwargs):
                     zplot = gridT[:, :, :, :, 0]
                 else:
                     zplot = gridT[:, :, :, :, 0]
-
-                # if total_footprint:
-                #    zplot = np.squeeze(gridT)
 
                 if OPS.calcfoot:
                     zplot = sumgrid(zplot, gridT,
