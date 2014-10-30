@@ -545,7 +545,7 @@ def read_grid(H, **kwargs):
 
 
     .. note::
-        most arguments are able to be extracted fro the header "H"
+        most arguments are able to be extracted from the header "H"
 
     """
 
@@ -586,7 +586,7 @@ def readgridV8(H, **kwargs):
     OPS.verbose = False
     OPS.BinaryFile = False
     OPS.version = 'V8'
-    # add keyword overides and options to header
+    # add keyword overrides and options to header
     OPS.update(kwargs)
     # H.update(OPS)
 
@@ -653,7 +653,7 @@ def readgridV8(H, **kwargs):
         fd.grid_dates = get_dates[:]
 
     print 'getting grid for: ', get_dates
-    # Some predifinitions
+    # Some pre-definitions
     fail = 0
     # set filename prefix
     prefix = ['grid_conc_', 'grid_pptv_',
@@ -690,7 +690,7 @@ def readgridV8(H, **kwargs):
         readgrid = _readgridBF
         OPS.BinaryFile = True
 
-   # reserve output fields
+    # reserve output fields
     print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
 
     # -------------------------------------------------
@@ -809,10 +809,11 @@ def readgridV8(H, **kwargs):
                 _shout('***ERROR: file %s not found! \n' % filename)
                 fail = 1
 
-        fd.set_with_dict(FLEXDATA)
+        fd.set_with_dict(FLEXDATA)  # XXX keys are tuples, is this really intended?
         try:
             # just for testing, set the first available grid as a shortcut
             # this will be removed.
+            # TODO: this can be removed now?
             qind = (nspec_ret[0], fd.grid_dates[0])
             fd.grid = fd[qind][fd[qind].keys()[0]].grid
         except:
@@ -1080,7 +1081,7 @@ def fill_grids(H, nspec=0, FD=None):
 
     Usage::
 
-        > C = fill_backward(H,nspec=(0))
+        > FDC = fill_backward(H, nspec=(0))
 
 
     This will cycle through all available_dates and create the filled backward array
@@ -1089,8 +1090,6 @@ def fill_grids(H, nspec=0, FD=None):
     Returns
 
         A dictionary keyed by a (species,k) tuple.
-        OR
-        C & FD attributes on H
 
     Each element in the dictionary is a 3D array (x,y,z) for each species,k
 
@@ -1105,8 +1104,6 @@ def fill_grids(H, nspec=0, FD=None):
     ==============        ========================================
     nspec                 the specied ID or a tuple of species IDs
     FD                    FD can be passed if it is already read
-    add_attributes        will add C and FD as attributes to H,
-                          rather than returning just C
     ==============        ========================================
 
     .. todo::
