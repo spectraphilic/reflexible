@@ -143,7 +143,7 @@ def _readgrid_noFF(H, **kwargs):
                 ii = ii + 1
                 fact = fact * -1.
             else:
-                n = n + 1
+                n = n + 1  # XXX n is actually set before this?
 
             kz = n / (numxgrid * numygrid)
             jy = (n - kz * numxgrid * numygrid) / numxgrid
@@ -906,7 +906,7 @@ def readgridV6(H, **kwargs):
         fd.grid_dates = get_dates[:]
 
     print 'getting grid for: ', get_dates
-    # Some predifinitions
+    # Some pre-definitions
     fail = 0
     # set filename prefix
     prefix = ['grid_conc_', 'grid_pptv_',

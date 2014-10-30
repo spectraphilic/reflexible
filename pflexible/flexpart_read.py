@@ -695,8 +695,9 @@ def read_header(pathname, **kwargs):
         Please report any problems...
 
     """
+    h = pf.Structure()
 
-    OPS = pf.Structure()
+    h.options = OPS = pf.Structure()
     OPS.readp = True
     OPS.nested = False
     OPS.ltopo = 1  # 1 for AGL, 0 for ASL
@@ -740,8 +741,6 @@ def read_header(pathname, **kwargs):
     # Define utility functions for reading binary file
     skip = lambda n = 8: bf.seek(n, 1)
     getbin = lambda dtype, n = 1: bf.read(dtype, (n,))
-
-    h = pf.Structure()
 
     if OPS.headerfile:
         filename = os.path.join(pathname, OPS.headerfile)
@@ -1097,7 +1096,6 @@ def read_header(pathname, **kwargs):
         layerthickness.append(lh - h.outheight[i])
     h.layerthickness = layerthickness
 
-    h.options = OPS
     h.fp_version = h.flexpart
     h.junk = junk  # the extra bits that were read... more for debugging
 
