@@ -358,6 +358,9 @@ class FDC(object):
     def grid(self, value):
         """Example of setter.  Add additional code here if desired."""
         self._grid = value
+        self._shape = value.shape
+        self._max = value.max()
+        self._min = value.min()
 
     @property
     def gridfile(self):
@@ -443,12 +446,12 @@ class FDC(object):
     # Read-only properties
     @property
     def shape(self):
-        return self._grid.shape
+        return self._shape
 
     @property
     def max(self):
-        return self._grid.max()
+        return self._max
 
     @property
     def min(self):
-        return self._grid.min()
+        return self._min
