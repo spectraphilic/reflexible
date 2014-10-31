@@ -666,15 +666,9 @@ def readgridV8(H, **kwargs):
     # Determine what module to read, try to use FortFlex, then dumpgrid, lastly pure Python
     # import the FortFlex / Fortran module
     try:
-        if OPS.version == 'V6':
-            from .FortFlex import readgrid_v6 as readgrid
-            from .FortFlex import sumgrid
-            useFortFlex = True
-            print 'using FortFlex VERSION 6'
-        else:
-            print('Assumed V8 Flexpart')
-            from .FortFlex import readgrid, sumgrid
-            useFortFlex = True
+        print('Assumed V8 Flexpart')
+        from .FortFlex import readgrid, sumgrid
+        useFortFlex = True
     except:
         # get the original module (no memory allocation)
         try:
