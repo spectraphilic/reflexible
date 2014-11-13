@@ -143,7 +143,7 @@ def _readgrid_noFF(H, **kwargs):
                 ii = ii + 1
                 fact = fact * -1.
             else:
-                n = n + 1
+                n = n + 1  # XXX n is actually set before this?
 
             kz = n / (numxgrid * numygrid)
             jy = (n - kz * numxgrid * numygrid) / numxgrid
@@ -503,7 +503,7 @@ def read_grid(H, **kwargs):
     Returns:
 
         A grid dictionary key by tuples with (species,available_dates), where species is
-        and integer. See grid.keys()
+        an integer. See grid.keys().
 
         FLEXDATA[(s,datestring)]['grid']
         FLEXDATA[(s,datestring)]['itime']
@@ -545,10 +545,9 @@ def read_grid(H, **kwargs):
 
 
     .. note::
-        most arguments are able to be extracted fro the header "H"
+        most arguments are able to be extracted from the header "H"
 
     """
-
     if H.version == 'V8':
         return readgridV8(H, **kwargs)
     if H.version == 'V6':
@@ -567,8 +566,12 @@ def readgridV8(H, **kwargs):
     This is the 'V8' version of the function.
 
     """
+    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    FLEXDATA = {}
+    fd = pf.Structure()
+
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = pf.Structure()
+    fd.options = OPS = pf.Structure()
     OPS.unit = H.unit
     OPS.getwet = False
     OPS.getdry = False
@@ -586,14 +589,9 @@ def readgridV8(H, **kwargs):
     OPS.verbose = False
     OPS.BinaryFile = False
     OPS.version = 'V8'
-    # add keyword overides and options to header
+    # add keyword overrides and options to header
     OPS.update(kwargs)
     # H.update(OPS)
-
-    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
-    FLEXDATA = {}
-    fd = pf.Structure()
-    fd.options = pf.Structure()
 
     # What direction is the run?
     unit = OPS.unit
@@ -653,7 +651,7 @@ def readgridV8(H, **kwargs):
         fd.grid_dates = get_dates[:]
 
     print 'getting grid for: ', get_dates
-    # Some predifinitions
+    # Some pre-definitions
     fail = 0
     # set filename prefix
     prefix = ['grid_conc_', 'grid_pptv_',
@@ -668,15 +666,9 @@ def readgridV8(H, **kwargs):
     # Determine what module to read, try to use FortFlex, then dumpgrid, lastly pure Python
     # import the FortFlex / Fortran module
     try:
-        if OPS.version == 'V6':
-            from .FortFlex import readgrid_v6 as readgrid
-            from .FortFlex import sumgrid
-            useFortFlex = True
-            print 'using FortFlex VERSION 6'
-        else:
-            print('Assumed V8 Flexpart')
-            from .FortFlex import readgrid, sumgrid
-            useFortFlex = True
+        print('Assumed V8 Flexpart')
+        from .FortFlex import readgrid, sumgrid
+        useFortFlex = True
     except:
         # get the original module (no memory allocation)
         try:
@@ -690,14 +682,13 @@ def readgridV8(H, **kwargs):
         readgrid = _readgridBF
         OPS.BinaryFile = True
 
-   # reserve output fields
+    # reserve output fields
     print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
 
     # -------------------------------------------------
 
     # add the requests to the fd object to be returned
     OPS.unit = unit
-    fd.options.update(OPS)
 
     #--------------------------------------------------
     # Loop over all times, given in field H['available_dates']
@@ -707,7 +698,6 @@ def readgridV8(H, **kwargs):
         datestring = get_dates[date_i]
         print datestring
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
-
             FLEXDATA[(s, datestring)] = fdc = pf.FDC()
             spec_fid = '_' + str(s + 1).zfill(3)
 
@@ -809,10 +799,11 @@ def readgridV8(H, **kwargs):
                 _shout('***ERROR: file %s not found! \n' % filename)
                 fail = 1
 
-        fd.set_with_dict(FLEXDATA)
+        fd.set_with_dict(FLEXDATA)  # XXX keys are tuples, is this really intended?
         try:
             # just for testing, set the first available grid as a shortcut
             # this will be removed.
+            # TODO: this can be removed now?
             qind = (nspec_ret[0], fd.grid_dates[0])
             fd.grid = fd[qind][fd[qind].keys()[0]].grid
         except:
@@ -831,8 +822,12 @@ def readgridV6(H, **kwargs):
     This is the 'V6' version of the function.
 
     """
+    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
+    FLEXDATA = {}
+    fd = pf.Structure()
+
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = pf.Structure()
+    fd.options = OPS = pf.Structure()
     OPS.unit = 'time'
     OPS.nspec_ret = 0
     OPS.pspec_ret = 0
@@ -845,16 +840,8 @@ def readgridV6(H, **kwargs):
     OPS.calcfoot = False
     OPS.verbose = False
     OPS.BinaryFile = False
-    # add keyword overides and options to header
+    # add keyword overrides and options to header
     OPS.update(kwargs)
-    # H.update(OPS)
-
-    # set up the return dictionary (FLEXDATA updates fd, fd is returned)
-    FLEXDATA = {}
-    fd = pf.Structure()
-    fd.options = pf.Structure()
-    # add the requests to the fd object to be returned
-    fd.options.update(OPS)
 
     # What direction is the run?
     unit = OPS.unit
@@ -913,7 +900,7 @@ def readgridV6(H, **kwargs):
         fd.grid_dates = get_dates[:]
 
     print 'getting grid for: ', get_dates
-    # Some predifinitions
+    # Some pre-definitions
     fail = 0
     # set filename prefix
     prefix = ['grid_conc_', 'grid_pptv_',
@@ -971,9 +958,7 @@ def readgridV6(H, **kwargs):
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
         print datestring
-        FLEXDATA[datestring] = {}
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
-            total_footprint = False
             FLEXDATA[(s, datestring)] = fdc = pf.FDC()
             # spec_fid = '_'+str(s+1).zfill(3)
 
@@ -985,7 +970,6 @@ def readgridV6(H, **kwargs):
             else:
                 # grid total footprint
                 print "Total footprint"
-                total_footprint = True
                 filename = os.path.join(H['pathname'],
                                         prefix[(unit_i) + (H.nested * 5)])
                 H.zdims = 1
@@ -1015,9 +999,6 @@ def readgridV6(H, **kwargs):
                     zplot = gridT[:, :, :, :, 0]
                 else:
                     zplot = gridT[:, :, :, :, 0]
-
-                # if total_footprint:
-                #    zplot = np.squeeze(gridT)
 
                 if OPS.calcfoot:
                     zplot = sumgrid(zplot, gridT,
@@ -1075,12 +1056,12 @@ def monthly_footprints(H):
     return footprints
 
 
-def fill_grids(H, nspec=0, FD=None, add_attributes=False):
+def fill_grids(H, nspec=0, FD=None):
     """ for backward runs, calculates the 20-day sensitivity at each release point.
 
     Usage::
 
-        > C = fill_backward(H,nspec=(0))
+        > FDC = fill_backward(H, nspec=(0))
 
 
     This will cycle through all available_dates and create the filled backward array
@@ -1089,8 +1070,6 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
     Returns
 
         A dictionary keyed by a (species,k) tuple.
-        OR
-        C & FD attributes on H
 
     Each element in the dictionary is a 3D array (x,y,z) for each species,k
 
@@ -1105,8 +1084,6 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
     ==============        ========================================
     nspec                 the specied ID or a tuple of species IDs
     FD                    FD can be passed if it is already read
-    add_attributes        will add C and FD as attributes to H,
-                          rather than returning just C
     ==============        ========================================
 
     .. todo::
@@ -1165,11 +1142,9 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
         # add total column
         C[(s, k)].slabs = get_slabs(H, C[(s, k)].grid)
 
-    if add_attributes:
-        H.C = C
-        H.FD = FD
-    else:
-        return C
+    H.C = C
+    H.FD = FD
+    return C
 
 
 def read_emissions(emissionsfile, E=None, maxemissions=1):

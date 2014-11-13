@@ -24,6 +24,13 @@ class Test_API(TestCase):
         fdkeys_ = sorted(FD[(0, '20070121100000')].keys())
         assert fdkeys_ == self.fdkeys
 
+    def test_H_read_grid(self):
+        self.H.read_grid(time_ret=0, nspec_ret=0)
+        fdkeys = sorted(self.H.FD.keys())
+        assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
+        fdkeys_ = sorted(self.H.FD[(0, '20070121100000')].keys())
+        assert fdkeys_ == self.fdkeys
+
     def test_read_trajectories(self):
         T = pf.read_trajectories(self.H)
         tkeys = sorted(T.keys())

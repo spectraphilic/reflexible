@@ -286,11 +286,11 @@ class Header(Structure):
 
     def read_grid(self, **kwargs):
         """ see :func:`read_grid` """
-        self.FD = pf.read_gridread_grid(self, **kwargs)
+        self.FD = pf.read_grid(self, **kwargs)
 
     def fill_backward(self, **kwargs):
         """ see :func:`fill_backward` """
-        pf.fill_grids(self, add_attributes=True, **kwargs)
+        pf.fill_grids(self, **kwargs)
 
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
@@ -358,6 +358,9 @@ class FDC(object):
     def grid(self, value):
         """Example of setter.  Add additional code here if desired."""
         self._grid = value
+        self._shape = value.shape
+        self._max = value.max()
+        self._min = value.min()
 
     @property
     def gridfile(self):
@@ -443,12 +446,12 @@ class FDC(object):
     # Read-only properties
     @property
     def shape(self):
-        return self._grid.shape
+        return self._shape
 
     @property
     def max(self):
-        return self._grid.max()
+        return self._max
 
     @property
     def min(self):
-        return self._grid.min()
+        return self._min
