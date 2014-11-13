@@ -717,18 +717,8 @@ def read_header(pathname, **kwargs):
             "Now use nested=True or nested=False")
 
     if 'nested' in kwargs.keys():
-        if kwargs['nested'] is 1:
-            print(
-                "WARNING, use of nested=1, deprecated converting to "
-                "nested=True")
-            kwargs['nested'] = True
-
-    if 'nested' in kwargs.keys():
-        if kwargs['nested'] is 0:
-            print(
-                "WARNING, use of nested=0, deprecated converting to "
-                "nested=False")
-            kwargs['nested'] = False
+        # Force the use of true boolean values
+        kwargs['nested'] = bool(kwargs['nested'])
 
     OPS.update(kwargs)
 
