@@ -3,7 +3,7 @@ import os, os.path
 from unittest import TestCase
 
 import pflexible as pf
-from pflexible.convert2netcdf4 import nc_create
+from .. import create_nc
 
 
 class Test_Fwd(TestCase):
@@ -14,7 +14,7 @@ class Test_Fwd(TestCase):
             'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
 
     def test_nc_create(self):
-        nc_create(pf.Fwd1_data, "/tmp/Fwd1.nc")
+        create_nc(pf.Fwd1_data, "/tmp/Fwd1.nc")
         assert os.path.exists("/tmp/Fwd1.nc")
 
     def test_read_grid(self):

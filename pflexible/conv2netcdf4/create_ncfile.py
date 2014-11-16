@@ -18,7 +18,7 @@ import netCDF4 as nc
 from pflexible.conv2netcdf4 import Header, read_grid
 
 
-def nc_create(H, ncfile):
+def create_ncfile(H, ncfile):
     FD = read_grid(H, time_ret=-1, nspec_ret=0)
 #     fdkeys = sorted(FD.keys())
 #     assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
@@ -30,7 +30,7 @@ def nc_create(H, ncfile):
 def main():
     fddir = sys.argv[1]
     H = Header(fddir)    
-    nc_create(H, os.path.join(fddir, ".nc"))
+    create_ncfile(H, os.path.join(fddir, ".nc"))
 
 
 if __name__ == '__main__':

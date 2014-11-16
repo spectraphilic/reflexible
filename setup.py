@@ -15,10 +15,12 @@ open('pflexible/version.py', 'w').write('__version__ = "%s"\n' % VERSION)
 
 # Build the FortFlex extension if necessary
 if (not os.path.exists("pflexible/conv2netcdf4/FortFlex.so") or
-    newer("pflexible/conv2netcdf4/fortflex/FortFlex.f", "pflexible/conv2netcdf4/FortFlex.so")):
+    newer("pflexible/conv2netcdf4/fortflex/FortFlex.f",
+          "pflexible/conv2netcdf4/FortFlex.so")):
     try:
         print(subprocess.check_output(
-            "cd pflexible/conv2netcdf4/fortflex; sh build_FortFlex.sh", shell=True))
+            "cd pflexible/conv2netcdf4/fortflex; "
+            "sh build_FortFlex.sh", shell=True))
     except:
         print("Problems compiling the FortFlex module.  "
               "Will continue using a slower fallback...")

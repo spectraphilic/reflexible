@@ -97,7 +97,5 @@ HelloWorld_data = os.path.join(this_dir, "../uio_examples/HelloWorld/outputs")
 
 
 # Import the public functions here
-from .flexpart_read import read_header, read_trajectories
-from .grid_read import read_grid, get_slabs, fill_grids
-from .data_structures import BinaryFile, Structure, Header, FDC
 from .tests.all import test
+from . import conv2netcdf4

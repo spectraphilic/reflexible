@@ -7,7 +7,7 @@ from math import pi, sqrt, cos
 
 import numpy as np
 
-import pflexible as pf
+import pflexible.conv2netcdf4
 from .helpers import closest
 
 
@@ -328,7 +328,7 @@ def read_trajectories(H, trajfile='trajectories.txt',
     numpoint = int(alltraj[2].strip())
     # Fill a dictionary with the Release points and information keyed by name
     # RelTraj['RelTraj_ID'] = (i1,i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
-    RelTraj = pf.Structure()
+    RelTraj = pflexible.conv2netcdf4.Structure()
     Trajectories = []
 
     for i in range(3, 3 + (numpoint * 2), 2):
@@ -490,7 +490,7 @@ def read_agespectrum(filename, part=False, ndays=20):
         numageclass = int(line1[0])
         ageclasses = np.array([int(i) for i in line1[1:]])
         numspec = int(f[1].strip().split()[0])
-    A = pf.Structure()
+    A = pflexible.conv2netcdf4.Structure()
     D = []
     for line in f[2:]:
         line = line.strip().split()
@@ -630,7 +630,7 @@ def _get_header_version(bf):
 
     """
     try:
-        bf = pf.BinaryFile(bf)
+        bf = pflexible.conv2netcdf4.BinaryFile(bf)
     except:
         bf = bf
 
@@ -650,7 +650,7 @@ def read_header(pathname, **kwargs):
     output.
 
     .. warning::
-        It is recommended to use the :class:`Header` class: H = pf.Header(path)
+        It is recommended to use the :class:`Header` class: H = Header(path)
 
     This version is using the BinaryFile class rather than FortFlex.
 
@@ -695,9 +695,9 @@ def read_header(pathname, **kwargs):
         Please report any problems...
 
     """
-    h = pf.Structure()
+    h = pflexible.conv2netcdf4.Structure()
 
-    h.options = OPS = pf.Structure()
+    h.options = OPS = pflexible.conv2netcdf4.Structure()
     OPS.readp = True
     OPS.nested = False
     OPS.ltopo = 1  # 1 for AGL, 0 for ASL
@@ -747,7 +747,7 @@ def read_header(pathname, **kwargs):
         raise IOError("No such file: {0}".format(filename))
     else:
         try:
-            bf = pf.BinaryFile(filename, order="fortran")
+            bf = pflexible.conv2netcdf4.BinaryFile(filename, order="fortran")
         except:
             raise IOError(
                 "Error opening: {0} with BinaryFile class".format(filename))
