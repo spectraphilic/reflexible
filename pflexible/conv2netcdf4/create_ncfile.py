@@ -18,19 +18,32 @@ import netCDF4 as nc
 from pflexible.conv2netcdf4 import Header, read_grid
 
 
+def write_metadata(H, ncid):
+    # hes CF convention requires these attributes
+    ncid.Conventions = 'CF-1.6'
+    ncid.title = 'FLEXPART model output'
+    # ncid.institution = institution.strip()
+    # ncid.source = trim(flexversion) + ' model output'
+    # ncid.history = date[:4] + '-' + date[4:6] + '-' + date[6:8] + ' ' + time[0:2] + ':' + time(3:4) + ' ' + zone + '  created by '+ trim(login_name) + ' on ' + trim(host_name)
+    ncid.references = 'Stohl et al., Atmos. Chem. Phys., 2005, doi:10.5194/acp-5-2461-200'
+
+
 def create_ncfile(H, ncfile):
+    ncid = nc.Dataset(ncfile, 'w')
+    write_metadata(H, ncid)
     FD = read_grid(H, time_ret=-1, nspec_ret=0)
-#     fdkeys = sorted(FD.keys())
-#     assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
-    print("grid_dates:", FD['grid_dates'], FD['options'])
-#     fdkeys_ = sorted(FD[(0, '20070121100000')].keys())
-#     assert fdkeys_ == self.fdkeys
+    ncid.close()
 
 
 def main():
     fddir = sys.argv[1]
-    H = Header(fddir)    
-    create_ncfile(H, os.path.join(fddir, ".nc"))
+    try:
+        outname = sys.argv[2]
+    except:
+        outname = "output.nc"
+    H = Header(fddir)
+    create_ncfile(H, "output.nc")
+    print("New netCDF4 files is available in: '%s'" % outname)
 
 
 if __name__ == '__main__':
