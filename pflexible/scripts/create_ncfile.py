@@ -66,7 +66,27 @@ def write_metadata(H, ncid):
 
 
 def write_header(H, ncid):
-    pass
+    nnx = H.numxgrid
+    nny = H.numygrid
+    nnz = H.numzgrid
+    # Create dimensions
+    # lon
+    lonDimID = ncid.createDimension('longitude', nnx)
+    # lat
+    latDimID = ncid.createDimension('latitude', nny)
+    # level
+    levDimID = ncid.createDimension('height', nnz)
+    # number of species
+    nspecDimID = ncid.createDimension('numspec', H.nspec)
+    # number of release points
+    pointspecDimID = ncid.createDimension('pointspec', H.numpointspec)  # XXX or H.maxpoint?
+    # number of age classes
+    nageclassDimID = ncid.createDimension('nageclass', H.nageclass)
+    # dimension for release point characters
+    ncharDimID = ncid.createDimension('nchar', 45)
+    # number of actual release points
+    npointDimID = ncid.createDimension('numpoint', H.numpoint)
+
 
 
 def create_ncfile(fddir, nested, outfile=None):
@@ -84,7 +104,8 @@ def create_ncfile(fddir, nested, outfile=None):
             ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
     else:
         ncfname = outfile
-    ncid = nc.Dataset(ncfname, 'w')
+    cache_size = 16 * H.numxgrid * H.numygrid * H.numzgrid
+    ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, ncid)
     write_header(H, ncid)
     ncid.close()
