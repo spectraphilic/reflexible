@@ -118,6 +118,14 @@ def write_header(H, ncid):
     latID.standard_name = 'grid_latitude'
     latID.description = 'grid cell centers'
 
+    # height
+    levID = ncid.createVariable('height', 'f4', 'height')
+    # levID.axis = 'Z'
+    levID.units = 'meters'
+    levID.positive = 'up'
+    levID.standard_name = 'height'
+    levID.long_name = 'height above ground'
+
 
 def create_ncfile(fddir, nested, outfile=None):
     H = Header(fddir, nested=nested)
