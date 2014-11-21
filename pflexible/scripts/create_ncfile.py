@@ -69,7 +69,15 @@ def write_header(H, ncid):
     nnx = H.numxgrid
     nny = H.numygrid
     nnz = H.numzgrid
+
     # Create dimensions
+
+    # time
+    timeDimID = ncid.createDimension('time', None)
+    adate, atime = str(H.ibdate), str(H.ibtime)
+    timeunit = 'seconds since ' + adate[:4] + '-' + adate[4:6] + \
+        '-'+ adate[6:8] + ' ' + atime[:2] + ':' + atime[2:4]
+
     # lon
     lonDimID = ncid.createDimension('longitude', nnx)
     # lat
@@ -87,6 +95,28 @@ def write_header(H, ncid):
     # number of actual release points
     npointDimID = ncid.createDimension('numpoint', H.numpoint)
 
+    # create variables
+
+    # time
+    tID = ncid.createVariable('time', 'i4', ('time',))
+    tID.units = timeunit
+    tID.calendar = 'proleptic_gregorian'
+
+    # lon
+    lonID = ncid.createVariable('longitude', 'f4', ('longitude',))
+    lonID.long_name = 'longitude in degree east'
+    lonID.axis = 'Lon'
+    lonID.units = 'degrees_east'
+    lonID.standard_name = 'grid_longitude'
+    lonID.description = 'grid cell centers'
+
+    # lat
+    latID = ncid.createVariable('latitude', 'f4', ('latitude',))
+    latID.long_name = 'latitude in degree north'
+    latID.axis = 'Lat'
+    latID.units = 'degrees_north'
+    latID.standard_name = 'grid_latitude'
+    latID.description = 'grid cell centers'
 
 
 def create_ncfile(fddir, nested, outfile=None):
