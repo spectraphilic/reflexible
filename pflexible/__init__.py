@@ -90,12 +90,13 @@ def print_versions():
 
 
 # Some data sources (for testing purposes mainly)
-Bwd1_data = os.path.join(this_dir, "../uio_examples/Bwd1/outputs")
-Fwd1_data = os.path.join(this_dir, "../uio_examples/Fwd1/outputs")
-Fwd2_data = os.path.join(this_dir, "../uio_examples/Fwd2/outputs")
-HelloWorld_data = os.path.join(this_dir, "../uio_examples/HelloWorld/outputs")
+Bwd1_data = os.path.join(this_dir, "uio_examples/Bwd1/outputs")
+Fwd1_data = os.path.join(this_dir, "uio_examples/Fwd1/outputs")
+Fwd2_data = os.path.join(this_dir, "uio_examples/Fwd2/outputs")
+HelloWorld_data = os.path.join(this_dir, "uio_examples/HelloWorld/outputs")
 
 
 # Import the public functions here
 from .tests.all import test
 from . import conv2netcdf4
+from .scripts.create_ncfile import create_ncfile

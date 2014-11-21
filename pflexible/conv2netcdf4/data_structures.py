@@ -271,7 +271,7 @@ class Header(Structure):
             traceback.print_exc()
             raise IOError('''
             Could not set header variables.
-            Does the `header` file exist in path?\n{0}'''.format(path))
+            Does the `header` or `header_nest` file exist in path?\n{0}'''.format(path))
 
     def lonlat(self):
         """ Add longitude and latitude attributes using data from header """

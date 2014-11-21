@@ -8,6 +8,6 @@ exclude DISTRIBUTE
 
 recursive-include pflexible *.py *.pyx *.pxd *.c *.h
 recursive-include pflexible/tests *.py
+recursive-include pflexible/uio_examples *
 recursive-include fortflex FortFlex.f build_FortFlex.sh README
 recursive-include doc/source *.rst *.txt *.py *.pdf *.css *.png
-recursive-include uio_examples *

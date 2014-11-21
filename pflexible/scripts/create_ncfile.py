@@ -69,7 +69,7 @@ def write_header(H, ncid):
     pass
 
 
-def create_ncfile(fddir, nested):
+def create_ncfile(fddir, nested, outfile=None):
     H = Header(fddir, nested=nested)
     if H.direction == "forward":
         fprefix = 'grid_conc_'
@@ -77,10 +77,13 @@ def create_ncfile(fddir, nested):
         fprefix = 'grid_time_'
     path = os.path.dirname(fddir)
     fprefix = os.path.join(path, fprefix)
-    if H.nested:
-        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
+    if outfile is None:
+        if H.nested:
+            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
+        else:
+            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
     else:
-        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
+        ncfname = outfile
     ncid = nc.Dataset(ncfname, 'w')
     write_metadata(H, ncid)
     write_header(H, ncid)

@@ -3,22 +3,22 @@ import os, os.path
 from unittest import TestCase
 
 import pflexible as pf
-from .. import create_nc
+import pflexible.conv2netcdf4 as conv
 
 
 class Test_Fwd(TestCase):
 
-    H = pf.Header(pf.Fwd1_data)
+    H = conv.Header(pf.Fwd1_data)
     fdkeys = [
             'dry', 'grid', 'gridfile', 'itime', 'max', 'min', 'rel_i',
             'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
 
     def test_nc_create(self):
-        create_nc(pf.Fwd1_data, "/tmp/Fwd1.nc")
+        pf.create_ncfile(pf.Fwd1_data, nested=False, outfile="/tmp/Fwd1.nc")
         assert os.path.exists("/tmp/Fwd1.nc")
 
     def test_read_grid(self):
-        FD = pf.read_grid(self.H, time_ret=0, nspec_ret=0)
+        FD = conv.read_grid(self.H, time_ret=0, nspec_ret=0)
         fdkeys = sorted(FD.keys())
         assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
         fdkeys_ = sorted(FD[(0, '20070121100000')].keys())
@@ -32,7 +32,7 @@ class Test_Fwd(TestCase):
         assert fdkeys_ == self.fdkeys
 
     def test_read_trajectories(self):
-        T = pf.read_trajectories(self.H)
+        T = conv.read_trajectories(self.H)
         tkeys = sorted(T.keys())
         assert tkeys == [
             'RELEASE_TEST1', 'Trajectories', 'date', 'info', 'labels',
@@ -40,7 +40,7 @@ class Test_Fwd(TestCase):
 
 class Test_Bwd(TestCase):
 
-    H = pf.Header(pf.Bwd1_data)
+    H = conv.Header(pf.Bwd1_data)
     fdkeys = [
             'dry', 'grid', 'gridfile', 'itime', 'max', 'min', 'rel_i',
             'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
@@ -53,7 +53,7 @@ class Test_Bwd(TestCase):
         assert sorted(fdkeys) == self.fdkeys
 
     def test_read_grid(self):
-        FD = pf.read_grid(self.H, time_ret=0, nspec_ret=0)
+        FD = conv.read_grid(self.H, time_ret=0, nspec_ret=0)
         fdkeys = sorted(FD.keys())
         assert fdkeys == ['grid_dates', 'options', (0, self.H.available_dates[0])]
         fdkeys_ = sorted(FD[(0, self.H.available_dates[0])].keys())
