@@ -11,7 +11,7 @@ The mapping module
 A brief description of the module
 =================================
 
-The mapping module is a helper function to the :mod:`pflexible` module.
+The mapping module is a helper function to the :mod:`reflexible` module.
 Primarily it is designed to perform a few tasks relating to using the 
 matplotlib `Basemap
 <http://matplotlib.sourceforge.net/basemap/doc/html/api/basemap_api.html#module-mpl_toolkits.basemap>`_ 
@@ -27,7 +27,7 @@ Purpose
 -------
 
 The purpose of this module is to ease create some basic mapping routines using
-the basemap module. These are called directly from the :mod:`pflexible` for
+the basemap module. These are called directly from the :mod:`reflexible` for
 example in the :func:`plot_sensitivity` routine. The core idea is that a
 "FIGURE" object is created using the :func:`get_FIGURE` function which has some
 key attributes. In general, this is transparent to the user, just intialize

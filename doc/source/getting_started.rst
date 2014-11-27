@@ -10,10 +10,10 @@ Getting started
 A quick overview of FLEXPART data
 =================================
 
-pflexible was originally developed for working with FLEXPART V8.x which has
+reflexible was originally developed for working with FLEXPART V8.x which has
 some fairly new features to how the output data is created. The latest version of FLEXPART
 also has functionality for saving directly to Netcdf. The ability to read this data directly
-is forthcoming, but for now pflexible still only works with the raw unformatted binary Fortran
+is forthcoming, but for now reflexible still only works with the raw unformatted binary Fortran
 data FLEXPART has traditionally used for output. 
 See the documents for information regarding `FLEXPART
 <http://transport.nilu.no/flexpart>`_ .
@@ -24,12 +24,12 @@ FLEXPART is available which explains the model output.
 *Note* If you are interested in contributing functionality for other FLEXPART
 versions, please contact me.
 
-pflexible was originally released as 'pflexpart', but as the goal is to be more
+reflexible was originally released as 'pflexpart', but as the goal is to be more
 generic, the package was renamed. The current release is still focused on
 FLEXPART, but some generalizations are starting to make their way into the code
 base.
 
-pflexible is undergoing *constant* modifications and is not particularly stable
+reflexible is undergoing *constant* modifications and is not particularly stable
 or backward compatible code. I am trying to move in the right direction, and
 have moved the code now to bitbucket.org. If you are interested in contributing,
 feel free to contact me: `John F. Burkhart <mailto:jfburkhart@gmail.com>`_
@@ -43,7 +43,7 @@ Fetching example data
 ---------------------
 
 An example data set is available for testing. The data contains a simple backward
-run case, and thus is suitable for testing some of the unique functions of pflexible
+run case, and thus is suitable for testing some of the unique functions of reflexible
 for analysis and creation of the retroplumes.
 
 I suggest using wget to grab the data::
@@ -53,9 +53,9 @@ I suggest using wget to grab the data::
   
 ----
 
-.. _testing-pflexible:
+.. _testing-reflexible:
 
-Testing pflexible
+Testing reflexible
 =================
 
 Once you have checked out the code and have a sufficient FLEXPART dataset to
@@ -63,7 +63,7 @@ work with you can begin to use the module. The first step is to load the
 module. Depending on how you checked out the code, you can accomplish this in a
 few different way, but the preferred is as follows::
 
-    import pflexible as pf
+    import reflexible as pf
 
 .. sidebar:: header file
 
@@ -88,7 +88,7 @@ run setup.
 ----
 
 Reasonably, you should now want to read in some of the data from your run. This
-is accomplished easily using the :func:`read_grid <pflexible.read_grid>`. This function
+is accomplished easily using the :func:`read_grid <reflexible.read_grid>`. This function
 may be called directly, or there
 are several alternative ways we can read the data. A special method exists for backward runs
 that collects all the data from the 20-days back in time (by default) and creates accumulated
@@ -108,7 +108,7 @@ If you receive a message about using the Pure Python approach it is highly
 recommended to build the FortFlex module.
 
 .. note::
-  See the :func:`read_grid <pflexible.read_grid>` function 
+  See the :func:`read_grid <reflexible.read_grid>` function 
   for information on the keyword arguments.
 
 At this point you should now have a variable 'FD' which is again a dictionary of
@@ -132,7 +132,7 @@ Okay, let\'s take a look at the example code above line by line. The first line 
 giving it a namespace "pf" -- this is the preferred approach. The next few lines simply define the paths for "SOURCE_DIR" and 
 "OUTPUT_DIR" (you probably already changed these).::
 
-    import pflexible as pf
+    import reflexible as pf
     SOURCE_DIR = '/path/to/flexpart/test_data'
     OUTPUT_DIR = '/path/to/flexpart/output'
 
@@ -141,7 +141,7 @@ of the directory (not header path) containing the FLEXPART run.::
 
     H = pf.Header(SOURCE_DIR)
 
-The `Header` is central to `pflexible`. This contains much information about the
+The `Header` is central to `reflexible`. This contains much information about the
 FLEXPART run, and enable plotting, labeling of plots, looking up dates of runs,
 coordinates for mapping, etc. All this information is contained in the `Header`.
 See for example::
@@ -170,7 +170,7 @@ This dictionary is similar to the "FD" dictionary, but contains the Cumulative
 sensitivity at each time step, so you can use it for plotting retroplumes.
 
 It is important to understand the differences between `H.FD` and `H.C` while
-working with pflexible. If we look closely at the keys of `H.FD`::
+working with reflexible. If we look closely at the keys of `H.FD`::
 
     In [13]: H.FD.keys()
     Out[13]: 
@@ -273,10 +273,10 @@ There is no longer a fourth dimension corresponding to the release time.
 Furthermore, there is a new key `slabs`. This is a dictionary where each numz
 level is packaged as a 2-d numpy array keyed by it's level index. This is
 redundant data to the grid, and will likely
-change in future versions of pflexible. However, the important point to note is
+change in future versions of reflexible. However, the important point to note is
 that the 0th element is the Total Column.
 
-Using the plotting tools of pflexible we can plot the total column easily::
+Using the plotting tools of reflexible we can plot the total column easily::
 
     pf.plot_totalcolumn (H, H.C[(0,1)], map_region='Europe')
 

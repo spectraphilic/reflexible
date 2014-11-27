@@ -18,7 +18,7 @@ import mapping as mp
 from .data_structures import Structure
 from .helpers import closest
 
-import pflexible as pf
+import reflexible as pf
 
 
 # Helpers for plotting routines
@@ -241,7 +241,7 @@ def _plot_dropm():
 def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14],
                   figure=None, map_region=None, projection=None, coords=None):
     """ plot FLEXPART trajectory (or set of trajectories) characteristics
-        R is a dictionary returned from pflexible.read_trajectories
+        R is a dictionary returned from reflexible.read_trajectories
 
         varindex is a list of the variables to plot from the trajectories
     """
@@ -1437,7 +1437,7 @@ def plot_sourcecontribution(H, D,
         A lot!! There are some problems here and it is sensitive to options.
 
     .. note::
-        k and rel_i are used throughout pflexible, should be more consistent
+        k and rel_i are used throughout reflexible, should be more consistent
         in future.
 
 
@@ -2157,7 +2157,7 @@ def plot_curtain(H, data,
 
 
 def plot_METDATA(METDATA, figure, date=None, level=None):
-    """ plots met data returned from :module:`pflexible.mapping.get_OpenDAP`
+    """ plots met data returned from :module:`reflexible.mapping.get_OpenDAP`
 
     """
 

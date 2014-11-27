@@ -1,5 +1,5 @@
-import pflexible as pf
-import pflexible.conv2netcdf4 as conv
+import reflexible as pf
+import reflexible.conv2netcdf4 as conv
 
 H = conv.Header(pf.datasets['Fwd1_V9.02'])
 print H.keys()

@@ -5,7 +5,7 @@ Run all test cases.
 import os
 import unittest
 
-import pflexible as pf
+import reflexible as pf
 
 
 def suite():

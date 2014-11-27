@@ -15,7 +15,7 @@ import sys
 import os.path
 import netCDF4 as nc
 
-from pflexible.conv2netcdf4 import Header, read_grid
+from reflexible.conv2netcdf4 import Header, read_grid
 
 
 def write_metadata(H, ncid):

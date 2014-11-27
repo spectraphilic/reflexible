@@ -5,22 +5,22 @@
 Introduction
 ************
 
-pflexible is an open source Python package to work with Lagrangian Particle
+reflexible is an open source Python package to work with Lagrangian Particle
 Disperion Model output. Currently it is built for `FLEXPART
 <http://transport.nilu.no/flexpart>`_ but future versions will include greater
 generality.
 
 Contributions and collaboration are welcome. The code is hosted at bitbucket and
-the documentation is hosted at readthedocs. pflexible is licensed under
+the documentation is hosted at readthedocs. reflexible is licensed under
 Creative Commons.
 
 Current development activities are focused on improved generality and handling of
 FLEXPART output in all possible run configurations, with and without deposition,
 forward, backward, or otherwise.
 
-.. _getting-pflexible:
+.. _getting-reflexible:
 
-Getting pflexible
+Getting reflexible
 =================
 Please contact: `John F. Burkhart <jfburkhart@gmail.com>`_
 
@@ -45,12 +45,12 @@ BitBucket
 ---------
 
 The code is available to the public at `bitbucket
-<https://bitbucket.org/jfburkhart/pflexible>`_. 
+<https://bitbucket.org/jfburkhart/reflexible>`_. 
 
 PyPi
 ----
 
-The `pflexible <http://pypi.python.org/pypi/pflexible>`_ code is also posted to
+The `reflexible <http://pypi.python.org/pypi/reflexible>`_ code is also posted to
 pypi, but this is more likely to fall out of date.
 
 
@@ -62,8 +62,8 @@ Mailing List
 ============
 
 There is a mailing list for the project set up at with sourceforge. You can subscribe to
-the `pflexible
-<https://lists.sourceforge.net/lists/listinfo/pflexible-users>`_ list for user
+the `reflexible
+<https://lists.sourceforge.net/lists/listinfo/reflexible-users>`_ list for user
 discussions.
 
 
@@ -82,13 +82,13 @@ and then install it (you might need to be superuser here)::
 
     python setup.py install
 
-Depending on where you checked out the pflexible module to, you need to make
+Depending on where you checked out the reflexible module to, you need to make
 sure it is accessbile in your PYTHONPATH environment variable. The dependencies
 also need to be available in the paths defined here. 
 
 .. note::
    This can be accomplished after you've checked out the software::
-      %export PYTHONPATH=/path/to/pflexible
+      %export PYTHONPATH=/path/to/reflexible
 
 .. sidebar:: Python at NILU
 

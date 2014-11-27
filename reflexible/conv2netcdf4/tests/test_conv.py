@@ -2,8 +2,8 @@ import os, os.path
 
 from unittest import TestCase
 
-import pflexible as pf
-import pflexible.conv2netcdf4 as conv
+import reflexible as pf
+import reflexible.conv2netcdf4 as conv
 
 fd_keys = [
     'dry', 'grid', 'gridfile', 'itime', 'max', 'min', 'rel_i',

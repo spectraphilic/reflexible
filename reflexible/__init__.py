@@ -2,7 +2,7 @@ WELCOME = """
 DESCRIPTION
 ===========
 
-    pflexible: A python package for working with FLEXPART Output.
+    reflexible: A python package for working with FLEXPART Output.
 
 
 EXAMPLES
@@ -11,10 +11,10 @@ EXAMPLES
     #TODO:
 
     A lot! This is just a starting point. See
-    http://pflexible.readthedocs.org for a gentle introduction to the package
+    http://reflexible.readthedocs.org for a gentle introduction to the package
     and the doc strings for more information about the various functions.
 
-    Also, have a look at the different tests in pflexible/tests for more hints
+    Also, have a look at the different tests in reflexible/tests for more hints
     on how to use the package.
 
 AUTHOR
@@ -73,13 +73,13 @@ _hg_description = _get_hg_description(this_dir)
 
 
 def print_versions():
-    """Print all the versions for packages that pflexible relies on."""
+    """Print all the versions for packages that reflexible relies on."""
     import numpy
     import sys
     print("-=" * 38)
-    print("pflexible version: %s" % __version__)
+    print("reflexible version: %s" % __version__)
     if _hg_description:
-        print("pflexible hg summary:    %s" % _hg_description)
+        print("reflexible hg summary:    %s" % _hg_description)
     print("NumPy version:     %s" % numpy.__version__)
     print("Python version:    %s" % sys.version)
     if os.name == "posix":

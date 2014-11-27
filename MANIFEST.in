@@ -6,8 +6,8 @@ include AUTHORS
 include LICENSE
 exclude DISTRIBUTE
 
-recursive-include pflexible *.py *.pyx *.pxd *.c *.h
-recursive-include pflexible/tests *.py
-recursive-include pflexible/uio_examples *
+recursive-include reflexible *.py *.pyx *.pxd *.c *.h
+recursive-include reflexible/tests *.py
+recursive-include reflexible/uio_examples *
 recursive-include fortflex FortFlex.f build_FortFlex.sh README
 recursive-include doc/source *.rst *.txt *.py *.pdf *.css *.png

@@ -6,7 +6,7 @@ import os
 
 import numpy as np
 
-import pflexible.conv2netcdf4
+import reflexible.conv2netcdf4
 from .FortFlex import sumgrid
 from .helpers import _shout
 
@@ -249,7 +249,7 @@ def _readgrid_noFF(H, **kwargs):
                         (numxgrid, numygrid, numzgrid, 1, 1), np.float)
                     # f = file(filename, 'rb')
                     # print filename
-                    f2 = pflexible.conv2netcdf4.BinaryFile(filename, order='fortran')
+                    f2 = reflexible.conv2netcdf4.BinaryFile(filename, order='fortran')
                     skip(4)
                     G['itime'] = getbin('i')
                     print H['available_dates'][date_i]
@@ -369,7 +369,7 @@ def _readgridBF(H, filename):
         print """WARNING: Using PURE Python to readgrid, execution will be slow.
          Try compiling the FortFlex module or the pflexcy module
          for your machine. For more information see the
-         pflexible/f2py_build directory or use cython with pflexcy.pyx
+         reflexible/f2py_build directory or use cython with pflexcy.pyx
         """
         dumpdatagrid = _dumpgrid
         dumpdepogrid = _dumpgrid
@@ -383,7 +383,7 @@ def _readgridBF(H, filename):
         (H.numxgrid, H.numygrid, H.numzgrid, H.numpointspec, nage), np.float)
     # f = file(filename,'rb')
     # print filename
-    f2 = pflexible.conv2netcdf4.BinaryFile(filename, order='fortran')
+    f2 = reflexible.conv2netcdf4.BinaryFile(filename, order='fortran')
     # read data:
     skip(4)
     itime = getbin('i')
@@ -461,7 +461,7 @@ def _read_headerFF(pathname, h=None,
                   'nzmax', 'npart', 'kind', 'lage', 'loutaver', 'loutsample',
                   'yyyymmdd', 'hhmmss', 'method']
     if h is None:
-        h = pflexible.conv2netcdf4.Structure()
+        h = reflexible.conv2netcdf4.Structure()
 
     if verbose:
         print """Reading Header with:
@@ -568,10 +568,10 @@ def readgridV8(H, **kwargs):
     """
     # set up the return dictionary (FLEXDATA updates fd, fd is returned)
     FLEXDATA = {}
-    fd = pflexible.conv2netcdf4.Structure()
+    fd = reflexible.conv2netcdf4.Structure()
 
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    fd.options = OPS = pflexible.conv2netcdf4.Structure()
+    fd.options = OPS = reflexible.conv2netcdf4.Structure()
     OPS.unit = H.unit
     OPS.getwet = False
     OPS.getdry = False
@@ -698,7 +698,7 @@ def readgridV8(H, **kwargs):
         datestring = get_dates[date_i]
         print datestring
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
-            FLEXDATA[(s, datestring)] = fdc = pflexible.conv2netcdf4.FDC()
+            FLEXDATA[(s, datestring)] = fdc = reflexible.conv2netcdf4.FDC()
             spec_fid = '_' + str(s + 1).zfill(3)
 
             if unit_i != 4:
@@ -824,10 +824,10 @@ def readgridV6(H, **kwargs):
     """
     # set up the return dictionary (FLEXDATA updates fd, fd is returned)
     FLEXDATA = {}
-    fd = pflexible.conv2netcdf4.Structure()
+    fd = reflexible.conv2netcdf4.Structure()
 
     # OPS is the options Structure, sets defaults, then update w/ kwargs
-    fd.options = OPS = pflexible.conv2netcdf4.Structure()
+    fd.options = OPS = reflexible.conv2netcdf4.Structure()
     OPS.unit = 'time'
     OPS.nspec_ret = 0
     OPS.pspec_ret = 0
@@ -959,7 +959,7 @@ def readgridV6(H, **kwargs):
         datestring = get_dates[date_i]
         print datestring
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
-            FLEXDATA[(s, datestring)] = fdc = pflexible.conv2netcdf4.FDC()
+            FLEXDATA[(s, datestring)] = fdc = reflexible.conv2netcdf4.FDC()
             # spec_fid = '_'+str(s+1).zfill(3)
 
             if unit_i != 4:
@@ -1104,12 +1104,12 @@ def fill_grids(H, nspec=0, FD=None):
         # then we need to read the grids
         FD = read_grid(H, time_ret=-1, nspec_ret=species)
 
-    C = pflexible.conv2netcdf4.Structure()
+    C = reflexible.conv2netcdf4.Structure()
 
     if H.direction == 'backward':
 
         for s, k in itertools.product(species, range(H.numpointspec)):
-            C[(s, k)] = c = pflexible.conv2netcdf4.FDC()
+            C[(s, k)] = c = reflexible.conv2netcdf4.FDC()
             c.grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
             c.itime = None
             c.timestamp = H.releasetimes[k]
@@ -1155,7 +1155,7 @@ def read_emissions(emissionsfile, E=None, maxemissions=1):
         raise ImportError(
             "Cannot find FortFlex module or missing reademissions")
     if not E:
-        E = pflexible.conv2netcdf4.Structure()
+        E = reflexible.conv2netcdf4.Structure()
         # set defaults for global 0.5 degree emissions
         defaults = {'nxmax': 720, 'nymax': 360, 'outlon0': -180,
                     'outlat0': -90, 'numxgrid': 720, 'numygrid': 360,
@@ -1213,7 +1213,7 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
     """
     Heightnn = H['Heightnn']
     area = H['area']
-    Slabs = pflexible.conv2netcdf4.Structure()
+    Slabs = reflexible.conv2netcdf4.Structure()
     grid_shape = G.shape
     if len(grid_shape) is 4:
         if index is None:

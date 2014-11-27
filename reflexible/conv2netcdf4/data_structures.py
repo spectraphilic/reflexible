@@ -1,5 +1,5 @@
 """
-Definition of the different data structures in pflexible.
+Definition of the different data structures in reflexible.
 """
 
 import datetime
@@ -8,7 +8,7 @@ import traceback
 
 import numpy as np
 
-import pflexible.conv2netcdf4
+import reflexible.conv2netcdf4
 from .helpers import closest
 
 
@@ -263,7 +263,7 @@ class Header(Structure):
 
         """
         try:
-            h = pflexible.conv2netcdf4.read_header(path, **readheader_ops)
+            h = reflexible.conv2netcdf4.read_header(path, **readheader_ops)
             self.set_with_dict(h)
             self.lonlat()
             self.version = 'V8'
@@ -286,15 +286,15 @@ class Header(Structure):
 
     def read_grid(self, **kwargs):
         """ see :func:`read_grid` """
-        self.FD = pflexible.conv2netcdf4.read_grid(self, **kwargs)
+        self.FD = reflexible.conv2netcdf4.read_grid(self, **kwargs)
 
     def fill_backward(self, **kwargs):
         """ see :func:`fill_backward` """
-        pflexible.conv2netcdf4.fill_grids(self, **kwargs)
+        reflexible.conv2netcdf4.fill_grids(self, **kwargs)
 
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
-        self.trajectory = pflexible.conv2netcdf4.read_trajectories(self)
+        self.trajectory = reflexible.conv2netcdf4.read_trajectories(self)
 
     def closest_dates(self, dateval, fmt=None, take_set=False):
         """ given an iterable of datetimes, finds the closest dates.

@@ -1,9 +1,9 @@
-.. pflexible documentation master file, created by
+.. reflexible documentation master file, created by
    sphinx-quickstart on Tue Sep  6 16:30:45 2011.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pflexible documentation overview
+reflexible documentation overview
 ================================
 
 Contents:
@@ -15,7 +15,7 @@ Contents:
 
    getting_started.rst
 
-   pflexible.rst
+   reflexible.rst
 
    mapping.rst
 

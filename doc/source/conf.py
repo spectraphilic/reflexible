@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pflexible documentation build configuration file, created by
+# reflexible documentation build configuration file, created by
 # sphinx-quickstart on Tue Sep  6 16:30:45 2011.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pflexible'
+project = u'reflexible'
 copyright = u'2011, John F. Burkhart'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -170,7 +170,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pflexibledoc'
+htmlhelp_basename = 'reflexibledoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -184,7 +184,7 @@ htmlhelp_basename = 'pflexibledoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'pflexible.tex', u'pflexible Documentation',
+  ('index', 'reflexible.tex', u'reflexible Documentation',
    u'John F. Burkhart', 'manual'),
 ]
 
@@ -217,7 +217,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pflexible', u'pflexible Documentation',
+    ('index', 'reflexible', u'reflexible Documentation',
      [u'John F. Burkhart'], 1)
 ]
 
@@ -225,7 +225,7 @@ man_pages = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'pflexible'
+epub_title = u'reflexible'
 epub_author = u'John F. Burkhart'
 epub_publisher = u'John F. Burkhart'
 epub_copyright = u'2011, John F. Burkhart'

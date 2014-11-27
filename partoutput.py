@@ -12,7 +12,7 @@ import numpy as np
 import datetime
 from collections import OrderedDict
 
-import pflexible as pf
+import reflexible as pf
 
 
 def read_particlepositions(H, **kwargs):

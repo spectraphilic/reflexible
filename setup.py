@@ -8,24 +8,24 @@ from setuptools import setup
 import subprocess
 
 
-# pflexible version
+# reflexible version
 VERSION = open('VERSION').read().strip()
 # Create the version.py file
-open('pflexible/version.py', 'w').write('__version__ = "%s"\n' % VERSION)
+open('reflexible/version.py', 'w').write('__version__ = "%s"\n' % VERSION)
 
 # Build the FortFlex extension if necessary
-if (not os.path.exists("pflexible/conv2netcdf4/FortFlex.so") or
-    newer("pflexible/conv2netcdf4/fortflex/FortFlex.f",
-          "pflexible/conv2netcdf4/FortFlex.so")):
+if (not os.path.exists("reflexible/conv2netcdf4/FortFlex.so") or
+    newer("reflexible/conv2netcdf4/fortflex/FortFlex.f",
+          "reflexible/conv2netcdf4/FortFlex.so")):
     try:
         print(subprocess.check_output(
-            "cd pflexible/conv2netcdf4/fortflex; "
+            "cd reflexible/conv2netcdf4/fortflex; "
             "sh build_FortFlex.sh", shell=True))
     except:
         print("Problems compiling the FortFlex module.  "
               "Will continue using a slower fallback...")
     else:
-        print("FortFlex.so extension has been created in pflexible/conv2netcdf4/!")
+        print("FortFlex.so extension has been created in reflexible/conv2netcdf4/!")
 
 
 def find_package_data(pdir):
@@ -35,28 +35,28 @@ def find_package_data(pdir):
 
 
 setup(
-    name = 'pflexible',
+    name = 'reflexible',
     version = VERSION,
     author = 'John F. Burkhart',
     author_email = 'jfburkhart@gmail.com',
-    url = 'http://niflheim.nilu.no/~burkhart/pflexible',
+    url = 'http://niflheim.nilu.no/~burkhart/reflexible',
     description = 'A Python interface to FLEXPART data.',
     license = 'Creative Commons',
-    # ext_modules = [Extension('pflexible.pflexcy', ['pflexible/pflexcy.c'],
+    # ext_modules = [Extension('reflexible.pflexcy', ['reflexible/pflexcy.c'],
     #                          include_dirs=[numpy.get_include()])],
     packages = [
-        'pflexible',
-        'pflexible.scripts',
-        'pflexible.conv2netcdf4',
-        'pflexible.tests',
+        'reflexible',
+        'reflexible.scripts',
+        'reflexible.conv2netcdf4',
+        'reflexible.tests',
         ],
     data_files = [
-        ('pflexible/conv2netcdf4', ['pflexible/conv2netcdf4/FortFlex.so'])] + \
-        find_package_data('pflexible/uio_examples'),
+        ('reflexible/conv2netcdf4', ['reflexible/conv2netcdf4/FortFlex.so'])] + \
+        find_package_data('reflexible/uio_examples'),
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'create_ncfile = pflexible.scripts.create_ncfile:main',
+            'create_ncfile = reflexible.scripts.create_ncfile:main',
         ]
     },
 

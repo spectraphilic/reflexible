@@ -1,8 +1,8 @@
-.. _pflexible-overview:
+.. _reflexible-overview:
 
 
 ********************
-The pflexible module
+The reflexible module
 ********************
 
 .. _module-description:
@@ -10,7 +10,7 @@ The pflexible module
 A brief description of the module
 =================================
 
-The pflexible module is developed to work with output from the Lagrangian
+The reflexible module is developed to work with output from the Lagrangian
 Particle Dispersion Model, `FLEXPART <http://transport.nilu.no/flexpart>`_ .
 
 The module relies extensively on the users knowledge of FLEXPART data in
@@ -37,14 +37,14 @@ most comfortable.
 
 
 *****************
-The pflexible API
+The reflexible API
 *****************
 
   :Release: |version|
   :Date: |today|
   :Author: John F. Burkhart
 
-.. automodule:: pflexible
+.. automodule:: reflexible
    :members:
    :undoc-members:
    :private-members:
