@@ -1291,7 +1291,7 @@ def default_netcdf(nco_filename,
 
 def grid_to_netcdf(H,D,nco_filename,spc,time):
     """INCOMPLETE, NOT YETWORKING
-    Dump a grid, returned from :module:`pf.get_grid` into a netcdf file.
+    Dump a grid, returned from :module:`rf.get_grid` into a netcdf file.
 
     USAGE::
         nco = grid_to_netcdf(H,D)

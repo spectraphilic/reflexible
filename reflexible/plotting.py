@@ -18,7 +18,7 @@ import mapping as mp
 from .data_structures import Structure
 from .helpers import closest
 
-import reflexible as pf
+import reflexible as rf
 
 
 # Helpers for plotting routines
@@ -136,7 +136,7 @@ def _gen_MapPar_fromHeader(H):
     Define some default map parameters from the Header File.
     """
 
-    MapPar = pf.Structure()
+    MapPar = rf.Structure()
     MapPar.llcrnrlat = H.outlat0
     MapPar.llcrnrlon = H.outlon0
     MapPar.urcrnrlat = H.outlat0 + (H.dyout * H.numygrid)
@@ -1853,7 +1853,7 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0,
     """
     extracts curtain data along a given flight track
 
-    input:  H (a pf.Header with a FD data object from H.read_grid)
+    input:  H (a rf.Header with a FD data object from H.read_grid)
             if the read_grid method has not been called, we'll call
             it below.
 
@@ -1923,7 +1923,7 @@ def curtain_for_line(grid, X, Y, coords, index=0):
     """
     extracts curtain data from a grid given pairs of lon, lat
 
-    input:  H (a pf.Header with a FD data object from H.read_grid)
+    input:  H (a rf.Header with a FD data object from H.read_grid)
             if the read_grid method has not been called, we'll call
             it below.
 

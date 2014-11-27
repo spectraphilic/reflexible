@@ -1,7 +1,7 @@
-import reflexible as pf
+import reflexible as rf
 import reflexible.conv2netcdf4 as conv
 
-H = conv.Header(pf.datasets['Fwd1_V9.02'])
+H = conv.Header(rf.datasets['Fwd1_V9.02'])
 print H.keys()
 
 print "Calling fill_backward():"
@@ -24,7 +24,7 @@ print T.keys()
 
 # Backward Runs
 #
-H = conv.Header(pf.datasets['Bwd1_V9.02'])
+H = conv.Header(rf.datasets['Bwd1_V9.02'])
 print H.keys()
 
 print "Calling fill_backward():"

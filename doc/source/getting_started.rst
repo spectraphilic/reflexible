@@ -63,7 +63,7 @@ work with you can begin to use the module. The first step is to load the
 module. Depending on how you checked out the code, you can accomplish this in a
 few different way, but the preferred is as follows::
 
-    import reflexible as pf
+    import reflexible as rf
 
 .. sidebar:: header file
 
@@ -73,7 +73,7 @@ few different way, but the preferred is as follows::
 
 The next step is to read the FLEXPART header file from a dataset::
 
-    H = pf.Header('/path/to/flexpart/output')
+    H = rf.Header('/path/to/flexpart/output')
 
 
 Now you have a variable 'H' which has all the information about the run that is
@@ -99,7 +99,7 @@ totals of the sensitivity::
 Alternatively, we may only want to read specific grids, in which case we can call the function
 directly::
 
-    FD = pf.read_grid(H,time_ret=0,nspec_ret=0)
+    FD = rf.read_grid(H,time_ret=0,nspec_ret=0)
     
 For optimal performance, this function will use the FortFlex module. However,
 this depends on having a Fortran compiler (gfortran) installed in your machine,
@@ -122,7 +122,7 @@ the species number and datestr is a YYYYMMDDHHMMSS string for the grid
 timestep.
 
 
-Working with pf... in depth
+Working with rf... in depth
 ================================
 
 Assuming the above steps worked out, then we can proceed to play with the tools
@@ -132,14 +132,14 @@ Okay, let\'s take a look at the example code above line by line. The first line 
 giving it a namespace "pf" -- this is the preferred approach. The next few lines simply define the paths for "SOURCE_DIR" and 
 "OUTPUT_DIR" (you probably already changed these).::
 
-    import reflexible as pf
+    import reflexible as rf
     SOURCE_DIR = '/path/to/flexpart/test_data'
     OUTPUT_DIR = '/path/to/flexpart/output'
 
 The next line creates a :class:`Header` class "H", by passing the path
 of the directory (not header path) containing the FLEXPART run.::
 
-    H = pf.Header(SOURCE_DIR)
+    H = rf.Header(SOURCE_DIR)
 
 The `Header` is central to `reflexible`. This contains much information about the
 FLEXPART run, and enable plotting, labeling of plots, looking up dates of runs,
@@ -153,7 +153,7 @@ This will show you all the attributes associated with the `Header`.
 .. note::
   This example uses the `methods` of the Header class, :class:`plexpart.Header`.
   You can also call most the methods directly, passing "H" as the first
-  argument as in: D = pf.fill_backward(H). In some cases, for some of the
+  argument as in: D = rf.fill_backward(H). In some cases, for some of the
   functions, H can be substituted. See the docstrings for more
   information.
 
@@ -278,7 +278,7 @@ that the 0th element is the Total Column.
 
 Using the plotting tools of reflexible we can plot the total column easily::
 
-    pf.plot_totalcolumn (H, H.C[(0,1)], map_region='Europe')
+    rf.plot_totalcolumn (H, H.C[(0,1)], map_region='Europe')
 
 
 This should return an image similar to:
@@ -291,7 +291,7 @@ Adding Trajectories
 I use the :func:`read_trajectories` function to read the `trajectories.txt`
 file and get the trajectories from the run output directory.::
 
-    T = pf.read_trajectories(H)
+    T = rf.read_trajectories(H)
 
 Note, that the only required parameter is the Header "H", this provides all the
 metadata for the function to read the trajectories. This is a function that 
@@ -324,8 +324,8 @@ See for example the following lines::
 
     for s,k in H.C:
         data = H.C[(s,k)]
-        TC = pf.plot_totalcolumn(H,data,map_region='Europe',FIGURE=TC)
-        TC = pf.plot_trajectory(H,T,k,FIGURE=TC)
+        TC = rf.plot_totalcolumn(H,data,map_region='Europe',FIGURE=TC)
+        TC = rf.plot_trajectory(H,T,k,FIGURE=TC)
         filename = '%s_tc_%s.png' % (data.species, data.timestamp)
         TC.fig.savefig(filename)
 

@@ -2,7 +2,7 @@ import os, os.path
 
 from unittest import TestCase
 
-import reflexible as pf
+import reflexible as rf
 import reflexible.conv2netcdf4 as conv
 
 fd_keys = [
@@ -13,7 +13,7 @@ fd_keys = [
 class Fwd_API(object):
 
     def test_nc_create(self):
-        pf.create_ncfile(self.dataset, nested=False, outfile="/tmp/Fwd1.nc")
+        rf.create_ncfile(self.dataset, nested=False, outfile="/tmp/Fwd1.nc")
         assert os.path.exists("/tmp/Fwd1.nc")
 
     def test_read_grid(self):
@@ -38,7 +38,7 @@ class Fwd_API(object):
             'version']
 
 class Test_Fwd1_V9_02(Fwd_API, TestCase):
-    dataset = pf.datasets['Fwd1_V9.02']
+    dataset = rf.datasets['Fwd1_V9.02']
     H = conv.Header(dataset)
 
 
@@ -66,9 +66,9 @@ class Bwd_API(object):
         assert fdkeys_ == fd_keys
 
 class Test_Bwd_V9_02(Bwd_API, TestCase):
-    dataset = pf.datasets['Bwd1_V9.02']
+    dataset = rf.datasets['Bwd1_V9.02']
     H = conv.Header(dataset)
 
 class Test_Bwd_V9_2beta(Bwd_API, TestCase):
-    dataset = pf.datasets['Bwd2_V9.2beta']
+    dataset = rf.datasets['Bwd2_V9.2beta']
     H = conv.Header(dataset)

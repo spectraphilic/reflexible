@@ -5,7 +5,7 @@ Run all test cases.
 import os
 import unittest
 
-import reflexible as pf
+import reflexible as rf
 
 
 def suite():
@@ -20,7 +20,7 @@ def test():
 
     Run all the tests in the test suite.
     """
-    pf.print_versions()
+    rf.print_versions()
     return unittest.TextTestRunner().run(suite())
 
 

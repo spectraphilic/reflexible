@@ -12,7 +12,7 @@ import numpy as np
 import datetime
 from collections import OrderedDict
 
-import reflexible as pf
+import reflexible as rf
 
 
 def read_particlepositions(H, **kwargs):
@@ -69,7 +69,7 @@ def read_particlepositions(H, **kwargs):
     from FortFlex import readparticles
     
     ## OPS is the options Structure, sets defaults, then update w/ kwargs
-    OPS = pf.Structure()
+    OPS = rf.Structure()
     OPS.npspec_int = False  # allows to select an index of npsec when calling readgrid
     OPS.time_ret = 0
     OPS.date = None
@@ -122,7 +122,7 @@ def read_particlepositions(H, **kwargs):
         print datestring
         dt_key = datetime.datetime.strptime(datestring, '%Y%m%d%H%M%S')
             
-        PP[dt_key] = pf.Structure()
+        PP[dt_key] = rf.Structure()
         
         if H.nested is True:
             filename = join(H['pathname'], \
