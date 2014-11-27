@@ -69,7 +69,6 @@ class Test_Bwd_V9_02(Bwd_API, TestCase):
     dataset = pf.datasets['Bwd1_V9.02']
     H = conv.Header(dataset)
 
-# XXX This does not work yet
-# class Test_Bwd_V9_2beta(Bwd_API, TestCase):
-#     dataset = pf.datasets['Bwd2_V9.2beta']
-#     H = conv.Header(dataset)
+class Test_Bwd_V9_2beta(Bwd_API, TestCase):
+    dataset = pf.datasets['Bwd2_V9.2beta']
+    H = conv.Header(dataset)

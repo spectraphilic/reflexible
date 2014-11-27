@@ -92,7 +92,7 @@ def print_versions():
 # Some data sources (for testing purposes mainly)
 datasets = {
     'Bwd1_V9.02': os.path.join(this_dir, "uio_examples/Bwd1_V9.02/outputs"),
-    'Bwd2_V9.2beta': os.path.join(this_dir, "uio_examples/Bwd1_V9.2beta/outputs"),
+    'Bwd2_V9.2beta': os.path.join(this_dir, "uio_examples/Bwd2_V9.2beta/outputs"),
     'Fwd1_V9.02': os.path.join(this_dir, "uio_examples/Fwd1_V9.02/outputs"),
     'Fwd2_V9.02': os.path.join(this_dir, "uio_examples/Fwd2_V9.02/outputs"),
     'HelloWorld_V9.02': os.path.join(this_dir, "uio_examples/HelloWorld_V9.02/outputs"),

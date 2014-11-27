@@ -637,6 +637,11 @@ def _get_header_version(bf):
     ret = bf.tell()
     bf.seek(12)  # start of version string
     version = bf.read('13S')
+    # Somewhere in version 9.2 beta, the version length changed to 29
+    # However, one *must* check which is the final size for this
+    if '9.2 b' in version:
+         bf.seek(12)
+         version = bf.read('29S')
     bf.seek(ret)
 
     return version
@@ -772,6 +777,7 @@ def read_header(pathname, **kwargs):
 
     # which version format is header file:
     version = _get_header_version(bf)
+    lenver = len(version)
 
     # required containers
     junk = []  # for catching unused output
@@ -790,8 +796,8 @@ def read_header(pathname, **kwargs):
          12: 'numygrid', 13: 'dxout', 14: 'dyout', 15: '_3', 16: 'numzgrid',
          }
     # format for binary reading first part of the header file
-    Dfmt = ['i', 'i', 'i', '13S', '2i', 'i', 'i', 'i', '2i', 'f', 'f', 'i',
-            'i', 'f', 'f', '2i', 'i']
+    Dfmt = ['i', 'i', 'i', '%dS'%lenver, '2i', 'i', 'i', 'i', '2i', 'f', 'f', 'i', 'i', 'f', 'f', '2i', 'i']
+
     if bf:
         a = [bf.read(fmt) for fmt in Dfmt]
         for j in range(len(a)):
