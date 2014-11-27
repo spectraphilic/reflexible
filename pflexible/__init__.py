@@ -90,10 +90,13 @@ def print_versions():
 
 
 # Some data sources (for testing purposes mainly)
-Bwd1_data = os.path.join(this_dir, "uio_examples/Bwd1/outputs")
-Fwd1_data = os.path.join(this_dir, "uio_examples/Fwd1/outputs")
-Fwd2_data = os.path.join(this_dir, "uio_examples/Fwd2/outputs")
-HelloWorld_data = os.path.join(this_dir, "uio_examples/HelloWorld/outputs")
+datasets = {
+    'Bwd1_V9.02': os.path.join(this_dir, "uio_examples/Bwd1_V9.02/outputs"),
+    'Bwd2_V9.2beta': os.path.join(this_dir, "uio_examples/Bwd1_V9.2beta/outputs"),
+    'Fwd1_V9.02': os.path.join(this_dir, "uio_examples/Fwd1_V9.02/outputs"),
+    'Fwd2_V9.02': os.path.join(this_dir, "uio_examples/Fwd2_V9.02/outputs"),
+    'HelloWorld_V9.02': os.path.join(this_dir, "uio_examples/HelloWorld_V9.02/outputs"),
+    }
 
 
 # Import the public functions here

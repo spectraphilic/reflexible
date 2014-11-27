@@ -1,7 +1,7 @@
 import pflexible as pf
 import pflexible.conv2netcdf4 as conv
 
-H = conv.Header(pf.Fwd1_data)
+H = conv.Header(pf.datasets['Fwd1_V9.02'])
 print H.keys()
 
 print "Calling fill_backward():"
@@ -24,7 +24,7 @@ print T.keys()
 
 # Backward Runs
 #
-H = conv.Header(pf.Bwd1_data)
+H = conv.Header(pf.datasets['Bwd1_V9.02'])
 print H.keys()
 
 print "Calling fill_backward():"
