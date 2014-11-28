@@ -9,9 +9,9 @@ import reflexible as rf
 
 
 def suite():
-    this_dir = os.path.dirname(__file__)
+    rf_dir = os.path.dirname(rf.__file__)
     return unittest.TestLoader().discover(
-        start_dir=this_dir, pattern="test_*.py")
+        start_dir=rf_dir, pattern="test_*.py")
 
 
 def test():
