@@ -22,12 +22,11 @@ files. Specific 'Headers' will be created for relevant models. If the data is
 not natively in netcdf format from the model, it will be converted. The user
 will have the option to save this converted output for later use.
 
-Initially we aim to provide::
+Initially we aim to provide:
 
-    a. an interface to read model output and provide general information about
-the simulation
-    b. tools for simple access to the data
-    c. simple visualization tools
+  a. an interface to read model output and provide general information about the simulation
+  b. tools for simple access to the data
+  c. simple visualization tools
 
 
 Some routines were initially created to work with FLEXPART model
@@ -45,7 +44,7 @@ inquiries via the
 [reflexible_maillist](https://lists.sourceforge.net/lists/listinfo/reflexible-users)
 
 As for Issues, please use the
-q[tool](https://github.com/spectraphilic/reflexible/issues) at
+[tool](https://github.com/spectraphilic/reflexible/issues) at
 github.
 
 Direct inquiries may be sent to::
