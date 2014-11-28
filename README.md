@@ -7,19 +7,36 @@ Github: https://github.com/spectraphilic/reflexible
 
 ## About ##
 
-This module is being created to work with FLEXPART model
-ouput. FLEXPART is a Lagrangian particle dispersion model written by
-Andreas Stohl. It is in active development at NILU and by Sabine
-Eckhardt, John Burkhart and numerous other research groups worldwide.
+reflexible is a complete rewrite of the pflexible module that was orginally
+written to work with FLEXPART model output. The new design goals of reflexible
+will drive significant changes from the prior module but provide greater
+flexibility.
 
-This module is based partially on Matlab(c) routines developed
-by Sabine Eckhardt and Harald Sodemann at NILU. Subsequent development
-and the Python routines have been conducted by John Burkhart.
+The reflexible module is being developed to provide an unified data analysis
+tool for working with geophysical model data. FLEXPART tools will be the initial
+target group, but other models (WRF, ENKI hydrologic model, etc.) are included
+in the development plans.
+
+The main paradigm of development and the data model is to work on top of netcdf
+files. Specific 'Headers' will be created for relevant models. If the data is
+not natively in netcdf format from the model, it will be converted. The user
+will have the option to save this converted output for later use.
+
+Initially we aim to provide::
+
+    a. an interface to read model output and provide general information about
+the simulation
+    b. tools for simple access to the data
+    c. simple visualization tools
+
+
+Some routines were initially created to work with FLEXPART model
+ouput. [FLEXPART](http://transport.nilu.no/flexpart) is a Lagrangian particle
+dispersion model.
 
 This software was written for the purposes of conducting research and displaying
 model results for publications. More information can be found on my
-[homepage](http://niflheim.nilu.no/~burkhart) under the 'Software' and
-'Publications' sections.
+[homepage](http://folk.uio.no/johnbur).
 
 ## Contact, Issues, and Discussion ##
 
@@ -38,7 +55,7 @@ Direct inquiries may be sent to::
 
 ## Web Resources ##
 
-### BitBucket ###
+### GitHub ###
 
 Clone the github repository into a folder in your PYTHONPATH::
 
