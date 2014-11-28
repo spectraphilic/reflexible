@@ -29,7 +29,7 @@ First, make sure you also have the dependencies installed:
   - matplotlib
   - basemap (matplotlib toolkit)
   - f2py (to build FortFlex)
-  - netcdf4-python (*not* python-netcdf)
+  - netCDF4 (*not* python-netcdf)
   - PIL
 
 Note the easiest way I've found to deal with the dependencies is to
