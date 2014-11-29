@@ -4,6 +4,8 @@ Github: https://github.com/spectraphilic/reflexible
 
 [![Travis CI](https://travis-ci.org/spectraphilic/reflexible.png?branch=master)](https://travis-ci.org/spectraphilic/reflexible)
 
+[![Coverage
+Status](https://coveralls.io/repos/spectraphilic/reflexible/badge.png)](https://coveralls.io/r/spectraphilic/reflexible)
 
 ## About ##
 
