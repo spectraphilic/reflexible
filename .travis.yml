@@ -10,11 +10,12 @@ install:
   - sudo apt-get update
 
 # install binary deps
-  - sudo apt-get install python-numpy python-matplotlib cython
+  - sudo apt-get install python-numpy python-matplotlib cython gfortran
   - sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
 
 # instal packages in pip
-  - sudo pip install -r requirements.txt -r test_requirements.txt
+  - sudo pip install netCDF4
+  - sudo pip install -r test_requirements.txt
   - sudo pip install coveralls
   - python setup.py build_ext --inplace
 
