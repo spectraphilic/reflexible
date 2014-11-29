@@ -10,7 +10,7 @@ install:
   - sudo apt-get update
 
 # install binary deps
-  - sudo apt-get install python-numpy cython
+  - sudo apt-get install python-numpy python-matplotlib cython
   - sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
 
 # instal packages in pip
