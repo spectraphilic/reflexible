@@ -2,12 +2,26 @@ language: python
 python:
   - 2.7
 install:
-  - pip install -r requirements.txt -r test_requirements.txt
-  - pip install coveralls
+# Switch off virtualenv so we can use apt-get for Python packages
+  - deactivate
+
+# add repo
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
+  - sudo apt-get update
+
+# install binary deps
+  - sudo apt-get install python-numpy python-matplotlib cython gfortran
+  - sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
+
+# instal packages in pip
+  - sudo pip install netCDF4
+  - sudo pip install -r test_requirements.txt
+  # - sudo pip install coveralls
   - python setup.py build_ext --inplace
+
 script:
   - py.test
-after_success:
-  - coveralls
+# after_success:
+#   - coveralls
 notifications:
   email: false
