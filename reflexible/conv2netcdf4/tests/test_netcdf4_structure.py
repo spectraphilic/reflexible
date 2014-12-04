@@ -21,7 +21,7 @@ class Dataset:
 
 
 class TestStructure:
-    @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta'])
+    @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta'])
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
         self.ncid, self.fp_path, self.nc_path = dataset.setup(tmpdir)

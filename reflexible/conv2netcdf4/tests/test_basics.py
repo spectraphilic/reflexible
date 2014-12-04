@@ -26,7 +26,7 @@ class Dataset:
 
 
 class TestFwdAPI:
-    @pytest.fixture(autouse=True, params=['Fwd1_V9.02'])
+    @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Fwd2_V9.02'])
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
         self.H, self.fp_path, self.nc_path = dataset.setup(tmpdir)
