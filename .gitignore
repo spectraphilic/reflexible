@@ -1,0 +1,13 @@
+*.pyc
+*.o
+*.prefs
+MANIFEST
+dist
+build
+*.egg-info
+.coverage
+doc/build/*
+.project
+.pydev*
+f2py_build/f90/*
+FortFlex.so
