@@ -1,4 +1,4 @@
-import os, os.path
+import os.path
 
 import pytest
 
@@ -14,25 +14,22 @@ class Dataset:
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
+
+    def setup(self, tmpdir):
+        self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
         self.H = conv.Header(self.fp_path)
+        self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
+        return self.H, self.fp_path, self.nc_path
 
     def cleanup(self):
         self.tmpdir.remove(self.nc_path)
 
 
-@pytest.fixture(scope="module", params=['Fwd1_V9.02'])
-def dataset_fwd(request):
-    return Dataset(request.param)
-
-
 class TestFwdAPI:
-    @pytest.fixture(autouse=True)
-    def setup(self, request, dataset_fwd, tmpdir):
-        self.dataset = dataset = dataset_fwd
-        dataset.tmpdir = tmpdir   # bring the fixture to the Dataset instance
-        self.H = dataset.H
-        self.dataset.nc_path = tmpdir.join("%s.nc" % dataset.fp_name).strpath
-        self.fp_path, self.nc_path = dataset.fp_path, dataset.nc_path
+    @pytest.fixture(autouse=True, params=['Fwd1_V9.02'])
+    def setup(self, request, tmpdir):
+        dataset = Dataset(request.param)
+        self.H, self.fp_path, self.nc_path = dataset.setup(tmpdir)
         request.addfinalizer(dataset.cleanup)
 
     def test_nc_create(self):
@@ -61,19 +58,11 @@ class TestFwdAPI:
             'version']
 
 
-@pytest.fixture(scope="module", params=['Bwd1_V9.02', 'Bwd2_V9.2beta'])
-def dataset_bwd(request):
-    return Dataset(request.param)
-
-
 class TestBwdAPI:
-    @pytest.fixture(autouse=True)
-    def setup(self, request, dataset_bwd, tmpdir):
-        self.dataset = dataset = dataset_bwd
-        dataset.tmpdir = tmpdir   # bring the fixture to the Dataset instance
-        self.H = dataset.H
-        self.dataset.nc_path = tmpdir.join("%s.nc" % dataset.fp_name).strpath
-        self.fp_path, self.nc_path = dataset.fp_path, dataset.nc_path
+    @pytest.fixture(autouse=True, params=['Bwd1_V9.02', 'Bwd2_V9.2beta'])
+    def setup(self, request, tmpdir):
+        dataset = Dataset(request.param)
+        self.H, self.fp_path, self.nc_path = dataset.setup(tmpdir)
         request.addfinalizer(dataset.cleanup)
 
     def test_fill_backward(self):
