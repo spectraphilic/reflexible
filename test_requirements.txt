@@ -1,4 +1,5 @@
-coverage
 pytest
 pytest-pep8
 pytest-cov
+coverage
+python-coveralls
