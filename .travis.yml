@@ -16,11 +16,11 @@ install:
 # instal packages in pip
   - sudo pip install netCDF4
   - sudo pip install -r test_requirements.txt
-  # - sudo pip install coveralls
+  - sudo pip install python-coveralls
   - python setup.py build_ext --inplace
 
 script:
-  - py.test
+  - py.test reflexible --cov reflexible --cov-report term-missing
 after_success:
   - coveralls
 notifications:

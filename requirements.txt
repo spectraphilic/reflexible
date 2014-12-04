@@ -1,3 +1,2 @@
-python-coveralls
 matplotlib
 netCDF4
