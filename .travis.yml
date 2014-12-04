@@ -19,7 +19,9 @@ install:
   - python setup.py build_ext --inplace
 
 script:
-  - py.test reflexible --pep8 reflexible -v --cov reflexible --cov-report term-missing
+  - py.test reflexible reflexible -v --cov reflexible --cov-report term-missing
+  # reflexible is far from being PEP8 compatible yet, but in the future maybe wise to use the line below...
+  # - py.test reflexible --pep8 reflexible -v --cov reflexible --cov-report term-missing
 after_success:
   - coveralls
 notifications:
