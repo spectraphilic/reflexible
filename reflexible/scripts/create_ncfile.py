@@ -12,6 +12,9 @@ Script to convert a FLEXPART dataset into a NetCDF4 file.
 from __future__ import print_function
 
 import sys
+import platform
+import getpass
+import datetime
 import os.path
 import netCDF4 as nc
 
@@ -22,9 +25,11 @@ def write_metadata(H, ncid):
     # hes CF convention requires these attributes
     ncid.Conventions = 'CF-1.6'
     ncid.title = 'FLEXPART model output'
-    # ncid.institution = institution.strip()
+    ncid.institution = 'NILU'
     ncid.source = H.version + ' model output'
-    # ncid.history = date[:4] + '-' + date[4:6] + '-' + date[6:8] + ' ' + time[0:2] + ':' + time(3:4) + ' ' + zone + '  created by '+ trim(login_name) + ' on ' + trim(host_name)
+    date = "%d-%d-%d %d:%d" % datetime.datetime.now().timetuple()[:5]
+    zone = "NA"
+    ncid.history = date + ' ' + zone + '  created by '+ getpass.getuser() + ' on ' + platform.node()
     ncid.references = 'Stohl et al., Atmos. Chem. Phys., 2005, doi:10.5194/acp-5-2461-200'
 
     # attributes describing model run
