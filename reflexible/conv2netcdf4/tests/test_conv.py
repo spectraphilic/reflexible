@@ -1,6 +1,6 @@
 import os, os.path
 
-from unittest import TestCase
+import pytest
 
 import reflexible as rf
 import reflexible.conv2netcdf4 as conv
@@ -10,11 +10,34 @@ fd_keys = [
     'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
 
 
-class Fwd_API(object):
+class Dataset:
+    def __init__(self, fp_name):
+        self.fp_name = fp_name
+        self.fp_path = rf.datasets[fp_name]
+        self.H = conv.Header(self.fp_path)
+
+    def cleanup(self):
+        self.tmpdir.remove(self.nc_path)
+
+
+@pytest.fixture(scope="module", params=['Fwd1_V9.02'])
+def dataset_fwd(request):
+    return Dataset(request.param)
+
+
+class TestFwdAPI:
+    @pytest.fixture(autouse=True)
+    def setup(self, request, dataset_fwd, tmpdir):
+        self.dataset = dataset = dataset_fwd
+        dataset.tmpdir = tmpdir   # bring the fixture to the Dataset instance
+        self.H = dataset.H
+        self.dataset.nc_path = tmpdir.join("%s.nc" % dataset.fp_name).strpath
+        self.fp_path, self.nc_path = dataset.fp_path, dataset.nc_path
+        request.addfinalizer(dataset.cleanup)
 
     def test_nc_create(self):
-        rf.create_ncfile(self.dataset, nested=False, outfile="/tmp/Fwd1.nc")
-        assert os.path.exists("/tmp/Fwd1.nc")
+        rf.create_ncfile(self.fp_path, nested=False, outfile=self.nc_path)
+        assert os.path.exists(self.nc_path)
 
     def test_read_grid(self):
         FD = conv.read_grid(self.H, time_ret=0, nspec_ret=0)
@@ -37,16 +60,25 @@ class Fwd_API(object):
             'RELEASE_TEST1', 'Trajectories', 'date', 'info', 'labels',
             'version']
 
-class Test_Fwd1_V9_02(Fwd_API, TestCase):
-    dataset = rf.datasets['Fwd1_V9.02']
-    H = conv.Header(dataset)
+
+@pytest.fixture(scope="module", params=['Bwd1_V9.02', 'Bwd2_V9.2beta'])
+def dataset_bwd(request):
+    return Dataset(request.param)
 
 
-class Bwd_API(object):
+class TestBwdAPI:
+    @pytest.fixture(autouse=True)
+    def setup(self, request, dataset_bwd, tmpdir):
+        self.dataset = dataset = dataset_bwd
+        dataset.tmpdir = tmpdir   # bring the fixture to the Dataset instance
+        self.H = dataset.H
+        self.dataset.nc_path = tmpdir.join("%s.nc" % dataset.fp_name).strpath
+        self.fp_path, self.nc_path = dataset.fp_path, dataset.nc_path
+        request.addfinalizer(dataset.cleanup)
 
     def test_fill_backward(self):
         self.H.fill_backward(nspec=(0,))
-        ckeys = self.H.C[(0,0)].keys()
+        ckeys = self.H.C[(0, 0)].keys()
         assert sorted(ckeys) == fd_keys
         fdkeys = self.H.FD[(0, self.H.available_dates[0])].keys()
         assert sorted(fdkeys) == fd_keys
@@ -64,11 +96,3 @@ class Bwd_API(object):
         assert fdkeys == ['grid_dates', 'options', (0, self.H.available_dates[0])]
         fdkeys_ = sorted(self.H.FD[(0, self.H.available_dates[0])].keys())
         assert fdkeys_ == fd_keys
-
-class Test_Bwd_V9_02(Bwd_API, TestCase):
-    dataset = rf.datasets['Bwd1_V9.02']
-    H = conv.Header(dataset)
-
-class Test_Bwd_V9_2beta(Bwd_API, TestCase):
-    dataset = rf.datasets['Bwd2_V9.2beta']
-    H = conv.Header(dataset)
