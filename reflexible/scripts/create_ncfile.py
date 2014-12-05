@@ -82,6 +82,12 @@ def write_metadata(H, command, ncid):
     ncid.ind_receptor = H.ind_receptor
 
     # COMMAND settings
+    # XXX One must add code to handle COMMAND file not available
+    # so here it is a way to compute the most important value: iout
+    # units = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
+    # unit_i = units.index(H.unit)
+    # iout = (unit_i) + (H.nested * 5)
+    # XXX One also need to figure out how to compute the 'wetdep' and 'drydep' booleans
     ncid.itsplit = command['T_PARTSPLIT']
     ncid.linit_cond = command['LINIT_COND']
     ncid.lsynctime = command['SYNC']
