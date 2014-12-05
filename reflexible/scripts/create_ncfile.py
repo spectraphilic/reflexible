@@ -18,10 +18,10 @@ import datetime
 import os.path
 import netCDF4 as nc
 
-from reflexible.conv2netcdf4 import Header, read_grid
+from reflexible.conv2netcdf4 import Header, read_grid, read_command, read_commandV9
 
 
-def write_metadata(H, ncid):
+def write_metadata(H, command, ncid):
     # hes CF convention requires these attributes
     ncid.Conventions = 'CF-1.6'
     ncid.title = 'FLEXPART model output'
@@ -70,7 +70,7 @@ def write_metadata(H, ncid):
     # ncid.surf_only = H.surf_only
 
 
-def write_header(H, ncid):
+def write_header(H, command, ncid):
     nnx = H.numxgrid
     nny = H.numygrid
     nnz = H.numzgrid
@@ -138,6 +138,11 @@ def create_ncfile(fddir, nested, outfile=None):
         fprefix = 'grid_conc_'
     else:
         fprefix = 'grid_time_'
+
+    command_path = os.path.join(os.path.dirname(fddir), "options/COMMAND")
+    # XXX This needs to be checked out, as I am not sure when the new format started
+    command = read_commandV9(command_path)
+
     path = os.path.dirname(fddir)
     fprefix = os.path.join(path, fprefix)
     if outfile is None:
@@ -148,9 +153,10 @@ def create_ncfile(fddir, nested, outfile=None):
     else:
         ncfname = outfile
     cache_size = 16 * H.numxgrid * H.numygrid * H.numzgrid
+
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
-    write_metadata(H, ncid)
-    write_header(H, ncid)
+    write_metadata(H, command, ncid)
+    write_header(H, command, ncid)
     ncid.close()
     return ncfname
 

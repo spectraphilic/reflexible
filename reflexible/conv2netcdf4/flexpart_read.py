@@ -10,6 +10,57 @@ import numpy as np
 import reflexible.conv2netcdf4
 from .helpers import closest
 
+def read_commandV9(path, headerrows=7):
+    """Quick and dirty approach for reading COMMAND file for FP V9"""
+    COMMAND_KEYS = (
+        'SIM_DIR',
+        'SIM_START',
+        'SIM_END',
+        'AVG_CNC_INT',
+        'AVG_CNC_TAVG',
+        'CNC_SAMP_TIME',
+        'T_PARTSPLIT',
+        'SYNC',
+        'CTL',
+        'IFINE',
+        'IOUT',
+        'IPOUT',
+        'LSUBGRID',
+        'LCONVECTION',
+        'LAGESPECTRA',
+        'IPIN',
+        'OUTPUTFOREACHRELEASE',
+        'IFLUX',
+        'MDOMAINFILL',
+        'IND_SOURCE',
+        'IND_RECEPTOR',
+        'MQUASILAG',
+        'NESTED_OUTPUT',
+        'LINIT_COND')
+    float_keys = ['CTL']
+    date_keys = ['SIM_START', 'SIM_END']
+
+    COMMAND = {}
+    ncommand = 0
+    with open(path, 'r') as comfile:
+        for i in range(headerrows):
+            comfile.readline()
+        while ncommand < len(COMMAND_KEYS):
+            comfile.readline()
+            val = comfile.readline().strip().split()
+            key = COMMAND_KEYS[ncommand]
+            if key in date_keys:
+                val = val[:2]
+            elif key in float_keys:
+                val = float(val[0])
+            else:
+                val = int(val[0])
+            COMMAND[key] = val
+            comfile.readline()
+            comfile.readline()
+            ncommand += 1
+    return COMMAND
+
 
 def read_command(path, headerrows=7):
     """
