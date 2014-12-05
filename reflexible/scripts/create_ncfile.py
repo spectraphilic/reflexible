@@ -21,6 +21,35 @@ import netCDF4 as nc
 from reflexible.conv2netcdf4 import Header, read_grid, read_command, read_commandV9
 
 
+def output_units(ncid):
+    if ncid.ldirect == 1:
+        # forward simulation
+        if ncid.in_source == 1:
+            if ncid.in_receptor == 1:
+                units = 'ng m-3'
+            else:
+                units = 'ng kg-1'
+        else:
+            if ncid.in_receptor == 1:
+                units = 'ng m-3'
+            else:
+                units = 'ng kg-1'
+    else:
+        # backward simulation
+        if ncid.ind_source == 1:
+            if ncid.ind_receptor == 1:
+                units = 's'
+            else:
+                units = 's m3 kg-1'
+        else:
+            if ncid.ind_receptor == 1:
+                units = 's kg m-3'
+            else:
+                units = 's'
+
+    return units
+
+
 def write_metadata(H, command, ncid):
     # hes CF convention requires these attributes
     ncid.Conventions = 'CF-1.6'
@@ -29,7 +58,7 @@ def write_metadata(H, command, ncid):
     ncid.source = H.version + ' model output'
     date = "%d-%d-%d %d:%d" % datetime.datetime.now().timetuple()[:5]
     zone = "NA"
-    ncid.history = date + ' ' + zone + '  created by '+ getpass.getuser() + ' on ' + platform.node()
+    ncid.history = date + ' ' + zone + '  created by ' + getpass.getuser() + ' on ' + platform.node()
     ncid.references = 'Stohl et al., Atmos. Chem. Phys., 2005, doi:10.5194/acp-5-2461-200'
 
     # attributes describing model run
@@ -75,36 +104,81 @@ def write_header(H, command, ncid):
     nny = H.numygrid
     nnz = H.numzgrid
 
+    # Parameter for data compression
+    complevel = 9
+    # Maximum number of chemical species per release (Source: par_mod.f90)
+    # maxspec = 4
+    # Variables defining the release locations, released species and their
+    # properties, etc. (Source: com_mod.f90)
+    species = []
+    decay = []
+    weightmolar = []
+    ohreact = []
+    kao = []
+    vsetaver = []
+    spec_ass = []
+    weta = []
+    wetb = []
+    weta_in = []
+    wetb_in = []
+    wetc_in = []
+    wetd_in = []
+    dquer = []
+    henry = []
+    dryvel = []
+    reldiff = []
+    f0 = []
+    density = []
+    dsigma = []
+    lage = []
+    # Source: outg_mod.f90
+    outheight = []
+    # netCDF variable IDs for main output grid
+    specID = []
+    specIDppt = []
+    wdspecID = []
+    ddspecID = []
+    # Source: point_mod.90
+    ireleasestart = []
+    ireleaseend = []
+    kindz = []
+    xpoint1 = []
+    xpoint2 = []
+    ypoint1 = []
+    ypoint2 = []
+    zpoint1 = []
+    zpoint2 = []
+    npart = []
+
     # Create dimensions
 
     # time
-    timeDimID = ncid.createDimension('time', None)
-    adate, atime = str(H.ibdate), str(H.ibtime)
-    timeunit = 'seconds since ' + adate[:4] + '-' + adate[4:6] + \
-        '-'+ adate[6:8] + ' ' + atime[:2] + ':' + atime[2:4]
-
+    ncid.createDimension('time', None)
+    # adate, atime = str(H.ibdate), str(H.ibtime)
+    # timeunit = 'seconds since ' + adate[:4] + '-' + adate[4:6] + \
+    #    '-'+ adate[6:8] + ' ' + atime[:2] + ':' + atime[2:4]
     # lon
-    lonDimID = ncid.createDimension('longitude', nnx)
+    ncid.createDimension('longitude', nnx)
     # lat
-    latDimID = ncid.createDimension('latitude', nny)
+    ncid.createDimension('latitude', nny)
     # level
-    levDimID = ncid.createDimension('height', nnz)
+    ncid.createDimension('height', nnz)
     # number of species
-    nspecDimID = ncid.createDimension('numspec', H.nspec)
+    ncid.createDimension('numspec', H.nspec)
     # number of release points
-    pointspecDimID = ncid.createDimension('pointspec', H.numpointspec)  # XXX or H.maxpoint?
+    ncid.createDimension('pointspec', H.numpointspec)  # XXX or H.maxpoint?
     # number of age classes
-    nageclassDimID = ncid.createDimension('nageclass', H.nageclass)
+    ncid.createDimension('nageclass', H.nageclass)
     # dimension for release point characters
-    ncharDimID = ncid.createDimension('nchar', 45)
+    ncid.createDimension('nchar', 45)
     # number of actual release points
-    npointDimID = ncid.createDimension('numpoint', H.numpoint)
+    ncid.createDimension('numpoint', H.numpoint)
 
     # create variables
 
     # time
     tID = ncid.createVariable('time', 'i4', ('time',))
-    tID.units = timeunit
+    # tID.units = timeunit  # XXX what timeunit?
     tID.calendar = 'proleptic_gregorian'
 
     # lon
@@ -130,6 +204,188 @@ def write_header(H, command, ncid):
     levID.positive = 'up'
     levID.standard_name = 'height'
     levID.long_name = 'height above ground'
+
+    # RELCOM nf90_char -> dtype??
+    # relcomID = ncid.createVariable('RELCOM', 'S8', ('nchar', 'numpoint'))
+    # relcomID.long_name = 'release point name'
+
+    # RELLNG1
+    rellng1ID = ncid.createVariable('RELLNG1', 'f4', ('numpoint',))
+    rellng1ID.units = 'degrees_east'
+    rellng1ID.long_name = 'release longitude lower left corner'
+
+    # RELLNG2
+    rellng2ID = ncid.createVariable('RELLNG2', 'f4', ('numpoint',))
+    rellng2ID.units = 'degrees_east'
+    rellng2ID.long_name = 'release longitude upper right corner'
+
+    # RELLAT1
+    rellat1ID = ncid.createVariable('RELLAT1', 'f4', ('numpoint',))
+    rellat1ID.units = 'degrees_north'
+    rellat1ID.long_name = 'release latitude lower left corner'
+
+    # RELLAT2
+    rellat2ID = ncid.createVariable('RELLAT2', 'f4', ('numpoint',))
+    rellat2ID.units = 'degrees_north'
+    rellat2ID.long_name = 'release latitude upper right corner'
+
+    # RELZZ1
+    relzz1ID = ncid.createVariable('RELZZ1', 'f4', ('numpoint',))
+    relzz1ID.units = 'meters'
+    relzz1ID.long_name = 'release height bottom'
+    # RELZZ2
+    relzz2ID = ncid.createVariable('RELZZ2', 'f4', ('numpoint',))
+    relzz2ID.units = 'meters'
+    relzz2ID.long_name = 'release height top'
+
+    # RELKINDZ
+    relkindzID = ncid.createVariable('RELKINDZ', 'i4', ('numpoint',))
+    relkindzID.long_name = 'release kind'
+
+    # RELSTART
+    relstartID = ncid.createVariable('RELSTART', 'i4', ('numpoint',))
+    relstartID.units = 'seconds'
+    relstartID.long_name = 'release start relative to simulation start'
+
+    # RELEND
+    relendID = ncid.createVariable('RELEND', 'i4', ('numpoint',))
+    relendID.units = 'seconds'
+    relendID.long_name = 'release end relative to simulation start'
+
+    # RELPART
+    relpartID = ncid.createVariable('RELPART', 'i4', ('numpoint',))
+    relpartID.long_name = 'number of release particles'
+
+    # RELXMASS
+    relxmassID = ncid.createVariable('RELXMASS', 'f4', ('numpoint', 'numspec'))
+    relpartID.long_name = 'total release particles mass'
+
+    # LAGE
+    lageID = ncid.createVariable('LAGE', 'i4', ('nageclass',))
+    lageID.units = 'seconds'
+    lageID.long_name = 'age class'
+
+    # ORO
+    oroID = ncid.createVariable('ORO', 'i4', ('longitude, latitude'), chunksizes=(nnx, nny),
+                                zlib=True, complevel=complevel)
+    oroID.standard_name = 'surface altitude'
+    oroID.long_name = 'outgrid surface altitude'
+    oroID.units = 'm'
+
+    # Concentration output, wet and dry deposition variables (one per species)
+    dIDs = ('longitude', 'latitude', 'height', 'time', 'pointspec', 'nageclass')
+    depdIDs = ('longitude', 'latitude', 'time', 'pointspec', 'nageclass')
+    chunksizes = (nnx, nny, nnz, 1, 1, 1)
+    dep_chunksizes = (nnx, nny, 1, 1, 1)
+    for i in range(0, H.nspec):
+        anspec = "%3.3d" % (i+1)
+        # TODO: iout??, units?? fill lists with values
+        # Assume iout in (1, 3, 5)
+        if True:
+            var_name = "spec" + anspec + "_mr"
+            sID = ncid.createVariable(var_name, 'f4', dIDs, chunksizes=chunksizes,
+                                      zlib=True, complevel=complevel)
+            # sID.units = units
+            sID.long_name = species[i]
+            sID.decay = decay[i]
+            sID.weightmolar = weightmolar[i]
+            sID.ohreact = ohreact[i]
+            sID.kao = kao[i]
+            sID.vsetaver = vsetaver[i]
+            sID.spec_ass = spec_ass[i]
+            specID[i] = sID
+        # Assume iout in (2, 3)
+        if True:
+            var_name = "spec" + anspec + "_pptv"
+            sID = ncid.createVariable(var_name, 'f4', dIDs, chunksizes=chunksizes,
+                                      zlib=True, complevel=complevel)
+            sID.units = 'pptv'
+            sID.long_name = species[i]
+            sID.decay = decay[i]
+            sID.weightmolar = weightmolar[i]
+            sID.ohreact = ohreact[i]
+            sID.kao = kao[i]
+            sID.vsetaver = vsetaver[i]
+            sID.spec_ass = spec_ass[i]
+            specIDppt[i] = sID
+        # TODO: wetdep?? fill lists with values
+        # Assume wetdep is True
+        if True:
+            var_name = "WD_spec" + anspec
+            wdsID = ncid.createVariable(var_name, 'f4', depdIDs, chunksizes=chunksizes,
+                                        complevel=complevel)
+            wdsID.units = '1e-12 kg m-2'
+            wdsID.weta = weta[i]
+            wdsID.wetb = wetb[i]
+            wdsID.weta_in = weta_in[i]
+            wdsID.wetb_in = wetb_in[i]
+            wdsID.wetc_in = wetc_in[i]
+            wdsID.wetd_in = wetd_in[i]
+            wdsID.dquer = dquer[i]
+            wdsID.henry = henry[i]
+            wdspecID[i] = wdsID
+        # TODO: drydep?? fill lists with values
+        # Assume drydep is True
+        if True:
+            var_name = "DD_spec" + anspec
+            ddsID = ncid.createVariable(var_name, 'f4', depdIDs, chunksizes=dep_chunksizes,
+                                        zlib=True, complevel=complevel)
+            ddsID.units = '1e-12 kg m-2'
+            ddsID.dryvel = dryvel[i]
+            ddsID.reldiff = reldiff[i]
+            ddsID.henry = henry[i]
+            ddsID.f0 = f0[i]
+            ddsID.dquer = dquer[i]
+            ddsID.density = density[i]
+            ddsID.dsigma = dsigma[i]
+            ddspecID[i] = ddsID
+
+    # Fill variables with data.
+
+    # longitudes (grid cell centers)
+    coord = []
+    for i in range(0, H.numxgrid):
+        coord[i] = ncid.outlon0 + (i - 0.5) * ncid.dxout
+    ncid.variables['longitude'][:] = coord
+
+    # latitudes (grid cell centers)
+    coord = []
+    for i in range(0, H.numygrid):
+        coord[i] = ncid.outlat0 + (i - 0.5) * ncid.dyout
+    ncid.variables['latitude'][:] = coord
+
+    # levels
+    # TODO: fill outheight with values
+    ncid.variables['height'][:] = outheight
+
+    # TODO: write_releases.eqv?
+    # Assume write_releases.eqv is True
+    if True:
+        # release point information
+        # TODO: fill lists with values
+        for i in range(0, H.numpoint):
+            ncid.variables['RELSTART'][i] = ireleasestart[i]
+            ncid.variables['RELEND'][i] = ireleaseend[i]
+            ncid.variables['RELKINDZ'][i] = kindz[i]
+            ncid.variables['RELLNG1'][i] = xpoint1[i]
+            ncid.variables['RELLNG2'][i] = xpoint2[i]
+            ncid.variables['RELLAT1'][i] = ypoint1[i]
+            ncid.variables['RELLAT2'][i] = ypoint2[i]
+            ncid.variables['RELZZ1'][i] = zpoint1[i]
+            ncid.variables['RELZZ2'][i] = zpoint2[i]
+            ncid.variables['RELLPART'][i] = npart[i]
+            if (i <= 1000):
+                pass
+                # TODO: Fill RELCOM and RELXMASS variables syntax??
+
+    # Age classes
+    # TODO: nageclass??
+    # ncid.variables['LAGE'][:] = lage[0, nageclass]
+
+    # Orography
+    # TODO: min_size?? oroout?? assignment syntax?
+    # if (not min_size):
+        # ncid.variables['ORO'] = ...
 
 
 def create_ncfile(fddir, nested, outfile=None):

@@ -93,135 +93,135 @@ class TestStructure:
         for attr in attr_names:
             assert attr in var_attrs
 
-    # # Assumption for all REL variables: write_releases.eqv is True
-    # def test_RELCOM(self):
-    #     assert 'RELCOM' in self.ncid.variables
-    #     assert 'long_name' in self.ncid.variables['RELCOM'].ncattrs()
+    # Assumption for all REL variables: write_releases.eqv is True
+    def test_RELCOM(self):
+        assert 'RELCOM' in self.ncid.variables
+        assert 'long_name' in self.ncid.variables['RELCOM'].ncattrs()
 
-    # def test_RELLNG1(self):
-    #     assert 'RELLNG1' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELLNG1'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name'in var_attrs
+    def test_RELLNG1(self):
+        assert 'RELLNG1' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELLNG1'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name'in var_attrs
 
-    # def test_RELLNG2(self):
-    #     assert 'RELLNG2' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELLNG2'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_RELLNG2(self):
+        assert 'RELLNG2' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELLNG2'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # def test_RELLAT1(self):
-    #     assert 'RELLAT1' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELLAT1'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_RELLAT1(self):
+        assert 'RELLAT1' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELLAT1'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # def test_RELLAT2(self):
-    #     assert 'RELLAT2' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELLAT2'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_RELLAT2(self):
+        assert 'RELLAT2' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELLAT2'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # def test_RELZZ1(self):
-    #     assert 'RELZZ1' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELZZ1'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_RELZZ1(self):
+        assert 'RELZZ1' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELZZ1'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # def test_RELZZ2(self):
-    #     assert 'RELZZ2' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELZZ2'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_RELZZ2(self):
+        assert 'RELZZ2' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELZZ2'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # def test_RELKINDZ(self):
-    #     assert 'RELKINDZ' in self.ncid.variables
-    #     assert 'long_name' in self.ncid.variables['RELKINDZ'].ncattrs()
+    def test_RELKINDZ(self):
+        assert 'RELKINDZ' in self.ncid.variables
+        assert 'long_name' in self.ncid.variables['RELKINDZ'].ncattrs()
 
-    # def test_RELSTART(self):
-    #     assert 'RELSTART' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELSTART'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_RELSTART(self):
+        assert 'RELSTART' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELSTART'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # def test_RELEND(self):
-    #     assert 'RELEND' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['RELEND'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_RELEND(self):
+        assert 'RELEND' in self.ncid.variables
+        var_attrs = self.ncid.variables['RELEND'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # def test_RELPART(self):
-    #     assert 'RELPART' in self.ncid.variables
-    #     assert 'long_name' in self.ncid.variables['RELPART'].ncattrs()
+    def test_RELPART(self):
+        assert 'RELPART' in self.ncid.variables
+        assert 'long_name' in self.ncid.variables['RELPART'].ncattrs()
 
-    # def test_RELXMASS(self):
-    #     assert 'RELXMASS' in self.ncid.variables
-    #     assert 'long_name' in self.ncid.variables['RELXMASS'].ncattrs()
+    def test_RELXMASS(self):
+        assert 'RELXMASS' in self.ncid.variables
+        assert 'long_name' in self.ncid.variables['RELXMASS'].ncattrs()
 
-    # def test_LAGE(self):
-    #     assert 'LAGE' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['LAGE'].ncattrs()
-    #     assert 'units' in var_attrs
-    #     assert 'long_name' in var_attrs
+    def test_LAGE(self):
+        assert 'LAGE' in self.ncid.variables
+        var_attrs = self.ncid.variables['LAGE'].ncattrs()
+        assert 'units' in var_attrs
+        assert 'long_name' in var_attrs
 
-    # # Assumption for ORO variable: min_size is False
-    # def test_ORO(self):
-    #     assert 'ORO' in self.ncid.variables
-    #     var_attrs = self.ncid.variables['ORO'].ncattrs()
-    #     attr_names = ('standard_name', 'long_name', 'units')
-    #     for attr in attr_names:
-    #         assert attr in var_attrs
+    # Assumption for ORO variable: min_size is False
+    def test_ORO(self):
+        assert 'ORO' in self.ncid.variables
+        var_attrs = self.ncid.variables['ORO'].ncattrs()
+        attr_names = ('standard_name', 'long_name', 'units')
+        for attr in attr_names:
+            assert attr in var_attrs
 
-    # # Concentration output, wet and dry deposition variables (one per species)
-    # # To be checked:  iout, wetdep, drydep
-    # def test_species_mr(self):
-    #     attr_names = ('units', 'long_name', 'decay', 'weightmolar',
-    #                   'ohreact', 'kao', 'vsetaver', 'spec_ass')
-    #     for i in range(1, H.nspec+1):
-    #         anspec = "%3.3d" % i
-    #         # Assume iout in (1, 3, 5)
-    #         if True:
-    #             var_name = "spec" + anspec + "_mr"
-    #             var_attrs = self.ncid.variables[var_name].ncattrs()
-    #             assert var_name in self.ncid.variables
-    #             for attr in attr_names:
-    #                 assert attr in var_attrs
+    # Concentration output, wet and dry deposition variables (one per species)
+    # To be checked:  iout, wetdep, drydep
+    def test_species_mr(self):
+        attr_names = ('units', 'long_name', 'decay', 'weightmolar',
+                      'ohreact', 'kao', 'vsetaver', 'spec_ass')
+        for i in range(1, H.nspec+1):
+            anspec = "%3.3d" % i
+            # Assume iout in (1, 3, 5)
+            if True:
+                var_name = "spec" + anspec + "_mr"
+                var_attrs = self.ncid.variables[var_name].ncattrs()
+                assert var_name in self.ncid.variables
+                for attr in attr_names:
+                    assert attr in var_attrs
 
-    # def test_species_pptv(self):
-    #     attr_names = ('units', 'long_name', 'decay', 'weightmolar',
-    #                   'ohreact', 'kao', 'vsetaver', 'spec_ass')
-    #     for i in range(1, H.nspec+1):
-    #         anspec = "%3.3d" % i
-    #         # Assume iout in (2, 3)
-    #         if True:
-    #             var_name = "spec" + anspec + "_pptv"
-    #             var_attrs = self.ncid.variables[var_name].ncattrs()
-    #             assert var_name in self.ncid.variables
-    #             for attr in attr_names:
-    #                 assert attr in var_attrs
+    def test_species_pptv(self):
+        attr_names = ('units', 'long_name', 'decay', 'weightmolar',
+                      'ohreact', 'kao', 'vsetaver', 'spec_ass')
+        for i in range(1, H.nspec+1):
+            anspec = "%3.3d" % i
+            # Assume iout in (2, 3)
+            if True:
+                var_name = "spec" + anspec + "_pptv"
+                var_attrs = self.ncid.variables[var_name].ncattrs()
+                assert var_name in self.ncid.variables
+                for attr in attr_names:
+                    assert attr in var_attrs
 
-    # def test_WDspecies(self):
-    #     attr_names = ('units', 'weta', 'wetb', 'weta_in', 'wetb_in',
-    #                   'wetc_in', 'wetd_in', 'dquer', 'henry')
-    #     for i in range(1, H.nspec+1):
-    #         anspec = "%3.3d" % i
-    #         # Assume wetdep is True
-    #         if True:
-    #             var_name = "WD_spec" + anspec
-    #             var_attrs = self.ncid.variables[var_name].ncattrs()
-    #             assert var_name in self.ncid.variables
-    #             for attr in attr_names:
-    #                 assert attr in var_attrs
+    def test_WDspecies(self):
+        attr_names = ('units', 'weta', 'wetb', 'weta_in', 'wetb_in',
+                      'wetc_in', 'wetd_in', 'dquer', 'henry')
+        for i in range(1, H.nspec+1):
+            anspec = "%3.3d" % i
+            # Assume wetdep is True
+            if True:
+                var_name = "WD_spec" + anspec
+                var_attrs = self.ncid.variables[var_name].ncattrs()
+                assert var_name in self.ncid.variables
+                for attr in attr_names:
+                    assert attr in var_attrs
 
-    # def test_DDspecies(self):
-    #     attr_names = ('units', 'dryvel', 'reldiff', 'henry', 'f0',
-    #                   'dquer', 'density', 'dsigma')
-    #     for i in range(1, H.nspec+1):
-    #         anspec = "%3.3d" % i
-    #         # Assume drydep is True
-    #         if True:
-    #             var_name = "DD_spec" + anspec
-    #             var_attrs = self.ncid.variables[var_name].ncattrs()
-    #             assert var_name in self.ncid.variables
-    #             for attr in attr_names:
-    #                 assert attr in var_attrs
+    def test_DDspecies(self):
+        attr_names = ('units', 'dryvel', 'reldiff', 'henry', 'f0',
+                      'dquer', 'density', 'dsigma')
+        for i in range(1, H.nspec+1):
+            anspec = "%3.3d" % i
+            # Assume drydep is True
+            if True:
+                var_name = "DD_spec" + anspec
+                var_attrs = self.ncid.variables[var_name].ncattrs()
+                assert var_name in self.ncid.variables
+                for attr in attr_names:
+                    assert attr in var_attrs
