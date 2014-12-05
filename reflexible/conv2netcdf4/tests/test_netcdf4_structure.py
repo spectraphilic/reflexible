@@ -44,17 +44,17 @@ class TestStructure:
             assert attr in existing_attrs
 
     # # COMMAND file settings
-    # def test_command_settings(self):
-    #     req_attrs = (
-    #         'ldirect', 'ibdate', 'ibtime', 'iedate', 'ietime', 'loutstep',
-    #         'loutaver', 'loutsample', 'itsplit', 'lsynctime', 'ctl',
-    #         'ifine', 'iout', 'ipout', 'lsubgrid', 'lconvection',
-    #         'lagespectra', 'ipin', 'ioutputforeachrelease',
-    #         'iflux', 'mdomainfill', 'ind_source', 'ind_receptor',
-    #         'mquasilag', 'nested_output', 'surf_only', 'linit_cond')
-    #     existing_attrs = ncid.ncattrs()
-    #     for attr in req_attrs:
-    #         self.assertTrue(attr in existing_attrs)
+    def test_command_settings(self):
+        req_attrs = (
+            'ldirect', 'ibdate', 'ibtime', 'iedate', 'ietime', 'loutstep',
+            'loutaver', 'loutsample', 'itsplit', 'lsynctime', 'ctl',
+            'ifine', 'iout', 'ipout', 'lsubgrid', 'lconvection',
+            'lagespectra', 'ipin', 'ioutputforeachrelease',
+            'iflux', 'mdomainfill', 'ind_source', 'ind_receptor',
+            'mquasilag', 'nested_output', 'surf_only', 'linit_cond')
+        existing_attrs = self.ncid.ncattrs()
+        for attr in req_attrs:
+            assert attr in existing_attrs
 
     # Test dimensions
     def test_dimensions(self):

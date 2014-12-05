@@ -52,22 +52,22 @@ def write_metadata(H, command, ncid):
     ncid.ind_source = H.ind_source
     ncid.ind_receptor = H.ind_receptor
 
-    # From here on, the COMMAND settings are not present in H header
-    # ncid.itsplit = H.itsplit
-    # ncid.linit_cond = H.linit_cond
-    # ncid.lsynctime = H.lsynctime
-    # ncid.ctl = H.ctl
-    # ncid.ifine = H.ifine
-    # ncid.iout = H.iout
-    # ncid.ipout = H.ipout
-    # ncid.lagespectra = H.lagespectra
-    # ncid.ipin = H.ipin
-    # ncid.ioutputforeachrelease = H.ioutputforeachrelease
-    # ncid.iflux = H.iflux
-    # ncid.mdomainfill = H.mdomainfill
-    # ncid.mquasilag = H.mquasilag
-    # ncid.nested_output = H.nested_output
-    # ncid.surf_only = H.surf_only
+    # COMMAND settings
+    ncid.itsplit = command['T_PARTSPLIT']
+    ncid.linit_cond = command['LINIT_COND']
+    ncid.lsynctime = command['SYNC']
+    ncid.ctl = command['CTL']
+    ncid.ifine = command['IFINE']
+    ncid.iout = command['IOUT']
+    ncid.ipout = command['IPOUT']
+    ncid.lagespectra = command['LAGESPECTRA']
+    ncid.ipin = command['IPIN']
+    ncid.ioutputforeachrelease = command['OUTPUTFOREACHRELEASE']
+    ncid.iflux = command['IFLUX']
+    ncid.mdomainfill = command['MDOMAINFILL']
+    ncid.mquasilag = command['MQUASILAG']
+    ncid.nested_output = command['NESTED_OUTPUT']
+    ncid.surf_only = 0  # XXX what's that?  a new option maybe?
 
 
 def write_header(H, command, ncid):
