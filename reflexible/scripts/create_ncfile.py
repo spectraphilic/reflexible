@@ -12,11 +12,13 @@ Script to convert a FLEXPART dataset into a NetCDF4 file.
 from __future__ import print_function
 
 import sys
+import warnings
 import platform
 import getpass
 import datetime
 import os.path
 import netCDF4 as nc
+
 
 from reflexible.conv2netcdf4 import Header, read_grid, read_command, read_commandV9
 
@@ -80,21 +82,23 @@ def write_metadata(H, command, ncid):
     ncid.ind_receptor = H.ind_receptor
 
     # COMMAND settings
-    ncid.itsplit = command['T_PARTSPLIT']
-    ncid.linit_cond = command['LINIT_COND']
-    ncid.lsynctime = command['SYNC']
-    ncid.ctl = command['CTL']
-    ncid.ifine = command['IFINE']
-    ncid.iout = command['IOUT']
-    ncid.ipout = command['IPOUT']
-    ncid.lagespectra = command['LAGESPECTRA']
-    ncid.ipin = command['IPIN']
-    ncid.ioutputforeachrelease = command['OUTPUTFOREACHRELEASE']
-    ncid.iflux = command['IFLUX']
-    ncid.mdomainfill = command['MDOMAINFILL']
-    ncid.mquasilag = command['MQUASILAG']
-    ncid.nested_output = command['NESTED_OUTPUT']
-    ncid.surf_only = 0  # XXX what's that? a new option maybe?
+    if len(command) > 0:
+        ncid.itsplit = command['T_PARTSPLIT']
+        ncid.linit_cond = command['LINIT_COND']
+        ncid.lsynctime = command['SYNC']
+        ncid.ctl = command['CTL']
+        ncid.ifine = command['IFINE']
+        ncid.iout = command['IOUT']
+        ncid.ipout = command['IPOUT']
+        ncid.lagespectra = command['LAGESPECTRA']
+        ncid.ipin = command['IPIN']
+        ncid.ioutputforeachrelease = command['OUTPUTFOREACHRELEASE']
+        ncid.iflux = command['IFLUX']
+        ncid.mdomainfill = command['MDOMAINFILL']
+        ncid.mquasilag = command['MQUASILAG']
+        ncid.nested_output = command['NESTED_OUTPUT']
+        # This is a new option in V9.2
+        ncid.surf_only = command.get('SURF_ONLY', 0)
 
 
 def write_header(H, command, ncid):
@@ -403,27 +407,47 @@ def write_header(H, command, ncid):
         # ncid.variables['ORO'] = 
 
 
-def create_ncfile(fddir, nested, outfile=None):
+def create_ncfile(fddir, nested, command_path=None, outdir=None):
+    """Main function that create a netCDF4 file from fddir output."""
+
+    print("NESTED:", nested)
+
+    if fddir.endswith('/'):
+        # Remove the trailing '/'
+        fddir = fddir[:-1]
+
     H = Header(fddir, nested=nested)
+
     if H.direction == "forward":
         fprefix = 'grid_conc_'
     else:
         fprefix = 'grid_time_'
 
-    command_path = os.path.join(os.path.dirname(fddir), "options/COMMAND")
-    # XXX This needs to be checked out, as I am not sure when the new format
-    # started
-    command = read_commandV9(command_path)
-
-    path = os.path.dirname(fddir)
-    fprefix = os.path.join(path, fprefix)
-    if outfile is None:
-        if H.nested:
-            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
-        else:
-            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
+    if command_path is None:
+        command_path = os.path.join(os.path.dirname(fddir), "options/COMMAND")
+    if not os.path.isfile(command_path):
+        warnings.warn(
+            "The COMMAND file cannot be found.  Continuing without it!")
+        command = {}
     else:
-        ncfname = outfile
+        # XXX This needs to be checked out, as I am not sure when the new format
+        # started
+        try:
+            command = read_commandV9(command_path)
+        except:
+            warnings.warn(
+                "The COMMAND file format is not supported.  Continuing without it!")
+            command = {}
+
+    if outdir is None:
+        path = os.path.dirname(fddir)
+        fprefix = os.path.join(path, fprefix)
+    else:
+        fprefix = outdir
+    if H.nested:
+        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
+    else:
+        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
     cache_size = 16 * H.numxgrid * H.numygrid * H.numzgrid
 
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
@@ -434,19 +458,36 @@ def create_ncfile(fddir, nested, outfile=None):
 
 
 def main():
-    try:
-        fddir = sys.argv[1]
-    except IndexError:
-        print("USAGE: create_ncfile output_dir [nested]")
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-n", "--nested",
+        help="Use a nested output.",
+        action="store_true",
+        )
+    parser.add_argument(
+        "-d", "--dirout",
+        help=("The dir where the netCDF4 file will be created. "
+              "If not specified, then the fddir/.. is used.")
+        )
+    parser.add_argument(
+        "-c", "--command-path",
+        help=("The path for the associated COMMAND file. "
+              "If not specified, then the fddir/../options/COMMAND is used.")
+        )
+    parser.add_argument(
+        "fddir", nargs="?",
+        help="The directory where the FLEXDATA output files are. "
+        )
+    args = parser.parse_args()
+
+    if args.fddir is None:
+        # At least the FLEXDATA output dir is needed
+        parser.print_help()
         sys.exit(1)
-    if fddir.endswith('/'):
-        # Remove the trailing '/'
-        fddir = fddir[:-1]
-    try:
-        nested = bool(sys.argv[2])
-    except IndexError:
-        nested = False
-    ncfname = create_ncfile(fddir, nested)
+
+    ncfname = create_ncfile(args.fddir, args.nested, args.command_path, args.dirout)
     print("New netCDF4 files is available in: '%s'" % ncfname)
 
 
