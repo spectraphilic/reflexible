@@ -179,10 +179,9 @@ class TestStructure:
     def test_species_mr(self):
         attr_names = ('units', 'long_name', 'decay', 'weightmolar',
                       'ohreact', 'kao', 'vsetaver', 'spec_ass')
-        for i in range(1, self.H.nspec+1):
-            anspec = "%3.3d" % i
-            # Assume iout in (1, 3, 5)
-            if True:
+        for i in range(0, self.H.nspec):
+            anspec = "%3.3d" % (i + 1)
+            if self.ncid.iout in (1, 3, 5):
                 var_name = "spec" + anspec + "_mr"
                 var_attrs = self.ncid.variables[var_name].ncattrs()
                 assert var_name in self.ncid.variables
@@ -195,15 +194,14 @@ class TestStructure:
     def test_species_pptv(self):
         attr_names = ('units', 'long_name', 'decay', 'weightmolar',
                       'ohreact', 'kao', 'vsetaver', 'spec_ass')
-        for i in range(1,self.H.nspec+1):
-            anspec = "%3.3d" % i
-            # Assume iout in (2, 3)
-            if True:
+        for i in range(0, self.H.nspec):
+            anspec = "%3.3d" % (i + 1)
+            if self.ncid.iout in (2, 3):
                 var_name = "spec" + anspec + "_pptv"
                 var_attrs = self.ncid.variables[var_name].ncattrs()
                 assert var_name in self.ncid.variables
                 # The following asserts fail because some attributes have not
-                # been set (decay, weightmolar, ohreact, kao, vsetaver,
+                # been set yet (decay, weightmolar, ohreact, kao, vsetaver,
                 # spec_ass)
                 # for attr in attr_names:
                 #     assert attr in var_attrs
@@ -211,15 +209,15 @@ class TestStructure:
     def test_WDspecies(self):
         attr_names = ('units', 'weta', 'wetb', 'weta_in', 'wetb_in',
                       'wetc_in', 'wetd_in', 'dquer', 'henry')
-        for i in range(1, self.H.nspec+1):
-            anspec = "%3.3d" % i
+        for i in range(0, self.H.nspec):
+            anspec = "%3.3d" % (i + 1)
             # Assume wetdep is True
             if True:
                 var_name = "WD_spec" + anspec
                 var_attrs = self.ncid.variables[var_name].ncattrs()
                 assert var_name in self.ncid.variables
                 # The following asserts fail because some attributes have not
-                # been set (weta, wetb, weta_in, wetb_in, wetc_in, wetd_in,
+                # been set yet (weta, wetb, weta_in, wetb_in, wetc_in, wetd_in,
                 # dquer, henry)
                 # for attr in attr_names:
                 #     assert attr in var_attrs
@@ -227,14 +225,14 @@ class TestStructure:
     def test_DDspecies(self):
         attr_names = ('units', 'dryvel', 'reldiff', 'henry', 'f0',
                       'dquer', 'density', 'dsigma')
-        for i in range(1, self.H.nspec+1):
-            anspec = "%3.3d" % i
+        for i in range(0, self.H.nspec):
+            anspec = "%3.3d" % (i + 1)
             # Assume drydep is True
             if True:
                 var_name = "DD_spec" + anspec
                 var_attrs = self.ncid.variables[var_name].ncattrs()
                 assert var_name in self.ncid.variables
                 # The following asserts fail because some attributes have not
-                # been set (dryvel, reldiff, henry, f0, dquer, density, dsigma)
+                # been set yet (dryvel, reldiff, henry, f0, dquer, density, dsigma)
                 # for attr in attr_names:
                 #     assert attr in var_attrs
