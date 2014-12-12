@@ -408,7 +408,7 @@ def write_header(H, command, ncid):
         # ncid.variables['ORO'] = 
 
 
-def create_ncfile(fddir, nested, command_path=None, outdir=None):
+def create_ncfile(fddir, nested, command_path=None, outdir=None, outfile=None):
     """Main function that create a netCDF4 file from fddir output."""
 
     print("NESTED:", nested)
@@ -440,15 +440,20 @@ def create_ncfile(fddir, nested, command_path=None, outdir=None):
                 "The COMMAND file format is not supported.  Continuing without it!")
             command = {}
 
-    if outdir is None:
-        path = os.path.dirname(fddir)
-        fprefix = os.path.join(path, fprefix)
+    if outfile:
+        # outfile has priority over previous flags
+        ncfname = outfile
     else:
-        fprefix = outdir
-    if H.nested:
-        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
-    else:
-        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
+        if outdir is None:
+            path = os.path.dirname(fddir)
+            fprefix = os.path.join(path, fprefix)
+        else:
+            fprefix = outdir
+        if H.nested:
+            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
+        else:
+            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
+
     cache_size = 16 * H.numxgrid * H.numygrid * H.numzgrid
 
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
@@ -473,6 +478,11 @@ def main():
               "If not specified, then the fddir/.. is used.")
         )
     parser.add_argument(
+        "-o", "--outfile",
+        help=("The complete path for the output file. "
+              "This overrides the --dirout flag.")
+        )
+    parser.add_argument(
         "-c", "--command-path",
         help=("The path for the associated COMMAND file. "
               "If not specified, then the fddir/../options/COMMAND is used.")
@@ -488,7 +498,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    ncfname = create_ncfile(args.fddir, args.nested, args.command_path, args.dirout)
+    ncfname = create_ncfile(args.fddir, args.nested, args.command_path, args.dirout, args.outfile)
     print("New netCDF4 files is available in: '%s'" % ncfname)
 
 
