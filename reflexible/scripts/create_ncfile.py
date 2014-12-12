@@ -22,6 +22,8 @@ import netCDF4 as nc
 
 from reflexible.conv2netcdf4 import Header, read_grid, read_command
 
+units = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
+
 
 def output_units(ncid):
     if ncid.ldirect == 1:
@@ -103,6 +105,15 @@ def write_metadata(H, command, ncid):
 
 
 def write_header(H, command, ncid):
+    global units
+
+    if len(command) > 0:
+        iout = command['IOUT']
+    else:
+        # If COMMAND file not available, guess the value of IOUT
+        unit_i = units.index(H.unit)
+        iout = (unit_i) + (H.nested * 5)
+
     nnx = H.numxgrid
     nny = H.numygrid
     nnz = H.numzgrid
