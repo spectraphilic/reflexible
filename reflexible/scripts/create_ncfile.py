@@ -20,7 +20,8 @@ import os.path
 import netCDF4 as nc
 
 
-from reflexible.conv2netcdf4 import Header, read_grid, read_command, read_commandV9
+from reflexible.conv2netcdf4 import Header, read_grid, read_command
+
 
 def output_units(ncid):
     if ncid.ldirect == 1:
@@ -433,7 +434,7 @@ def create_ncfile(fddir, nested, command_path=None, outdir=None):
         # XXX This needs to be checked out, as I am not sure when the new format
         # started
         try:
-            command = read_commandV9(command_path)
+            command = read_command(command_path)
         except:
             warnings.warn(
                 "The COMMAND file format is not supported.  Continuing without it!")
