@@ -23,7 +23,7 @@ import numpy as np
 
 from reflexible.conv2netcdf4 import Header, read_grid, read_command
 
-units = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
+UNITS = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
 
 
 def output_units(ncid):
@@ -107,13 +107,13 @@ def write_metadata(H, command, ncid):
 
 
 def write_header(H, ncid):
-    global units
+    global UNITS
 
     if hasattr(ncid, "iout"):
         iout = ncid.iout
     else:
         # If IOUT is not available (no COMMAND file), guess the value of IOUT
-        unit_i = units.index(H.unit)
+        unit_i = UNITS.index(H.unit) + 1  # add 1 because the counts starts with 1
         iout = (unit_i) + (H.nested * 5)
 
     # Parameter for data compression
