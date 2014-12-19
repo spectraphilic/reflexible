@@ -415,7 +415,6 @@ def write_variables(H, ncid, iout):
     for ispec in range(H.nspec):
         anspec = "%3.3d" % (ispec + 1)
         for idt, date in enumerate(H.available_dates):
-            print("idt, date:", idt, date)
             # read grid, as well as wet and dry depositions
             H.read_grid(nspec_ret=ispec, time_ret=idt, getwet=True, getdry=True)
 
@@ -438,7 +437,7 @@ def write_variables(H, ncid, iout):
             dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :]
 
 
-def create_ncfile(fddir, nested, command_path=None, outdir=None, outfile=None):
+def create_ncfile(fddir, nested, command_path=None, dirout=None, outfile=None):
     """Main function that create a netCDF4 file from fddir output."""
 
     if fddir.endswith('/'):
@@ -459,8 +458,6 @@ def create_ncfile(fddir, nested, command_path=None, outdir=None, outfile=None):
             "The COMMAND file cannot be found.  Continuing without it!")
         command = {}
     else:
-        # XXX This needs to be checked out, as I am not sure when the new format
-        # started
         try:
             command = read_command(command_path)
         except:
@@ -472,11 +469,11 @@ def create_ncfile(fddir, nested, command_path=None, outdir=None, outfile=None):
         # outfile has priority over previous flags
         ncfname = outfile
     else:
-        if outdir is None:
+        if dirout is None:
             path = os.path.dirname(fddir)
             fprefix = os.path.join(path, fprefix)
         else:
-            fprefix = outdir
+            fprefix = os.path.join(dirout, fprefix)
         if H.nested:
             ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
         else:
