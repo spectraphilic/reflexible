@@ -106,7 +106,7 @@ def write_metadata(H, command, ncid):
         ncid.surf_only = command.get('SURF_ONLY', 0)
 
 
-def write_header(H, ncid):
+def write_header(H, ncid, wetdep, drydep):
     global UNITS
 
     if hasattr(ncid, "iout"):
@@ -318,8 +318,7 @@ def write_header(H, ncid):
             # specIDppt[i] = sID  ==> ValueError
             specIDppt.append(sID)
 
-        # Assume wetdep is True
-        if True:
+        if wetdep:
             var_name = "WD_spec" + anspec
             wdsID = ncid.createVariable(var_name, 'f4', depdIDs,
                                         chunksizes=dep_chunksizes,
@@ -336,8 +335,7 @@ def write_header(H, ncid):
             # wdspecID[i] = wdsID ==> ValueError
             wdspecID.append(wdsID)
 
-        # Assume drydep is True
-        if True:
+        if drydep:
             var_name = "DD_spec" + anspec
             ddsID = ncid.createVariable(var_name, 'f4', depdIDs,
                                         chunksizes=dep_chunksizes,
@@ -410,14 +408,15 @@ def write_header(H, ncid):
     return iout
 
 
-def write_variables(H, ncid, iout):
+def write_variables(H, ncid, wetdep, drydep, iout):
     # loop over all the species and dates
     for ispec in range(H.nspec):
         anspec = "%3.3d" % (ispec + 1)
         for idt, date in enumerate(H.available_dates):
             # read grid, as well as wet and dry depositions
             try:
-                H.read_grid(nspec_ret=ispec, time_ret=idt, getwet=True, getdry=True)
+                H.read_grid(nspec_ret=ispec, time_ret=idt,
+                            getwet=wetdep, getdry=drydep)
                 fd = H.FD[(0, date)]
             except:
                 # Oops, we ha ve got an error while reading, so close the file
@@ -436,15 +435,18 @@ def write_variables(H, ncid, iout):
             conc[:, :, :, idt, :, :] = fd.grid[:, :, :, np.newaxis, :, np.newaxis]
 
             # wet and dry depositions
-            wet = ncid.variables["WD_spec" + anspec]
-            dry = ncid.variables["DD_spec" + anspec]
             # (x, y, time, pointspec, nageclass) <- (x, y, pointspec, nageclass)
-            wet[:, :, idt, :, :] = fd.wet[:, :, np.newaxis, :, :]
-            dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :]
+            if wetdep:
+                wet = ncid.variables["WD_spec" + anspec]
+                wet[:, :, idt, :, :] = fd.wet[:, :, np.newaxis, :, :]
+            if drydep:
+                dry = ncid.variables["DD_spec" + anspec]
+                dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :]
 
 
-def create_ncfile(fddir, nested, command_path=None, dirout=None, outfile=None):
-    """Main function that create a netCDF4 file from fddir output."""
+def create_ncfile(fddir, nested, wetdep, drydep, command_path=None,
+                  dirout=None, outfile=None):
+    """Main function that create a netCDF4 file from a FLEXPART output."""
 
     if fddir.endswith('/'):
         # Remove the trailing '/'
@@ -490,8 +492,8 @@ def create_ncfile(fddir, nested, command_path=None, dirout=None, outfile=None):
     print("About to create new netCDF4 file: '%s'" % ncfname)
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, command, ncid)
-    iout = write_header(H, ncid)
-    write_variables(H, ncid, iout)
+    iout = write_header(H, ncid, wetdep, drydep)
+    write_variables(H, ncid, wetdep, drydep, iout)
     ncid.close()
     return ncfname
 
@@ -503,6 +505,16 @@ def main():
     parser.add_argument(
         "-n", "--nested",
         help="Use a nested output.",
+        action="store_true",
+        )
+    parser.add_argument(
+        "-W", "--wetdep",
+        help="Write wet depositions in the netCDF4 file.",
+        action="store_true",
+        )
+    parser.add_argument(
+        "-D", "--drydep",
+        help="Write dry depositions into the netCDF4 file.",
         action="store_true",
         )
     parser.add_argument(
@@ -531,7 +543,8 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    ncfname = create_ncfile(args.fddir, args.nested, args.command_path, args.dirout, args.outfile)
+    ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
+                            args.command_path, args.dirout, args.outfile)
     print("New netCDF4 file is available in: '%s'" % ncfname)
 
 
