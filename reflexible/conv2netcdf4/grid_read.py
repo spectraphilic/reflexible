@@ -746,9 +746,9 @@ def readgridV8(H, **kwargs):
                         OPS.scaleconc, H.decayconstant, npspec_int)
 
                 if OPS.getwet:
-                    wet = wetgrid.squeeze()
+                    wet = wetgrid
                 if OPS.getdry:
-                    dry = drygrid.squeeze()
+                    dry = drygrid
                 if forward:
                     zplot = gridT[:, :, :, :, 0]
                 else:

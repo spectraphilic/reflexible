@@ -280,13 +280,13 @@ def write_header(H, ncid):
     wdspecID = []
     # ddspecID = np.zeros((H.nspec,), dtype='f4')
     ddspecID = []
+
     chunksizes = (H.numxgrid, H.numygrid, H.numzgrid, 1, 1, 1)
     dep_chunksizes = (H.numxgrid, H.numygrid, 1, 1, 1)
     for i in range(0, H.nspec):
-        anspec = "%3.3d" % (i+1)
+        anspec = "%3.3d" % (i + 1)
         # iout: 1 conc. output (ng/m3), 2 mixing ratio (pptv), 3 both,
         # 4 plume traject, 5=1+4
-        # TODO: fill values using numpy arrays instead of lists
         if iout in (1, 3, 5):
             var_name = "spec" + anspec + "_mr"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
@@ -302,7 +302,6 @@ def write_header(H, ncid):
             # sID.spec_ass = spec_ass[i]
             # specID[i] = sID ==> ValueError: setting an array element with a sequence
             specID.append(sID)
-        # TODO: fill values using numpy arrays instead of lists
         if iout in (2, 3):
             var_name = "spec" + anspec + "_pptv"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
@@ -318,7 +317,7 @@ def write_header(H, ncid):
             # sID.spec_ass = spec_ass[i]
             # specIDppt[i] = sID  ==> ValueError
             specIDppt.append(sID)
-        # TODO: wetdep?? fill values using numpy arrays instead of lists
+
         # Assume wetdep is True
         if True:
             var_name = "WD_spec" + anspec
@@ -336,7 +335,7 @@ def write_header(H, ncid):
             # wdsID.henry = henry[i]
             # wdspecID[i] = wdsID ==> ValueError
             wdspecID.append(wdsID)
-        # TODO: drydep?? fill values using numpy arrays instead of lists
+
         # Assume drydep is True
         if True:
             var_name = "DD_spec" + anspec
@@ -408,6 +407,36 @@ def write_header(H, ncid):
         # TODO: review the setup of the ORO variable (dimensions: (longitude, latitude))
         ncid.variables['ORO'][:, :] = H.oro
 
+    return iout
+
+
+def write_variables(H, ncid, iout):
+    # loop over all the species and dates
+    for ispec in range(H.nspec):
+        anspec = "%3.3d" % (ispec + 1)
+        for idt, date in enumerate(H.available_dates):
+            print("idt, date:", idt, date)
+            # read grid, as well as wet and dry depositions
+            H.read_grid(nspec_ret=ispec, time_ret=idt, getwet=True, getdry=True)
+
+            # Fill concentration values
+            if iout in (1, 3, 5):
+                conc_name = "spec" + anspec + "_mr"
+            if iout in (2, 3):
+                conc_name = "spec" + anspec + "_pptv"
+            fd = H.FD[(0, date)]
+            conc = ncid.variables[conc_name]
+            # (x, y, z, time, pointspec, nageclass) <- (x, y, z, pointspec)
+            # TODO: should we put the nageclass dim in fd.grid back?
+            conc[:, :, :, idt, :, :] = fd.grid[:, :, :, np.newaxis, :, np.newaxis]
+
+            # wet and dry depositions
+            wet = ncid.variables["WD_spec" + anspec]
+            dry = ncid.variables["DD_spec" + anspec]
+            # (x, y, time, pointspec, nageclass) <- (x, y, pointspec, nageclass)
+            wet[:, :, idt, :, :] = fd.wet[:, :, np.newaxis, :, :]
+            dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :]
+
 
 def create_ncfile(fddir, nested, command_path=None, outdir=None, outfile=None):
     """Main function that create a netCDF4 file from fddir output."""
@@ -457,7 +486,8 @@ def create_ncfile(fddir, nested, command_path=None, outdir=None, outfile=None):
 
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, command, ncid)
-    write_header(H, ncid)
+    iout = write_header(H, ncid)
+    write_variables(H, ncid, iout)
     ncid.close()
     return ncfname
 
