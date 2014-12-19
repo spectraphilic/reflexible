@@ -416,14 +416,20 @@ def write_variables(H, ncid, iout):
         anspec = "%3.3d" % (ispec + 1)
         for idt, date in enumerate(H.available_dates):
             # read grid, as well as wet and dry depositions
-            H.read_grid(nspec_ret=ispec, time_ret=idt, getwet=True, getdry=True)
+            try:
+                H.read_grid(nspec_ret=ispec, time_ret=idt, getwet=True, getdry=True)
+                fd = H.FD[(0, date)]
+            except:
+                # Oops, we ha ve got an error while reading, so close the file
+                ncid.close()
+                # and re-raise the error
+                raise
 
             # Fill concentration values
             if iout in (1, 3, 5):
                 conc_name = "spec" + anspec + "_mr"
             if iout in (2, 3):
                 conc_name = "spec" + anspec + "_pptv"
-            fd = H.FD[(0, date)]
             conc = ncid.variables[conc_name]
             # (x, y, z, time, pointspec, nageclass) <- (x, y, z, pointspec)
             # TODO: should we put the nageclass dim in fd.grid back?
@@ -481,6 +487,7 @@ def create_ncfile(fddir, nested, command_path=None, dirout=None, outfile=None):
 
     cache_size = 16 * H.numxgrid * H.numygrid * H.numzgrid
 
+    print("About to create new netCDF4 file: '%s'" % ncfname)
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, command, ncid)
     iout = write_header(H, ncid)
@@ -525,7 +532,7 @@ def main():
         sys.exit(1)
 
     ncfname = create_ncfile(args.fddir, args.nested, args.command_path, args.dirout, args.outfile)
-    print("New netCDF4 files is available in: '%s'" % ncfname)
+    print("New netCDF4 file is available in: '%s'" % ncfname)
 
 
 if __name__ == '__main__':
