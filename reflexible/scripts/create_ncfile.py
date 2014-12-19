@@ -444,8 +444,8 @@ def write_variables(H, ncid, wetdep, drydep, iout):
                 dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :]
 
 
-def create_ncfile(fddir, nested, wetdep, drydep, command_path=None,
-                  dirout=None, outfile=None):
+def create_ncfile(fddir, nested, wetdep=False, drydep=False,
+                  command_path=None, dirout=None, outfile=None):
     """Main function that create a netCDF4 file from a FLEXPART output."""
 
     if fddir.endswith('/'):

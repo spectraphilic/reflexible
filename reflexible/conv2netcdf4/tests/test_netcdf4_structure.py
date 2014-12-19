@@ -10,12 +10,14 @@ class Dataset:
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
 
-    def setup(self, tmpdir):
+    def setup(self, tmpdir, nested=False, wetdep=True, drydep=True):
         self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
-        rf.create_ncfile(self.fp_path, nested=False, outfile=self.nc_path)
+        rf.create_ncfile(self.fp_path, nested, wetdep, drydep, outfile=self.nc_path)
         self.ncid = nc.Dataset(self.nc_path, 'r')
         self.H = Header(self.fp_path, nested=False)
+        self.wetdep = wetdep
+        self.drydep = drydep
         return self.ncid, self.fp_path, self.nc_path, self.H
 
     def cleanup(self):
@@ -206,13 +208,20 @@ class TestStructure:
                 # for attr in attr_names:
                 #     assert attr in var_attrs
 
+
+class TestWetDryDeps:
+    @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta'])
+    def setup(self, request, tmpdir):
+        self.dataset = dataset = Dataset(request.param)
+        self.ncid, self.fp_path, self.nc_path, self.H = dataset.setup(tmpdir)
+        request.addfinalizer(dataset.cleanup)
+
     def test_WDspecies(self):
         attr_names = ('units', 'weta', 'wetb', 'weta_in', 'wetb_in',
                       'wetc_in', 'wetd_in', 'dquer', 'henry')
         for i in range(0, self.H.nspec):
             anspec = "%3.3d" % (i + 1)
-            # Assume wetdep is True
-            if True:
+            if self.dataset.wetdep:
                 var_name = "WD_spec" + anspec
                 var_attrs = self.ncid.variables[var_name].ncattrs()
                 assert var_name in self.ncid.variables
@@ -227,8 +236,7 @@ class TestStructure:
                       'dquer', 'density', 'dsigma')
         for i in range(0, self.H.nspec):
             anspec = "%3.3d" % (i + 1)
-            # Assume drydep is True
-            if True:
+            if self.dataset.drydep:
                 var_name = "DD_spec" + anspec
                 var_attrs = self.ncid.variables[var_name].ncattrs()
                 assert var_name in self.ncid.variables
