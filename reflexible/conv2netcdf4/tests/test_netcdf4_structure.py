@@ -5,6 +5,9 @@ import reflexible as rf
 from reflexible.conv2netcdf4 import Header
 
 
+output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta']
+
+
 class Dataset:
     def __init__(self, fp_name):
         self.fp_name = fp_name
@@ -25,7 +28,7 @@ class Dataset:
 
 
 class TestStructure:
-    @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta'])
+    @pytest.fixture(autouse=True, params=output_list)
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
         self.ncid, self.fp_path, self.nc_path, self.H = dataset.setup(tmpdir)
@@ -210,7 +213,7 @@ class TestStructure:
 
 
 class TestWetDryDeps:
-    @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta'])
+    @pytest.fixture(autouse=True, params=output_list)
     def setup(self, request, tmpdir):
         self.dataset = dataset = Dataset(request.param)
         self.ncid, self.fp_path, self.nc_path, self.H = dataset.setup(tmpdir)
