@@ -417,7 +417,7 @@ def write_variables(H, ncid, wetdep, drydep, iout):
             try:
                 H.read_grid(nspec_ret=ispec, time_ret=idt,
                             getwet=wetdep, getdry=drydep)
-                fd = H.FD[(0, date)]
+                fd = H.FD[(ispec, date)]
             except:
                 # Oops, we ha ve got an error while reading, so close the file
                 ncid.close()
