@@ -1214,16 +1214,17 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
     area = H['area']
     Slabs = reflexible.conv2netcdf4.Structure()
     grid_shape = G.shape
-    if len(grid_shape) is 4:
+    nageclass = 0   # XXX assume nageclass equal to 0
+    if len(grid_shape) is 5:
         if index is None:
             if H.direction is 'forward':
                 index = 0
             else:
                 index = 0
-            g = G[:, :, :, index]
+            g = G[:, :, :, index, nageclass]
         else:
             try:
-                g = G[:, :, :, index]
+                g = G[:, :, :, index, nageclass]
             except:
                 raise IOError(
                     '######### ERROR: Which Release Point to get? ########## ')

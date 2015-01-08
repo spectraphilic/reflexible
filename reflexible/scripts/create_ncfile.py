@@ -1,5 +1,6 @@
-'''
-Script to convert a FLEXPART dataset into a NetCDF4 file.
+from __future__ import print_function
+
+"""Script to convert a FLEXPART dataset into a NetCDF4 file.
 
 :Author: Francesc Alted
 :Contact:  francesc@blosc.org
@@ -7,9 +8,12 @@ Script to convert a FLEXPART dataset into a NetCDF4 file.
 :Acknowledgment: Funding for the development of this code is provided
      through the iiSPAC project (NSF-ARC-1023651)
 
-'''
+This script demonstrates how to convert FLEXDATA output files into a
+file with netCDF4 format.  Help to use this script can be get with::
 
-from __future__ import print_function
+  $ create_ncfile.py -h
+
+"""
 
 import sys
 import warnings
@@ -17,16 +21,35 @@ import platform
 import getpass
 import datetime
 import os.path
+
 import netCDF4 as nc
 import numpy as np
 
-
-from reflexible.conv2netcdf4 import Header, read_grid, read_command
+from reflexible.conv2netcdf4 import Header, read_command
 
 UNITS = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
 
+"""Used in combination with H.nested to determine the value of the
+   ncid.iout attribute when the COMMAND file is not available.
+"""
+
 
 def output_units(ncid):
+    """The ncid.units attribute computation.
+
+    This function computes the value of the ncid.units attribute required
+    when concentration output, wet and dry deposition variables are created.
+
+    Parameters
+    ----------
+    ncid : Python object
+        the object associated to the netCDF4 file
+
+    Return
+    ------
+    string
+        the value of the ncid.units attributte
+    """
     if ncid.ldirect == 1:
         # forward simulation
         if ncid.ind_source == 1:
@@ -56,15 +79,32 @@ def output_units(ncid):
 
 
 def write_metadata(H, command, ncid):
-    # hes CF convention requires these attributes
+    """Write attributes to the netCDF4 file object (i.e. ncid).
+
+    These function writes metadata (as attributes) to the netCDF4 file object.
+    The metadata is read from the Python objects associated to the header and
+    command files.
+
+    Parameters
+    ----------
+    H: Python object
+      the Header object.
+    command: Python object
+      the COMMAND file object.
+    ncid: Python object
+      the netCDF4 file object.
+    """
+    # the CF convention requires these attributes
     ncid.Conventions = 'CF-1.6'
     ncid.title = 'FLEXPART model output'
     ncid.institution = 'NILU'
     ncid.source = H.version + ' model output'
     date = "%d-%d-%d %d:%d" % datetime.datetime.now().timetuple()[:5]
     zone = "NA"
-    ncid.history = date + ' ' + zone + ' created by ' + getpass.getuser() + ' on ' + platform.node()
-    ncid.references = 'Stohl et al., Atmos. Chem. Phys., 2005, doi:10.5194/acp-5-2461-200'
+    ncid.history = (date + ' ' + zone + ' created by ' +
+                    getpass.getuser() + ' on ' + platform.node())
+    ncid.references = ("Stohl et al., Atmos. Chem. Phys., 2005, "
+                       "doi:10.5194/acp-5-2461-200")
 
     # attributes describing model run
     ncid.outlon0 = H.outlon0
@@ -86,7 +126,7 @@ def write_metadata(H, command, ncid):
     ncid.ind_source = H.ind_source
     ncid.ind_receptor = H.ind_receptor
 
-    # COMMAND settings
+    # additional COMMAND settings
     if len(command) > 0:
         ncid.itsplit = command['T_PARTSPLIT']
         ncid.linit_cond = command['LINIT_COND']
@@ -107,13 +147,44 @@ def write_metadata(H, command, ncid):
 
 
 def write_header(H, ncid, wetdep, drydep):
-    global UNITS
+    """Create netCDF4 dimensions and variables.
+
+    Create the netCDF4 variables (and the required dimensions) that will be
+    stored in the netCDF4 file. The created variables are available through
+    the dictionary ncid.variables as::
+
+      ncid.variables['var_name']
+
+    Beware that variables are created but not filled with data.
+
+    Parameters
+    ----------
+    H : Python object
+      The Header object.
+    ncid : Python object
+      The netCDF4 file object.
+    wetdep : boolean
+      True if wet depositions have to be written into the netCDF4 file.
+    drydep : boolean
+      True if dry depositions have to be written into the netCDF4 file.
+
+    Return
+    ------
+    int
+      1 -> conc. output (ng/m3)
+      2 -> mixing ratio (pptv)
+      3 -> both
+      4 -> plume traject
+      5 -> 1 + 4
+    """
+    # global UNITS
 
     if hasattr(ncid, "iout"):
         iout = ncid.iout
     else:
         # If IOUT is not available (no COMMAND file), guess the value of IOUT
-        unit_i = UNITS.index(H.unit) + 1  # add 1 because the counts starts with 1
+        # Add 1 because the count starts with 1
+        unit_i = UNITS.index(H.unit) + 1
         iout = (unit_i) + (H.nested * 5)
 
     # Parameter for data compression
@@ -197,9 +268,8 @@ def write_header(H, ncid, wetdep, drydep):
     levID.standard_name = 'height'
     levID.long_name = 'height above ground'
 
-    # RELCOM nf90_char -> dtype = S30
-    # http://www.unidata.ucar.edu/mailing_lists/archives/netcdfgroup/2014/msg00100.html
-    relcomID = ncid.createVariable('RELCOM', 'S30', ('nchar', 'numpoint'))
+    # RELCOM nf90_char -> dtype = S1
+    relcomID = ncid.createVariable('RELCOM', 'S1', ('nchar', 'numpoint'))
     relcomID.long_name = 'release point name'
 
     # RELLNG1
@@ -270,16 +340,11 @@ def write_header(H, ncid, wetdep, drydep):
     units = output_units(ncid)
 
     # Concentration output, wet and dry deposition variables (one per species)
-    dIDs = ('longitude', 'latitude', 'height', 'time', 'pointspec', 'nageclass')
-    # specID = np.zeros((H.nspec,), dtype='f4')
-    specID = []
-    # specIDppt = np.zeros((H.nspec,), dtype='f4')
-    specIDppt = []
+    # Variables for concentration ouput have dimensions given by dIDs
+    # Variables for wer and dry deposition have dimensions given by depdIDs
+    dIDs = (
+        'longitude', 'latitude', 'height', 'time', 'pointspec', 'nageclass')
     depdIDs = ('longitude', 'latitude', 'time', 'pointspec', 'nageclass')
-    # wdspecID = np.zeros((H.nspec,), dtype='f4')
-    wdspecID = []
-    # ddspecID = np.zeros((H.nspec,), dtype='f4')
-    ddspecID = []
 
     chunksizes = (H.numxgrid, H.numygrid, H.numzgrid, 1, 1, 1)
     dep_chunksizes = (H.numxgrid, H.numygrid, 1, 1, 1)
@@ -291,7 +356,8 @@ def write_header(H, ncid, wetdep, drydep):
             var_name = "spec" + anspec + "_mr"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
                                       chunksizes=chunksizes,
-                                      zlib=True, complevel=complevel)
+                                      zlib=True,
+                                      complevel=complevel)
             sID.units = units
             sID.long_name = H.species[i]
             # sID.decay = decay[i]
@@ -300,13 +366,12 @@ def write_header(H, ncid, wetdep, drydep):
             # sID.kao = kao[i]
             # sID.vsetaver = vsetaver[i]
             # sID.spec_ass = spec_ass[i]
-            # specID[i] = sID ==> ValueError: setting an array element with a sequence
-            specID.append(sID)
+            ncid.variables[var_name] = sID
         if iout in (2, 3):
             var_name = "spec" + anspec + "_pptv"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
-                                      chunksizes=chunksizes,
-                                      zlib=True, complevel=complevel)
+                                      chunksizes=chunksizes, zlib=True,
+                                      complevel=complevel)
             sID.units = 'pptv'
             sID.long_name = H.species[i]
             # sID.decay = decay[i]
@@ -315,8 +380,7 @@ def write_header(H, ncid, wetdep, drydep):
             # sID.kao = kao[i]
             # sID.vsetaver = vsetaver[i]
             # sID.spec_ass = spec_ass[i]
-            # specIDppt[i] = sID  ==> ValueError
-            specIDppt.append(sID)
+            ncid.variables[var_name] = sID
 
         if wetdep:
             var_name = "WD_spec" + anspec
@@ -332,8 +396,7 @@ def write_header(H, ncid, wetdep, drydep):
             # wdsID.wetd_in = wetd_in[i]
             # wdsID.dquer = dquer[i]
             # wdsID.henry = henry[i]
-            # wdspecID[i] = wdsID ==> ValueError
-            wdspecID.append(wdsID)
+            ncid.variables[var_name] = wdsID
 
         if drydep:
             var_name = "DD_spec" + anspec
@@ -348,21 +411,51 @@ def write_header(H, ncid, wetdep, drydep):
             # ddsID.dquer = dquer[i]
             # ddsID.density = density[i]
             # ddsID.dsigma = dsigma[i]
-            # ddspecID[i] = ddsID  ==> ValueError
-            ddspecID.append(ddsID)
+            ncid.variables[var_name] = wdsID
 
+    return iout
+
+
+def write_variables(H, ncid, wetdep, drydep, iout):
+    """Fill netCDF4 variables with data.
+
+    The netCDF4 variables created in the ``write_header`` function are filled
+    with data.
+
+    Parameters
+    ----------
+    H : Python object
+      the header object
+    ncid : Python object
+      the netCDF4 file object
+    wetdep : boolean
+      True if wet depositions have to be written into the netCDF4 file.
+    drydep : boolean
+      True if dry depositions have to be written into the netCDF4 file.
+    iout : int
+      1 -> conc. output (ng/m3)
+      2 -> mixing ratio (pptv)
+      3 -> both
+      4 -> plume traject
+      5 -> 1+4
+    """
     # Fill variables with data.
+
+    # time
+    time_var = ncid.variables['time']
+    time_var[:] = nc.date2num(H.available_dates_dt, units=time_var.units,
+                              calendar=time_var.calendar)
 
     # longitudes (grid cell centers)
     ncid.variables['longitude'][:] = np.linspace(
-        ncid.outlon0+0.5*ncid.dxout,
-        ncid.outlon0+(H.numxgrid-0.5)*ncid.dxout,
+        ncid.outlon0 + 0.5 * ncid.dxout,
+        ncid.outlon0 + (H.numxgrid-0.5) * ncid.dxout,
         H.numxgrid)
 
     # latitudes (grid cell centers)
     ncid.variables['latitude'][:] = np.linspace(
-        ncid.outlat0+0.5*ncid.dyout,
-        ncid.outlat0+(H.numygrid-0.5)*ncid.dyout,
+        ncid.outlat0 + 0.5 * ncid.dyout,
+        ncid.outlat0 + (H.numygrid-0.5) * ncid.dyout,
         H.numygrid)
 
     # levels
@@ -382,8 +475,9 @@ def write_header(H, ncid, wetdep, drydep):
         ncid.variables['RELZZ1'][:] = H.zpoint1
         ncid.variables['RELZZ2'][:] = H.zpoint2
         ncid.variables['RELPART'][:] = H.npart
-        # TODO: review the setup of the RELXMASS variable (dimensions: (numpoint, numspec))
-        ncid.variables['RELXMASS'][:,:] = H.xmass
+        # TODO: review the setup of the RELXMASS variable
+        # dimensions are: (numpoint, numspec)
+        ncid.variables['RELXMASS'][:, :] = H.xmass
 
         if H.numpoint < 1000:
             # TODO: Fill RELCOM in the range(0, H.numpoint)
@@ -401,15 +495,13 @@ def write_header(H, ncid, wetdep, drydep):
 
     # Orography
     # TODO: min_size?? Assume min_size = False
-    if (not False):
-        # TODO: review the setup of the ORO variable (dimensions: (longitude, latitude))
+    if not False:
+        # TODO: review the setup of the ORO variable
+        # dimensions are: (longitude, latitude)
         ncid.variables['ORO'][:, :] = H.oro
 
-    return iout
-
-
-def write_variables(H, ncid, wetdep, drydep, iout):
-    # loop over all the species and dates
+    # Concentration output, wet and dry deposition variables (one per species)
+    # Loop over all the species and dates
     for ispec in range(H.nspec):
         anspec = "%3.3d" % (ispec + 1)
         for idt, date in enumerate(H.available_dates):
@@ -418,8 +510,8 @@ def write_variables(H, ncid, wetdep, drydep, iout):
                 H.read_grid(nspec_ret=ispec, time_ret=idt,
                             getwet=wetdep, getdry=drydep)
                 fd = H.FD[(ispec, date)]
-            except:
-                # Oops, we ha ve got an error while reading, so close the file
+            except IOError:
+                # Oops, we have got an error while reading, so close the file
                 ncid.close()
                 # and re-raise the error
                 raise
@@ -430,8 +522,10 @@ def write_variables(H, ncid, wetdep, drydep, iout):
             if iout in (2, 3):
                 conc_name = "spec" + anspec + "_pptv"
             conc = ncid.variables[conc_name]
-            # (x, y, z, time, pointspec, nageclass) <- (x, y, z, pointspec, nageclass)
+            # (x, y, z, time, pointspec, nageclass) <-
+            # (x, y, z, pointspec, nageclass)
             conc[:, :, :, idt, :, :] = fd.grid[:, :, :, np.newaxis, :, :]
+
             # wet and dry depositions
             # (x, y, time, pointspec, nageclass) <- (x, y, pointspec, nageclass)
             if wetdep:
@@ -444,8 +538,30 @@ def write_variables(H, ncid, wetdep, drydep, iout):
 
 def create_ncfile(fddir, nested, wetdep=False, drydep=False,
                   command_path=None, dirout=None, outfile=None):
-    """Main function that create a netCDF4 file from a FLEXPART output."""
+    """Main function that create a netCDF4 file from a FLEXPART output.
 
+    Parameters
+    ----------
+    fddir : string
+      the directory where the FLEXDATA output files are stored.
+    nested : bool
+      if True -> use a nested output.
+    wetdep : bool
+      defaults to False -> don't write wet deposition in the netCDF4 file.
+    drydep : dool
+      defaults to False -> don't write dry deposition in the netCDF4 file.
+    command_path : string
+      path for the associated COMMAND file. Defaults to None.
+    dirout : string
+      the dir where the netCDF4 file will be created. Defaults to None.
+    outfile : string
+      If passed it overrides the ``dirout`` argument. Defaults to None.
+
+    Return
+    ------
+    string
+      the full path of the netCDF4 file to be created.
+    """
     if fddir.endswith('/'):
         # Remove the trailing '/'
         fddir = fddir[:-1]
@@ -466,9 +582,10 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
     else:
         try:
             command = read_command(command_path)
-        except:
+        except IOError:
             warnings.warn(
-                "The COMMAND file format is not supported.  Continuing without it!")
+                "The COMMAND file format is not supported.  " +
+                "Continuing without it!")
             command = {}
 
     if outfile:
@@ -497,6 +614,10 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
 
 
 def main():
+    """Parses the passed command line arguments.
+
+    The passed arguments will be used to create the netCDF4 file.
+    """
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -544,7 +665,6 @@ def main():
     ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
                             args.command_path, args.dirout, args.outfile)
     print("New netCDF4 file is available in: '%s'" % ncfname)
-
 
 if __name__ == '__main__':
     main()
