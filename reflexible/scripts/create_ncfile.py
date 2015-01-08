@@ -430,10 +430,8 @@ def write_variables(H, ncid, wetdep, drydep, iout):
             if iout in (2, 3):
                 conc_name = "spec" + anspec + "_pptv"
             conc = ncid.variables[conc_name]
-            # (x, y, z, time, pointspec, nageclass) <- (x, y, z, pointspec)
-            # TODO: should we put the nageclass dim in fd.grid back?
-            conc[:, :, :, idt, :, :] = fd.grid[:, :, :, np.newaxis, :, np.newaxis]
-
+            # (x, y, z, time, pointspec, nageclass) <- (x, y, z, pointspec, nageclass)
+            conc[:, :, :, idt, :, :] = fd.grid[:, :, :, np.newaxis, :, :]
             # wet and dry depositions
             # (x, y, time, pointspec, nageclass) <- (x, y, pointspec, nageclass)
             if wetdep:

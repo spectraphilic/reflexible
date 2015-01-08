@@ -168,7 +168,7 @@ def _readgrid_noFF(H, **kwargs):
     # create zero arrays for datagrid and zplot
     datagrid = np.zeros((numxgrid, numygrid, numzgrid, numpoint),
                         dtype=np.float32)
-    zplot = np.empty((numxgrid, numygrid, numzgrid, numpoint))
+    zplot = np.empty((numxgrid, numygrid, numzgrid, numpoint, nageclass))
 
     #--------------------------------------------------
     # Loop over all times, given in field H['dates']
@@ -749,13 +749,11 @@ def readgridV8(H, **kwargs):
                     wet = wetgrid
                 if OPS.getdry:
                     dry = drygrid
-                if forward:
-                    zplot = gridT[:, :, :, :, 0]
-                else:
-                    zplot = gridT[:, :, :, :, 0]
+
+                # XXX zplot is the name below. needs some more name consistency
+                zplot = gridT.copy()
 
                 if OPS.calcfoot:
-
                     zplot = sumgrid(zplot, gridT, H.area, H.Heightnn)
 
                 # get the total column and prep the grid
@@ -995,10 +993,8 @@ def readgridV6(H, **kwargs):
                         H.numpointspec, H.nageclass, OPS.scaledepo,
                         OPS.scaleconc, H.decayconstant)
 
-                if forward:
-                    zplot = gridT[:, :, :, :, 0]
-                else:
-                    zplot = gridT[:, :, :, :, 0]
+                # XXX zplot is the name below. needs some more name consistency
+                zplot = gridT.copy()
 
                 if OPS.calcfoot:
                     zplot = sumgrid(zplot, gridT,
@@ -1126,7 +1122,10 @@ def fill_grids(H, nspec=0, FD=None):
                 # cycle through all the date grids (20days back)
                 for k in range(H.numpointspec):
                     # cycle through each release point
-                    contribution = FD[(s, d)].grid[:, :, :, k]
+                    contribution = 0
+                    for l in range(H.nageclass):
+                        # cycle through each release point
+                        contribution += FD[(s, d)].grid[:, :, :, k, l]
                     C[(s, k)].grid += contribution
 
     # added this, not sure if it makes sense to have this for 'forward'
