@@ -171,14 +171,6 @@ class TestStructure:
         assert 'units' in var_attrs
         assert 'long_name' in var_attrs
 
-    # Assumption for ORO variable: min_size is False
-    def test_ORO(self):
-        assert 'ORO' in self.ncid.variables
-        var_attrs = self.ncid.variables['ORO'].ncattrs()
-        attr_names = ('standard_name', 'long_name', 'units')
-        for attr in attr_names:
-            assert attr in var_attrs
-
     # Concentration output, wet and dry deposition variables (one per species)
     # To be checked:  iout, wetdep, drydep
     def test_species_mr(self):

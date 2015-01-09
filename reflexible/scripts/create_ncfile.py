@@ -28,9 +28,13 @@ import numpy as np
 from reflexible.conv2netcdf4 import Header, read_command
 
 UNITS = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
-
 """Used in combination with H.nested to determine the value of the
    ncid.iout attribute when the COMMAND file is not available.
+"""
+
+MIN_SIZE = True
+"""If set True, redundant fields (topography) are not written to minimize file
+   size.
 """
 
 
@@ -189,29 +193,6 @@ def write_header(H, ncid, wetdep, drydep):
 
     # Parameter for data compression
     complevel = 9
-    # Maximum number of chemical species per release (Source: par_mod.f90)
-    # maxspec = 4
-    # Variables defining the release locations, released species and their
-    # properties, etc. (Source: com_mod.f90)
-    # decay = []
-    # weightmolar = []
-    # ohreact = []
-    # kao = []
-    # vsetaver = []
-    # spec_ass = []
-    # weta = []
-    # wetb = []
-    # weta_in = []
-    # wetb_in = []
-    # wetc_in = []
-    # wetd_in = []
-    # dquer = []
-    # henry = []
-    # dryvel = []
-    # reldiff = []
-    # f0 = []
-    # density = []
-    # dsigma = []
 
     # Create dimensions
 
@@ -228,7 +209,7 @@ def write_header(H, ncid, wetdep, drydep):
     ncid.createDimension('height', H.numzgrid)
     # number of species
     ncid.createDimension('numspec', H.nspec)
-    # number of release points   XXX or H.maxpoint?
+    # number of release points
     ncid.createDimension('pointspec', H.numpointspec)
     # number of age classes
     ncid.createDimension('nageclass', H.nageclass)
@@ -330,12 +311,13 @@ def write_header(H, ncid, wetdep, drydep):
     lageID.long_name = 'age class'
 
     # ORO
-    oroID = ncid.createVariable('ORO', 'i4', ('longitude', 'latitude'),
-                                chunksizes=(H.numxgrid, H.numygrid),
-                                zlib=True, complevel=complevel)
-    oroID.standard_name = 'surface altitude'
-    oroID.long_name = 'outgrid surface altitude'
-    oroID.units = 'm'
+    if not MIN_SIZE:
+        oroID = ncid.createVariable('ORO', 'i4', ('longitude', 'latitude'),
+                                    chunksizes=(H.numxgrid, H.numygrid),
+                                    zlib=True, complevel=complevel)
+        oroID.standard_name = 'surface altitude'
+        oroID.long_name = 'outgrid surface altitude'
+        oroID.units = 'm'
 
     units = output_units(ncid)
 
@@ -360,6 +342,7 @@ def write_header(H, ncid, wetdep, drydep):
                                       complevel=complevel)
             sID.units = units
             sID.long_name = H.species[i]
+            # TODO: we still need to figure out how to get the next data
             # sID.decay = decay[i]
             # sID.weightmolar = weightmolar[i]
             # sID.ohreact = ohreact[i]
@@ -374,6 +357,7 @@ def write_header(H, ncid, wetdep, drydep):
                                       complevel=complevel)
             sID.units = 'pptv'
             sID.long_name = H.species[i]
+            # TODO: we still need to figure out how to get the next data
             # sID.decay = decay[i]
             # sID.weightmolar = weightmolar[i]
             # sID.ohreact = ohreact[i]
@@ -388,6 +372,7 @@ def write_header(H, ncid, wetdep, drydep):
                                         chunksizes=dep_chunksizes,
                                         zlib=True, complevel=complevel)
             wdsID.units = '1e-12 kg m-2'
+            # TODO: we still need to figure out how to get the next data
             # wdsID.weta = weta[i]
             # wdsID.wetb = wetb[i]
             # wdsID.weta_in = weta_in[i]
@@ -404,6 +389,7 @@ def write_header(H, ncid, wetdep, drydep):
                                         chunksizes=dep_chunksizes,
                                         zlib=True, complevel=complevel)
             ddsID.units = '1e-12 kg m-2'
+            # TODO: we still need to figure out how to get the next data
             # dsID.dryvel = dryvel[i]
             # ddsID.reldiff = reldiff[i]
             # ddsID.henry = henry[i]
@@ -494,10 +480,7 @@ def write_variables(H, ncid, wetdep, drydep, iout):
     ncid.variables['LAGE'][:] = H.lage
 
     # Orography
-    # TODO: min_size?? Assume min_size = False
-    if not False:
-        # TODO: review the setup of the ORO variable
-        # dimensions are: (longitude, latitude)
+    if not MIN_SIZE:
         ncid.variables['ORO'][:, :] = H.oro
 
     # Concentration output, wet and dry deposition variables (one per species)
@@ -665,6 +648,7 @@ def main():
     ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
                             args.command_path, args.dirout, args.outfile)
     print("New netCDF4 file is available in: '%s'" % ncfname)
+
 
 if __name__ == '__main__':
     main()
