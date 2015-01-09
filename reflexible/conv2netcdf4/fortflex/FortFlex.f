@@ -3,18 +3,18 @@ C     # FortFlex fortran routine for reading FLEXPART output
 C     # Use with f2py, on linux:
 C     #
 C     # %f2py -c -m FortFlex FortFlex.f
-C     # 
+C     #
 C     # This will create a FortFlex.so module that can be read by
 C     # Python. It is used by PyFlex.readgridV8
 C     #
-C     # You will probably have to run this yourself as it is quite 
+C     # You will probably have to run this yourself as it is quite
 C     # dependent on libraries and machine variables. Also, will be
 C     # different between 64bit and 32bit machines
 C     #
 C     # JFB, 02.07.2009
 C     ################################################################
-      
-      
+
+
       subroutine readgrid(filegrid,
      +numxgrid,numygrid,numzgrid,numpointspec,nageclass,
      +grid,wetgrid,drygrid,itime,scaledepo,scaleconc,
@@ -227,17 +227,17 @@ C End species loop, end age class loop
      +numxgrid,numygrid,numzgrid,
      +numpoint,nageclass,
      +area,heightnn)
-     
+
       real grid(numxgrid,numygrid,numzgrid,numpoint,nageclass)
-Cf2py intent(in) grid      
-      real zplot(numxgrid,numygrid,numzgrid,numpoint)
+Cf2py intent(in) grid
+      real zplot(numxgrid,numygrid,numzgrid,numpoint,nageclass)
 Cf2py intent(in,out) zplot
       real heightnn(numxgrid,numygrid,numzgrid)
-Cf2py intent(in) heightnn    
+Cf2py intent(in) heightnn
       real area(numxgrid,numygrid)
 Cf2py intent(in) areas
 
-     
+
 ********************************************************
 C Add contributions from this time step to gridded field
 ********************************************************
@@ -253,11 +253,11 @@ C     +       /(heightnn(ix,jy,kz))
               contribution=grid(ix,jy,kz,k,nageclass)/area(ix,jy)
 C     +        /(heightnn(ix,jy,kz)-heightnn(ix,jy,kz-1))
               endif
-              zplot(ix,jy,kz,k)=zplot(ix,jy,kz,k)+contribution
+              zplot(ix,jy,kz,k,nageclass)=zplot(ix,jy,kz,k,nageclass)+contribution
 220         continue
 201         continue
 
-203    continue 
+203    continue
        end
 
 
@@ -265,7 +265,7 @@ C     +        /(heightnn(ix,jy,kz)-heightnn(ix,jy,kz-1))
      +numxgrid,numygrid,numzgrid,numpointspec,nageclass,
      +grid,wetgrid,drygrid,itime,scaledepo,scaleconc,
      +decayconstant)
-      
+
 C     +nzmax,numzgrid,maxspec,nspec,nspec2,maxageclass,nageclass,grid,
 C     +lage,scaleconc,decayconstant)
 
@@ -291,7 +291,7 @@ Cf2py intent(out) drygrid
       character*500 filegrid
 
       open(10,file=filegrid,form='unformatted',status='old')
-      read(10,end=99) itime 
+      read(10,end=99) itime
       write(*,*) itime
 
 C Loop about all species
@@ -425,7 +425,7 @@ C End species loop, end age class loop
 
       end
 
-       
+
       subroutine readheader(filename,nxmax,numxgrid,nymax,numygrid,
      +nzmax,numzgrid,outlon0,outlat0,dxout,dyout,outheight,ibdate,
      +ibtime,loutstep,maxspec,nspec,maxageclass,nageclass,lage,
@@ -437,7 +437,7 @@ C End species loop, end age class loop
       character filename*150,compoint(maxpoint)*45,species(maxspec)*7
 Cf2py intent(out) compoint
 Cf2py intent(out) species
-Cf2py intent(in) filename 
+Cf2py intent(in) filename
       real outheight(nzmax),heightnn(nxmax,nymax,0:nzmax)
 Cf2py intent(out) outheight
 Cf2py intent(out) heightnn
@@ -568,7 +568,7 @@ C Determine area of each output grid box
 
       end
 
-      
+
 
 
 

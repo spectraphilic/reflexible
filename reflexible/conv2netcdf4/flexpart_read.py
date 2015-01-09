@@ -10,7 +10,20 @@ import numpy as np
 import reflexible.conv2netcdf4
 from .helpers import closest
 
-def read_commandV9(path, headerrows=7):
+
+def read_command(path, headerrows=7):
+    with open(path, 'r') as comfile:
+        for i in range(headerrows):
+            comfile.readline()
+        signature = comfile.readline().strip()
+        if signature[:5] == "1. __":
+            command = read_command_new(path, headerrows)
+        else:
+            command = read_command_old(path, headerrows)
+    return command
+
+
+def read_command_new(path, headerrows):
     """Quick and dirty approach for reading COMMAND file for FP V9"""
     COMMAND_KEYS = (
         'SIM_DIR',
@@ -62,7 +75,7 @@ def read_commandV9(path, headerrows=7):
     return COMMAND
 
 
-def read_command(path, headerrows=7):
+def read_command_old(path, headerrows):
     """
     Reads a FLEXPART COMMAND file.
 

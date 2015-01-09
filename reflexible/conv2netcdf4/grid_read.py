@@ -168,7 +168,7 @@ def _readgrid_noFF(H, **kwargs):
     # create zero arrays for datagrid and zplot
     datagrid = np.zeros((numxgrid, numygrid, numzgrid, numpoint),
                         dtype=np.float32)
-    zplot = np.empty((numxgrid, numygrid, numzgrid, numpoint))
+    zplot = np.empty((numxgrid, numygrid, numzgrid, numpoint, nageclass))
 
     #--------------------------------------------------
     # Loop over all times, given in field H['dates']
@@ -746,16 +746,14 @@ def readgridV8(H, **kwargs):
                         OPS.scaleconc, H.decayconstant, npspec_int)
 
                 if OPS.getwet:
-                    wet = wetgrid.squeeze()
+                    wet = wetgrid
                 if OPS.getdry:
-                    dry = drygrid.squeeze()
-                if forward:
-                    zplot = gridT[:, :, :, :, 0]
-                else:
-                    zplot = gridT[:, :, :, :, 0]
+                    dry = drygrid
+
+                # XXX zplot is the name below. needs some more name consistency
+                zplot = gridT.copy()
 
                 if OPS.calcfoot:
-
                     zplot = sumgrid(zplot, gridT, H.area, H.Heightnn)
 
                 # get the total column and prep the grid
@@ -995,10 +993,8 @@ def readgridV6(H, **kwargs):
                         H.numpointspec, H.nageclass, OPS.scaledepo,
                         OPS.scaleconc, H.decayconstant)
 
-                if forward:
-                    zplot = gridT[:, :, :, :, 0]
-                else:
-                    zplot = gridT[:, :, :, :, 0]
+                # XXX zplot is the name below. needs some more name consistency
+                zplot = gridT.copy()
 
                 if OPS.calcfoot:
                     zplot = sumgrid(zplot, gridT,
@@ -1126,7 +1122,10 @@ def fill_grids(H, nspec=0, FD=None):
                 # cycle through all the date grids (20days back)
                 for k in range(H.numpointspec):
                     # cycle through each release point
-                    contribution = FD[(s, d)].grid[:, :, :, k]
+                    contribution = 0
+                    for l in range(H.nageclass):
+                        # cycle through each release point
+                        contribution += FD[(s, d)].grid[:, :, :, k, l]
                     C[(s, k)].grid += contribution
 
     # added this, not sure if it makes sense to have this for 'forward'
@@ -1215,16 +1214,17 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
     area = H['area']
     Slabs = reflexible.conv2netcdf4.Structure()
     grid_shape = G.shape
-    if len(grid_shape) is 4:
+    nageclass = 0   # XXX assume nageclass equal to 0
+    if len(grid_shape) is 5:
         if index is None:
             if H.direction is 'forward':
                 index = 0
             else:
                 index = 0
-            g = G[:, :, :, index]
+            g = G[:, :, :, index, nageclass]
         else:
             try:
-                g = G[:, :, :, index]
+                g = G[:, :, :, index, nageclass]
             except:
                 raise IOError(
                     '######### ERROR: Which Release Point to get? ########## ')
