@@ -32,10 +32,10 @@ UNITS = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
    ncid.iout attribute when the COMMAND file is not available.
 """
 
-MIN_SIZE = True
-"""If set True, redundant fields (topography) are not written to minimize file
-   size.
-"""
+# Global variables for hosting different command line arguments.
+# The default values here are not relevant.
+COMPLEVEL = 9
+MIN_SIZE = False
 
 
 def output_units(ncid):
@@ -191,9 +191,6 @@ def write_header(H, ncid, wetdep, drydep):
         unit_i = UNITS.index(H.unit) + 1
         iout = (unit_i) + (H.nested * 5)
 
-    # Parameter for data compression
-    complevel = 9
-
     # Create dimensions
 
     # time
@@ -314,7 +311,7 @@ def write_header(H, ncid, wetdep, drydep):
     if not MIN_SIZE:
         oroID = ncid.createVariable('ORO', 'i4', ('longitude', 'latitude'),
                                     chunksizes=(H.numxgrid, H.numygrid),
-                                    zlib=True, complevel=complevel)
+                                    zlib=True, complevel=COMPLEVEL)
         oroID.standard_name = 'surface altitude'
         oroID.long_name = 'outgrid surface altitude'
         oroID.units = 'm'
@@ -339,7 +336,7 @@ def write_header(H, ncid, wetdep, drydep):
             sID = ncid.createVariable(var_name, 'f4', dIDs,
                                       chunksizes=chunksizes,
                                       zlib=True,
-                                      complevel=complevel)
+                                      complevel=COMPLEVEL)
             sID.units = units
             sID.long_name = H.species[i]
             # TODO: we still need to figure out how to get the next data
@@ -354,7 +351,7 @@ def write_header(H, ncid, wetdep, drydep):
             var_name = "spec" + anspec + "_pptv"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
                                       chunksizes=chunksizes, zlib=True,
-                                      complevel=complevel)
+                                      complevel=COMPLEVEL)
             sID.units = 'pptv'
             sID.long_name = H.species[i]
             # TODO: we still need to figure out how to get the next data
@@ -370,7 +367,7 @@ def write_header(H, ncid, wetdep, drydep):
             var_name = "WD_spec" + anspec
             wdsID = ncid.createVariable(var_name, 'f4', depdIDs,
                                         chunksizes=dep_chunksizes,
-                                        zlib=True, complevel=complevel)
+                                        zlib=True, complevel=COMPLEVEL)
             wdsID.units = '1e-12 kg m-2'
             # TODO: we still need to figure out how to get the next data
             # wdsID.weta = weta[i]
@@ -387,7 +384,7 @@ def write_header(H, ncid, wetdep, drydep):
             var_name = "DD_spec" + anspec
             ddsID = ncid.createVariable(var_name, 'f4', depdIDs,
                                         chunksizes=dep_chunksizes,
-                                        zlib=True, complevel=complevel)
+                                        zlib=True, complevel=COMPLEVEL)
             ddsID.units = '1e-12 kg m-2'
             # TODO: we still need to figure out how to get the next data
             # dsID.dryvel = dryvel[i]
@@ -602,43 +599,54 @@ def main():
     The passed arguments will be used to create the netCDF4 file.
     """
     import argparse
+    global MIN_SIZE, COMPLEVEL
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-n", "--nested",
+        "-n", "--nested", action="store_true",
         help="Use a nested output.",
-        action="store_true",
         )
     parser.add_argument(
-        "-W", "--wetdep",
+        "-W", "--wetdep", action="store_true",
         help="Write wet depositions in the netCDF4 file.",
-        action="store_true",
         )
     parser.add_argument(
-        "-D", "--drydep",
+        "-D", "--drydep", action="store_true",
         help="Write dry depositions into the netCDF4 file.",
-        action="store_true",
         )
     parser.add_argument(
         "-d", "--dirout",
-        help=("The dir where the netCDF4 file will be created. "
+        help=("The dir where the netCDF4 file will be created."
               "If not specified, then the fddir/.. is used.")
         )
     parser.add_argument(
         "-o", "--outfile",
-        help=("The complete path for the output file. "
+        help=("The complete path for the output file."
               "This overrides the --dirout flag.")
         )
     parser.add_argument(
         "-c", "--command-path",
-        help=("The path for the associated COMMAND file. "
+        help=("The path for the associated COMMAND file."
               "If not specified, then the fddir/../options/COMMAND is used.")
         )
     parser.add_argument(
         "fddir", nargs="?",
-        help="The directory where the FLEXDATA output files are. "
+        help="The directory where the FLEXDATA output files are."
         )
+    parser.add_argument(
+        "--min-size", dest="min_size", action="store_true",
+        help=("Do not write redundant fields (orographry) so as to reduce "
+              "netCDF4 file size.")
+        )
+    parser.add_argument(
+        "--complevel", type=int, default=9,
+        help="Compression level for the netCDF4 file."
+        )
+
     args = parser.parse_args()
+
+    MIN_SIZE = args.min_size
+    COMPLEVEL = args.complevel
 
     if args.fddir is None:
         # At least the FLEXDATA output dir is needed
@@ -646,7 +654,8 @@ def main():
         sys.exit(1)
 
     ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
-                            args.command_path, args.dirout, args.outfile)
+                            args.command_path, args.dirout,
+                            args.outfile)
     print("New netCDF4 file is available in: '%s'" % ncfname)
 
 
