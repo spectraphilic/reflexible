@@ -51,7 +51,6 @@ def read_releases(path):
                 rpnames.append(prev_line.strip())
             prev_line = line
     # Return just the release point names for now
-    print("rpnames:", rpnames)
     return {"release_point_names": np.array(rpnames, dtype="S45")}
 
 
@@ -167,7 +166,7 @@ def write_metadata(H, command, ncid):
         ncid.surf_only = command.get('SURF_ONLY', 0)
 
 
-def write_header(H, ncid, wetdep, drydep):
+def write_header(H, ncid, wetdep, drydep, write_releases):
     """Create netCDF4 dimensions and variables.
 
     Create the netCDF4 variables (and the required dimensions) that will be
@@ -263,63 +262,64 @@ def write_header(H, ncid, wetdep, drydep):
     levID.standard_name = 'height'
     levID.long_name = 'height above ground'
 
-    # RELCOM
-    relcomID = ncid.createVariable('RELCOM', 'S45', ('numpoint',))
-    # Fill RELCOM with default values ("NA" means Non-Available)
-    relcomID[:] = np.array(["NA"] * H.numpoint, dtype="S45")
-    relcomID.long_name = 'release point name'
+    if write_releases:
+        # RELCOM
+        relcomID = ncid.createVariable('RELCOM', 'S45', ('numpoint',))
+        # Fill RELCOM with default values ("NA" means Non-Available)
+        relcomID[:] = np.array(["NA"] * H.numpoint, dtype="S45")
+        relcomID.long_name = 'release point name'
 
-    # RELLNG1
-    rellng1ID = ncid.createVariable('RELLNG1', 'f4', ('numpoint',))
-    rellng1ID.units = 'degrees_east'
-    rellng1ID.long_name = 'release longitude lower left corner'
+        # RELLNG1
+        rellng1ID = ncid.createVariable('RELLNG1', 'f4', ('numpoint',))
+        rellng1ID.units = 'degrees_east'
+        rellng1ID.long_name = 'release longitude lower left corner'
 
-    # RELLNG2
-    rellng2ID = ncid.createVariable('RELLNG2', 'f4', ('numpoint',))
-    rellng2ID.units = 'degrees_east'
-    rellng2ID.long_name = 'release longitude upper right corner'
+        # RELLNG2
+        rellng2ID = ncid.createVariable('RELLNG2', 'f4', ('numpoint',))
+        rellng2ID.units = 'degrees_east'
+        rellng2ID.long_name = 'release longitude upper right corner'
 
-    # RELLAT1
-    rellat1ID = ncid.createVariable('RELLAT1', 'f4', ('numpoint',))
-    rellat1ID.units = 'degrees_north'
-    rellat1ID.long_name = 'release latitude lower left corner'
+        # RELLAT1
+        rellat1ID = ncid.createVariable('RELLAT1', 'f4', ('numpoint',))
+        rellat1ID.units = 'degrees_north'
+        rellat1ID.long_name = 'release latitude lower left corner'
 
-    # RELLAT2
-    rellat2ID = ncid.createVariable('RELLAT2', 'f4', ('numpoint',))
-    rellat2ID.units = 'degrees_north'
-    rellat2ID.long_name = 'release latitude upper right corner'
+        # RELLAT2
+        rellat2ID = ncid.createVariable('RELLAT2', 'f4', ('numpoint',))
+        rellat2ID.units = 'degrees_north'
+        rellat2ID.long_name = 'release latitude upper right corner'
 
-    # RELZZ1
-    relzz1ID = ncid.createVariable('RELZZ1', 'f4', ('numpoint',))
-    relzz1ID.units = 'meters'
-    relzz1ID.long_name = 'release height bottom'
+        # RELZZ1
+        relzz1ID = ncid.createVariable('RELZZ1', 'f4', ('numpoint',))
+        relzz1ID.units = 'meters'
+        relzz1ID.long_name = 'release height bottom'
 
-    # RELZZ2
-    relzz2ID = ncid.createVariable('RELZZ2', 'f4', ('numpoint',))
-    relzz2ID.units = 'meters'
-    relzz2ID.long_name = 'release height top'
+        # RELZZ2
+        relzz2ID = ncid.createVariable('RELZZ2', 'f4', ('numpoint',))
+        relzz2ID.units = 'meters'
+        relzz2ID.long_name = 'release height top'
 
-    # RELKINDZ
-    relkindzID = ncid.createVariable('RELKINDZ', 'i4', ('numpoint',))
-    relkindzID.long_name = 'release kind'
+        # RELKINDZ
+        relkindzID = ncid.createVariable('RELKINDZ', 'i4', ('numpoint',))
+        relkindzID.long_name = 'release kind'
 
-    # RELSTART
-    relstartID = ncid.createVariable('RELSTART', 'i4', ('numpoint',))
-    relstartID.units = 'seconds'
-    relstartID.long_name = 'release start relative to simulation start'
+        # RELSTART
+        relstartID = ncid.createVariable('RELSTART', 'i4', ('numpoint',))
+        relstartID.units = 'seconds'
+        relstartID.long_name = 'release start relative to simulation start'
 
-    # RELEND
-    relendID = ncid.createVariable('RELEND', 'i4', ('numpoint',))
-    relendID.units = 'seconds'
-    relendID.long_name = 'release end relative to simulation start'
+        # RELEND
+        relendID = ncid.createVariable('RELEND', 'i4', ('numpoint',))
+        relendID.units = 'seconds'
+        relendID.long_name = 'release end relative to simulation start'
 
-    # RELPART
-    relpartID = ncid.createVariable('RELPART', 'i4', ('numpoint',))
-    relpartID.long_name = 'number of release particles'
+        # RELPART
+        relpartID = ncid.createVariable('RELPART', 'i4', ('numpoint',))
+        relpartID.long_name = 'number of release particles'
 
-    # RELXMASS
-    relxmassID = ncid.createVariable('RELXMASS', 'f4', ('numpoint', 'numspec'))
-    relxmassID.long_name = 'total release particles mass'
+        # RELXMASS
+        relxmassID = ncid.createVariable('RELXMASS', 'f4', ('numpoint', 'numspec'))
+        relxmassID.long_name = 'total release particles mass'
 
     # LAGE
     lageID = ncid.createVariable('LAGE', 'i4', ('nageclass',))
@@ -418,7 +418,7 @@ def write_header(H, ncid, wetdep, drydep):
     return iout
 
 
-def write_variables(H, ncid, wetdep, drydep, iout, releases):
+def write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases):
     """Fill netCDF4 variables with data.
 
     The netCDF4 variables created in the ``write_header`` function are filled
@@ -463,9 +463,7 @@ def write_variables(H, ncid, wetdep, drydep, iout, releases):
     # levels
     ncid.variables['height'][:] = H.outheight
 
-    # TODO: write_releases.eqv?
-    # Assume write_releases.eqv is True
-    if True:
+    if write_releases:
         # release point information
         ncid.variables['RELSTART'][:] = H.ireleasestart
         ncid.variables['RELEND'][:] = H.ireleaseend
@@ -477,8 +475,6 @@ def write_variables(H, ncid, wetdep, drydep, iout, releases):
         ncid.variables['RELZZ1'][:] = H.zpoint1
         ncid.variables['RELZZ2'][:] = H.zpoint2
         ncid.variables['RELPART'][:] = H.npart
-        # TODO: review the setup of the RELXMASS variable
-        # dimensions are: (numpoint, numspec)
         ncid.variables['RELXMASS'][:, :] = H.xmass
         relnames = releases["release_point_names"]
         ncid.variables['RELCOM'][:len(relnames)] = relnames
@@ -527,6 +523,7 @@ def write_variables(H, ncid, wetdep, drydep, iout, releases):
 
 
 def read_conffiles(filename, fddir, path):
+    """Read FLEXPART config files and return a dictionary of metadata."""
     if path is None:
         # Try in the options/ directory before giving up
         path = os.path.join(os.path.dirname(fddir), "options/%s" % filename)
@@ -547,8 +544,8 @@ def read_conffiles(filename, fddir, path):
 
 
 def create_ncfile(fddir, nested, wetdep=False, drydep=False,
-                  command_path=None, releases_path=None, dirout=None,
-                  outfile=None):
+                  command_path=None, releases_path=None,
+                  write_releases=True, dirout=None, outfile=None):
     """Main function that create a netCDF4 file from a FLEXPART output.
 
     Parameters
@@ -556,19 +553,21 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
     fddir : string
       the directory where the FLEXDATA output files are stored.
     nested : bool
-      if True -> use a nested output.
+      use a nested output.
     wetdep : bool
-      defaults to False -> don't write wet deposition in the netCDF4 file.
-    drydep : dool
-      defaults to False -> don't write dry deposition in the netCDF4 file.
+      write wet deposition in the netCDF4 file.
+    drydep : bool
+      write dry deposition in the netCDF4 file.
     command_path : string
-      path for the associated COMMAND file. Defaults to None.
+      path for the associated COMMAND file.
     releases_path : string
-      path for the associated RELEASES file. Defaults to None.
+      path for the associated RELEASES file.
+    write_releases : string
+      whether output of release point information.
     dirout : string
-      the dir where the netCDF4 file will be created. Defaults to None.
+      the dir where the netCDF4 file will be created.
     outfile : string
-      If passed it overrides the ``dirout`` argument. Defaults to None.
+      the complete path of the output file (overrides the ``dirout`` argument)
 
     Return
     ------
@@ -608,8 +607,8 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
     print("About to create new netCDF4 file: '%s'" % ncfname)
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, command, ncid)
-    iout = write_header(H, ncid, wetdep, drydep)
-    write_variables(H, ncid, wetdep, drydep, iout, releases)
+    iout = write_header(H, ncid, wetdep, drydep, write_releases)
+    write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases)
     ncid.close()
     return ncfname
 
@@ -656,6 +655,10 @@ def main():
               "If not specified, then the fddir/../options/RELEASES is used.")
         )
     parser.add_argument(
+        "-r", "--dont-write-releases", action="store_true",
+        help=("Don't write release point information.")
+        )
+    parser.add_argument(
         "fddir", nargs="?",
         help="The directory where the FLEXDATA output files are."
         )
@@ -680,8 +683,9 @@ def main():
         sys.exit(1)
 
     ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
-                            args.command_path, args.releases_path, args.dirout,
-                            args.outfile)
+                            args.command_path, args.releases_path,
+                            not args.dont_write_releases,
+                            args.dirout, args.outfile)
     print("New netCDF4 file is available in: '%s'" % ncfname)
 
 
