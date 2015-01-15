@@ -38,6 +38,23 @@ COMPLEVEL = 9
 MIN_SIZE = False
 
 
+def read_releases(path):
+    """Read metadata from a RELEASES path and return it as a dict.
+
+    Only 'release_point_names' returned.
+    """
+    rpnames = []
+    with open(path) as f:
+        prev_line = None
+        for line in f:
+            if prev_line is not None and "comment" in line:
+                rpnames.append(prev_line.strip())
+            prev_line = line
+    # Return just the release point names for now
+    print("rpnames:", rpnames)
+    return {"release_point_names": np.array(rpnames, dtype="S45")}
+
+
 def output_units(ncid):
     """The ncid.units attribute computation.
 
@@ -246,8 +263,10 @@ def write_header(H, ncid, wetdep, drydep):
     levID.standard_name = 'height'
     levID.long_name = 'height above ground'
 
-    # RELCOM nf90_char -> dtype = S1
-    relcomID = ncid.createVariable('RELCOM', 'S1', ('nchar', 'numpoint'))
+    # RELCOM
+    relcomID = ncid.createVariable('RELCOM', 'S45', ('numpoint',))
+    # Fill RELCOM with default values ("NA" means Non-Available)
+    relcomID[:] = np.array(["NA"] * H.numpoint, dtype="S45")
     relcomID.long_name = 'release point name'
 
     # RELLNG1
@@ -399,7 +418,7 @@ def write_header(H, ncid, wetdep, drydep):
     return iout
 
 
-def write_variables(H, ncid, wetdep, drydep, iout):
+def write_variables(H, ncid, wetdep, drydep, iout, releases):
     """Fill netCDF4 variables with data.
 
     The netCDF4 variables created in the ``write_header`` function are filled
@@ -461,17 +480,8 @@ def write_variables(H, ncid, wetdep, drydep, iout):
         # TODO: review the setup of the RELXMASS variable
         # dimensions are: (numpoint, numspec)
         ncid.variables['RELXMASS'][:, :] = H.xmass
-
-        if H.numpoint < 1000:
-            # TODO: Fill RELCOM in the range(0, H.numpoint)
-            # ncid, relcomID, compoint(i), (/1,i/), (/45,1/)
-            pass
-        else:
-            # TODO: Fill RELCOM in the range(0, 1000)
-            # ncid, relcomID, compoint(i), (/1,i/), (/45,1/)
-            # TODO: Fill RELCOM in the range(1000, H.numpoint)
-            # ncid, relcomID, 'NA', (/1,i/), (/45,1/)
-            pass
+        relnames = releases["release_point_names"]
+        ncid.variables['RELCOM'][:len(relnames)] = relnames
 
     # Age classes
     ncid.variables['LAGE'][:] = H.lage
@@ -516,8 +526,29 @@ def write_variables(H, ncid, wetdep, drydep, iout):
                 dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :]
 
 
+def read_conffiles(filename, fddir, path):
+    if path is None:
+        # Try in the options/ directory before giving up
+        path = os.path.join(os.path.dirname(fddir), "options/%s" % filename)
+    if not os.path.isfile(path):
+        warnings.warn(
+            "The %s file cannot be found.  Continuing without it!" % filename)
+        return {}
+    try:
+        if filename == "COMMAND":
+            return read_command(path)
+        elif filename == "RELEASES":
+            return read_releases(path)
+    except IOError:
+        warnings.warn(
+            "The %s file format is not supported.  "
+            "Continuing without it!" % filename)
+    return {}
+
+
 def create_ncfile(fddir, nested, wetdep=False, drydep=False,
-                  command_path=None, dirout=None, outfile=None):
+                  command_path=None, releases_path=None, dirout=None,
+                  outfile=None):
     """Main function that create a netCDF4 file from a FLEXPART output.
 
     Parameters
@@ -532,6 +563,8 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
       defaults to False -> don't write dry deposition in the netCDF4 file.
     command_path : string
       path for the associated COMMAND file. Defaults to None.
+    releases_path : string
+      path for the associated RELEASES file. Defaults to None.
     dirout : string
       the dir where the netCDF4 file will be created. Defaults to None.
     outfile : string
@@ -553,20 +586,8 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
     else:
         fprefix = 'grid_time_'
 
-    if command_path is None:
-        command_path = os.path.join(os.path.dirname(fddir), "options/COMMAND")
-    if not os.path.isfile(command_path):
-        warnings.warn(
-            "The COMMAND file cannot be found.  Continuing without it!")
-        command = {}
-    else:
-        try:
-            command = read_command(command_path)
-        except IOError:
-            warnings.warn(
-                "The COMMAND file format is not supported.  " +
-                "Continuing without it!")
-            command = {}
+    command = read_conffiles("COMMAND", fddir, command_path)
+    releases = read_conffiles("RELEASES", fddir, releases_path)
 
     if outfile:
         # outfile has priority over previous flags
@@ -588,7 +609,7 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, command, ncid)
     iout = write_header(H, ncid, wetdep, drydep)
-    write_variables(H, ncid, wetdep, drydep, iout)
+    write_variables(H, ncid, wetdep, drydep, iout, releases)
     ncid.close()
     return ncfname
 
@@ -625,9 +646,14 @@ def main():
               "This overrides the --dirout flag.")
         )
     parser.add_argument(
-        "-c", "--command-path",
+        "-C", "--command-path",
         help=("The path for the associated COMMAND file."
               "If not specified, then the fddir/../options/COMMAND is used.")
+        )
+    parser.add_argument(
+        "-R", "--releases-path",
+        help=("The path for the associated RELEASES file."
+              "If not specified, then the fddir/../options/RELEASES is used.")
         )
     parser.add_argument(
         "fddir", nargs="?",
@@ -654,7 +680,7 @@ def main():
         sys.exit(1)
 
     ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
-                            args.command_path, args.dirout,
+                            args.command_path, args.releases_path, args.dirout,
                             args.outfile)
     print("New netCDF4 file is available in: '%s'" % ncfname)
 
