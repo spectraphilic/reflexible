@@ -55,10 +55,165 @@ I suggest using wget to grab the data::
 
 ----
 
+.. _converting-output-to-netCDF4:
+
+Converting FLEXPART output to netCDF4 format
+============================================
+
+Reflexible is using a netCDF4 internally for doing its analysis and
+plotting duties.  This section demonstrates how to convert the
+FLEXPART output to netCDF4 format. In order to do that the
+`create_ncfile` script will be invoked. This script is copied into a
+directory in your path when reflexible is installed, so you should not
+worry about copying it manually.
+
+Before processing the data in `flexpart_V8data.tgz` we have to
+uncompress that file::
+
+  $ cp flexpart_V8data.tgz /tmp
+  $ cd /tmp
+  $ tar -zxvf flexpart_V8data.tgz
+
+After uncompressing, a directory named `test_data` is created. It
+contains the result of processing a simple backward run case with
+FLEXPART. Next we execute the `create_ncfile` script in the simplest
+possible way (i.e. passing to it the unique required argument)::
+
+  $ create_ncfile /tmp/test_data
+
+note that the directory containing the FLEXPART output is the
+`create_ncfile` input. The output of this command is rather verbose,
+but if everything goes fine, we will see something like this at the
+end::
+
+  getting grid for:  ['20100531210000']
+  Assumed V8 Flexpart
+  720 180 3 1 0 0 1 7
+  20100531210000
+  New netCDF4 file is available in: '/tmp/grid_time_20100601210000.nc'
+
+As the output reports the FLEXPART output is now available in netCDF4
+format in the file `/tmp/grid_time_20100601210000.nc`.
+
+----
+
+.. _reading-netcdf4:
+
+
+Reading data out of the netCDF4 file
+------------------------------------
+
+The resulting netCDF4 file can be read by using the python-netcdf4
+package.  Let's have a quick glimpse on how you can access the
+different data on it.
+
+Open the file and print meta-information for the run::
+
+    In [1]: from netCDF4 import Dataset
+
+    In [2]: rootgrp = Dataset('grid_time_20100601210000.nc')
+
+    In [3]: print rootgrp
+    <type 'netCDF4.Dataset'>
+    root group (NETCDF4 data model, file format UNDEFINED):
+        Conventions: CF-1.6
+        title: FLEXPART model output
+        institution: NILU
+        source: V8 model output
+        history: 2015-1-15 10:43 NA created by faltet on francesc-Latitude-E6430
+        references: Stohl et al., Atmos. Chem. Phys., 2005, doi:10.5194/acp-5-2461-200
+        outlon0: -179.0
+        outlat0: 0.0
+        dxout: 0.5
+        dyout: 0.5
+        ldirect: -1
+        ibdate: 20100512
+        ibtime: 210000
+        iedate: 20100531
+        ietime: 210000
+        loutstep: -86400
+        loutaver: -86400
+        loutsample: -900
+        lsubgrid: 1
+        lconvection: 1
+        ind_source: 1
+        ind_receptor: 1
+        dimensions(sizes): time(20), longitude(720), latitude(180), height(3), numspec(2), pointspec(7), nageclass(1), nchar(45), numpoint(7)
+        variables(dimensions): int32 time(time), float32 longitude(longitude), float32 latitude(latitude), float32 height(height), |S1 RELCOM(nchar,numpoint), float32 RELLNG1(numpoint), float32 RELLNG2(numpoint), float32 RELLAT1(numpoint), float32 RELLAT2(numpoint), float32 RELZZ1(numpoint), float32 RELZZ2(numpoint), int32 RELKINDZ(numpoint), int32 RELSTART(numpoint), int32 RELEND(numpoint), int32 RELPART(numpoint), float32 RELXMASS(numpoint,numspec), int32 LAGE(nageclass), int32 ORO(longitude,latitude), float32 spec001_mr(longitude,latitude,height,time,pointspec,nageclass), float32 spec001_pptv(longitude,latitude,height,time,pointspec,nageclass), float32 spec002_mr(longitude,latitude,height,time,pointspec,nageclass), float32 spec002_pptv(longitude,latitude,height,time,pointspec,nageclass)
+        groups:
+
+We can get the info for a specific attribute just by referencing it like this::
+
+    In [4]: print rootgrp.loutstep
+    -86400
+
+We can have a look at the different dimensions and variables in the file::
+
+    In [5]: print rootgrp.dimensions
+    OrderedDict([(u'time', <netCDF4.Dimension object at 0x7f6404022550>), (u'longitude', <netCDF4.Dimension object at 0x7f64040225a0>), (u'latitude', <netCDF4.Dimension object at 0x7f64040225f0>), (u'height', <netCDF4.Dimension object at 0x7f6404022640>), (u'numspec', <netCDF4.Dimension object at 0x7f6404022690>), (u'pointspec', <netCDF4.Dimension object at 0x7f64040226e0>), (u'nageclass', <netCDF4.Dimension object at 0x7f6404022730>), (u'nchar', <netCDF4.Dimension object at 0x7f6404022780>), (u'numpoint', <netCDF4.Dimension object at 0x7f64040227d0>)])
+
+    In [6]: print rootgrp.variables
+    OrderedDict([(u'time', <netCDF4.Variable object at 0x7f6404050a68>), (u'longitude', <netCDF4.Variable object at 0x7f6404050b00>), (u'latitude', <netCDF4.Variable object at 0x7f6404050b98>), (u'height', <netCDF4.Variable object at 0x7f6404050c30>), (u'RELCOM', <netCDF4.Variable object at 0x7f6404050cc8>), (u'RELLNG1', <netCDF4.Variable object at 0x7f6404050d60>), (u'RELLNG2', <netCDF4.Variable object at 0x7f6404050df8>), (u'RELLAT1', <netCDF4.Variable object at 0x7f6404050e90>), (u'RELLAT2', <netCDF4.Variable object at 0x7f6404050f28>), (u'RELZZ1', <netCDF4.Variable object at 0x7f640402c050>), (u'RELZZ2', <netCDF4.Variable object at 0x7f640402c0e8>), (u'RELKINDZ', <netCDF4.Variable object at 0x7f640402c180>), (u'RELSTART', <netCDF4.Variable object at 0x7f640402c218>), (u'RELEND', <netCDF4.Variable object at 0x7f640402c2b0>), (u'RELPART', <netCDF4.Variable object at 0x7f640402c348>), (u'RELXMASS', <netCDF4.Variable object at 0x7f640402c3e0>), (u'LAGE', <netCDF4.Variable object at 0x7f640402c478>), (u'ORO', <netCDF4.Variable object at 0x7f640402c510>), (u'spec001_mr', <netCDF4.Variable object at 0x7f640402c5a8>), (u'spec001_pptv', <netCDF4.Variable object at 0x7f640402c640>), (u'spec002_mr', <netCDF4.Variable object at 0x7f640402c6d8>), (u'spec002_pptv', <netCDF4.Variable object at 0x7f640402c770>)])
+
+The `netCDF4` Python wrappers allows to easily slice and dice variables::
+
+    In [15]: longitude = rootgrp.variables['longitude']
+
+    In [16]: print longitude
+    <type 'netCDF4.Variable'>
+    float32 longitude(longitude)
+        long_name: longitude in degree east
+        axis: Lon
+        units: degrees_east
+        standard_name: grid_longitude
+        description: grid cell centers
+    unlimited dimensions:
+    current shape = (720,)
+    filling on, default _FillValue of 9.96920996839e+36 used
+
+We see that 'longitude' is a unidimensional variable with shape (720,).
+Let's read just the 10 first elements::
+
+    In [20]: longitude[:10]
+    Out[20]:
+    array([-178.75, -178.25, -177.75, -177.25, -176.75, -176.25, -175.75,
+           -175.25, -174.75, -174.25], dtype=float32)
+
+As only the 10 first elements are brought into memory, that allows you
+to reduce your memory needs to what is required by your current
+analysis.
+
+Also, what you get from slicing netCDF4 variables are always NumPy arrays::
+
+    In [21]: type(longitude[:10])
+    Out[21]: numpy.ndarray
+
+which, besides of being memory-efficient, they are what you normally
+use in your analysis tasks.
+
+Also, each variable can have attached different attributes meant to
+add more information about what they are about::
+
+    In [23]: longitude.ncattrs()
+    Out[23]: [u'long_name', u'axis', u'units', u'standard_name', u'description']
+
+    In [24]: longitude.long_name
+    Out[24]: u'longitude in degree east'
+
+    In [25]: longitude.units
+    Out[25]: u'degrees_east'
+
+That's is basically all you need to know to access the on-disk data.
+Feel free to play a bit more with the netCDF4 interface, because you
+will need to use it quite extensively with reflexible.
+
+
+----
+
 .. _testing-reflexible:
 
 Testing reflexible
-=================
+==================
 
 Once you have checked out the code and have a sufficient FLEXPART
 dataset to work with you can begin to use the module. The first step
