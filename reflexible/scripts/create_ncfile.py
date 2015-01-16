@@ -234,12 +234,14 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
     # Create variables
 
     # time
-    tID = ncid.createVariable('time', 'i4', ('time',))
+    tID = ncid.createVariable('time', 'i4', ('time',),
+                              zlib=True, complevel=COMPLEVEL)
     tID.units = timeunit
     tID.calendar = 'proleptic_gregorian'
 
     # lon
-    lonID = ncid.createVariable('longitude', 'f4', ('longitude',))
+    lonID = ncid.createVariable('longitude', 'f4', ('longitude',),
+                                zlib=True, complevel=COMPLEVEL)
     lonID.long_name = 'longitude in degree east'
     lonID.axis = 'Lon'
     lonID.units = 'degrees_east'
@@ -247,7 +249,8 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
     lonID.description = 'grid cell centers'
 
     # lat
-    latID = ncid.createVariable('latitude', 'f4', ('latitude',))
+    latID = ncid.createVariable('latitude', 'f4', ('latitude',),
+                                zlib=True, complevel=COMPLEVEL)
     latID.long_name = 'latitude in degree north'
     latID.axis = 'Lat'
     latID.units = 'degrees_north'
@@ -255,7 +258,8 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
     latID.description = 'grid cell centers'
 
     # height
-    levID = ncid.createVariable('height', 'f4', ('height',))
+    levID = ncid.createVariable('height', 'f4', ('height',),
+                                zlib=True, complevel=COMPLEVEL)
     # levID.axis = 'Z'
     levID.units = 'meters'
     levID.positive = 'up'
@@ -264,61 +268,74 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
 
     if write_releases:
         # RELCOM
-        relcomID = ncid.createVariable('RELCOM', 'S45', ('numpoint',))
+        relcomID = ncid.createVariable('RELCOM', 'S45', ('numpoint',),
+                                       zlib=True, complevel=COMPLEVEL)
         # Fill RELCOM with default values ("NA" means Non-Available)
         relcomID[:] = np.array(["NA"] * H.numpoint, dtype="S45")
         relcomID.long_name = 'release point name'
 
         # RELLNG1
-        rellng1ID = ncid.createVariable('RELLNG1', 'f4', ('numpoint',))
+        rellng1ID = ncid.createVariable('RELLNG1', 'f4', ('numpoint',),
+                                        zlib=True, complevel=COMPLEVEL)
         rellng1ID.units = 'degrees_east'
         rellng1ID.long_name = 'release longitude lower left corner'
 
         # RELLNG2
-        rellng2ID = ncid.createVariable('RELLNG2', 'f4', ('numpoint',))
+        rellng2ID = ncid.createVariable('RELLNG2', 'f4', ('numpoint',),
+                                        zlib=True, complevel=COMPLEVEL)
         rellng2ID.units = 'degrees_east'
         rellng2ID.long_name = 'release longitude upper right corner'
 
         # RELLAT1
-        rellat1ID = ncid.createVariable('RELLAT1', 'f4', ('numpoint',))
+        rellat1ID = ncid.createVariable('RELLAT1', 'f4', ('numpoint',),
+                                        zlib=True, complevel=COMPLEVEL)
         rellat1ID.units = 'degrees_north'
         rellat1ID.long_name = 'release latitude lower left corner'
 
         # RELLAT2
-        rellat2ID = ncid.createVariable('RELLAT2', 'f4', ('numpoint',))
+        rellat2ID = ncid.createVariable('RELLAT2', 'f4', ('numpoint',),
+                                        zlib=True, complevel=COMPLEVEL)
         rellat2ID.units = 'degrees_north'
         rellat2ID.long_name = 'release latitude upper right corner'
 
         # RELZZ1
-        relzz1ID = ncid.createVariable('RELZZ1', 'f4', ('numpoint',))
+        relzz1ID = ncid.createVariable('RELZZ1', 'f4', ('numpoint',),
+                                       zlib=True, complevel=COMPLEVEL)
         relzz1ID.units = 'meters'
         relzz1ID.long_name = 'release height bottom'
 
         # RELZZ2
-        relzz2ID = ncid.createVariable('RELZZ2', 'f4', ('numpoint',))
+        relzz2ID = ncid.createVariable('RELZZ2', 'f4', ('numpoint',),
+                                       zlib=True, complevel=COMPLEVEL)
         relzz2ID.units = 'meters'
         relzz2ID.long_name = 'release height top'
 
         # RELKINDZ
-        relkindzID = ncid.createVariable('RELKINDZ', 'i4', ('numpoint',))
+        relkindzID = ncid.createVariable('RELKINDZ', 'i4', ('numpoint',),
+                                         zlib=True, complevel=COMPLEVEL)
         relkindzID.long_name = 'release kind'
 
         # RELSTART
-        relstartID = ncid.createVariable('RELSTART', 'i4', ('numpoint',))
+        relstartID = ncid.createVariable('RELSTART', 'i4', ('numpoint',),
+                                         zlib=True, complevel=COMPLEVEL)
         relstartID.units = 'seconds'
         relstartID.long_name = 'release start relative to simulation start'
 
         # RELEND
-        relendID = ncid.createVariable('RELEND', 'i4', ('numpoint',))
+        relendID = ncid.createVariable('RELEND', 'i4', ('numpoint',),
+                                       zlib=True, complevel=COMPLEVEL)
         relendID.units = 'seconds'
         relendID.long_name = 'release end relative to simulation start'
 
         # RELPART
-        relpartID = ncid.createVariable('RELPART', 'i4', ('numpoint',))
+        relpartID = ncid.createVariable('RELPART', 'i4', ('numpoint',),
+                                        zlib=True, complevel=COMPLEVEL)
         relpartID.long_name = 'number of release particles'
 
         # RELXMASS
-        relxmassID = ncid.createVariable('RELXMASS', 'f4', ('numpoint', 'numspec'))
+        relxmassID = ncid.createVariable('RELXMASS', 'f4',
+                                         ('numspec', 'numpoint'),
+                                         zlib=True, complevel=COMPLEVEL)
         relxmassID.long_name = 'total release particles mass'
 
     # LAGE
@@ -354,8 +371,7 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
             var_name = "spec" + anspec + "_mr"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
                                       chunksizes=chunksizes,
-                                      zlib=True,
-                                      complevel=COMPLEVEL)
+                                      zlib=True, complevel=COMPLEVEL)
             sID.units = units
             sID.long_name = H.species[i]
             # TODO: we still need to figure out how to get the next data
@@ -369,8 +385,8 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
         if iout in (2, 3):
             var_name = "spec" + anspec + "_pptv"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
-                                      chunksizes=chunksizes, zlib=True,
-                                      complevel=COMPLEVEL)
+                                      chunksizes=chunksizes,
+                                      zlib=True, complevel=COMPLEVEL)
             sID.units = 'pptv'
             sID.long_name = H.species[i]
             # TODO: we still need to figure out how to get the next data
