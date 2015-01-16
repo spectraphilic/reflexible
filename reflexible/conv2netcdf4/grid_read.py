@@ -744,14 +744,13 @@ def readgridV8(H, **kwargs):
                         filename, H.numxgrid, H.numygrid, H.zdims,
                         numpointspec, H.nageclass, OPS.scaledepo,
                         OPS.scaleconc, H.decayconstant, npspec_int)
-
                 if OPS.getwet:
                     wet = wetgrid
                 if OPS.getdry:
                     dry = drygrid
 
                 # XXX zplot is the name below. needs some more name consistency
-                zplot = gridT.copy()
+                zplot = gridT
 
                 if OPS.calcfoot:
                     zplot = sumgrid(zplot, gridT, H.area, H.Heightnn)
@@ -994,7 +993,7 @@ def readgridV6(H, **kwargs):
                         OPS.scaleconc, H.decayconstant)
 
                 # XXX zplot is the name below. needs some more name consistency
-                zplot = gridT.copy()
+                zplot = gridT
 
                 if OPS.calcfoot:
                     zplot = sumgrid(zplot, gridT,

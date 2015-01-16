@@ -413,7 +413,7 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
             # ddsID.dquer = dquer[i]
             # ddsID.density = density[i]
             # ddsID.dsigma = dsigma[i]
-            ncid.variables[var_name] = wdsID
+            ncid.variables[var_name] = ddsID
 
     return iout
 

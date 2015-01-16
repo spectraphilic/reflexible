@@ -13,9 +13,7 @@ from .helpers import closest
 
 
 class BinaryFile(object):
-
     """
-
     BinaryFile: A class for accessing data to/from large binary files
 
     The data is meant to be read/write sequentially from/to a binary file.
@@ -108,9 +106,6 @@ class BinaryFile(object):
                 data = struct.unpack(self.structtypes[dts], data)[0]
         else:
             data = np.ndarray(shape=shape, buffer=data, dtype=dtype.base)
-            if rank == 0:
-                # Retrieve the scalar out of the 0-dim array
-                data = data[()]
 
         if rank > 1:
             # If original data file is in fortran mode, reverse the
