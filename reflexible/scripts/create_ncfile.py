@@ -21,6 +21,7 @@ import platform
 import getpass
 import datetime
 import os.path
+from collections import defaultdict
 
 import netCDF4 as nc
 import numpy as np
@@ -41,7 +42,7 @@ MIN_SIZE = False
 def read_releases(path):
     """Read metadata from a RELEASES path and return it as a dict.
 
-    Only 'release_point_names' returned.
+    Only 'release_point_names' entry returned.
     """
     rpnames = []
     with open(path) as f:
@@ -52,6 +53,57 @@ def read_releases(path):
             prev_line = line
     # Return just the release point names for now
     return {"release_point_names": np.array(rpnames, dtype="S45")}
+
+
+def read_species(fddir, species_dir, nspec):
+    """Read metadata from SPECIES dir and return it as a dict.
+
+    TODO: maybe the current version is specific of FLEXPART 9.
+    """
+    if species_dir is None:
+        # Try in the options/ directory before giving up
+        species_dir = os.path.join(os.path.dirname(fddir), "options/SPECIES")
+    if not os.path.isdir(species_dir):
+        warnings.warn(
+            "The SPECIES dir cannot be found.  Continuing without it!")
+        return {}
+
+    keymap = {
+        # "Tracer name": "tname",
+        "Species half life": "decay",
+        "Wet deposition - A": "weta",
+        "Wet deposition - B": "wetb",
+        "Dry deposition (gases) - D": "reldiff",
+        "Dry deposition (gases) - Henrys const.": "henry",
+        "Dry deposition (gases) - f0 (reactivity)": "f0",
+        # TODO: what's the equivalent to rho?
+        # "Dry deposition (particles) - rho": "",
+        "Dry deposition (particles) - dquer": "dquer",
+        "Dry deposition (particles) - dsig": "dsigma",
+        "Alternative: dry deposition velocity": "dryvel",
+        "molweight": "weightmolar",
+        "OH Reaction rate at 25 deg, [cm^3/sec]": "ohreact",
+        "number of associated specias (neg. none)": "spec_ass",
+        "KOA - organic matter air partitioning": "kao",
+        }
+
+    dspec = defaultdict(list)
+    for spec in range(1, nspec+1):
+        path = os.path.join(species_dir, "SPECIES_%03d" % spec)
+        with open(path) as fspec:
+            for line in fspec:
+                for sstring in keymap:
+                    if sstring in line:
+                        try:
+                            if keymap[sstring] == "spec_ass":
+                                value = int(line.split()[0])
+                            else:
+                                value = float(line.split()[0])
+                        except ValueError:
+                            # Probably this line does not have a value
+                            pass
+                        dspec[keymap[sstring]].append(value)
+    return dspec
 
 
 def output_units(ncid):
@@ -166,16 +218,11 @@ def write_metadata(H, command, ncid):
         ncid.surf_only = command.get('SURF_ONLY', 0)
 
 
-def write_header(H, ncid, wetdep, drydep, write_releases):
+def write_header(H, ncid, wetdep, drydep, write_releases, species):
     """Create netCDF4 dimensions and variables.
 
     Create the netCDF4 variables (and the required dimensions) that will be
-    stored in the netCDF4 file. The created variables are available through
-    the dictionary ncid.variables as::
-
-      ncid.variables['var_name']
-
-    Beware that variables are created but not filled with data.
+    stored in the netCDF4 file.
 
     Parameters
     ----------
@@ -376,30 +423,19 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
                                       chunksizes=chunksizes,
                                       zlib=True, complevel=COMPLEVEL)
             sID.units = units
-            sID.long_name = H.species[i]
-            # TODO: we still need to figure out how to get the next data
-            # sID.decay = decay[i]
-            # sID.weightmolar = weightmolar[i]
-            # sID.ohreact = ohreact[i]
-            # sID.kao = kao[i]
-            # sID.vsetaver = vsetaver[i]
-            # sID.spec_ass = spec_ass[i]
-            ncid.variables[var_name] = sID
         if iout in (2, 3):
             var_name = "spec" + anspec + "_pptv"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
                                       chunksizes=chunksizes,
                                       zlib=True, complevel=COMPLEVEL)
             sID.units = 'pptv'
-            sID.long_name = H.species[i]
-            # TODO: we still need to figure out how to get the next data
-            # sID.decay = decay[i]
-            # sID.weightmolar = weightmolar[i]
-            # sID.ohreact = ohreact[i]
-            # sID.kao = kao[i]
-            # sID.vsetaver = vsetaver[i]
-            # sID.spec_ass = spec_ass[i]
-            ncid.variables[var_name] = sID
+        sID.long_name = H.species[i]
+        sID.decay = species.get("decay", [])
+        sID.weightmolar = species.get("weightmolar", [])
+        sID.ohreact = species.get("ohreact", [])
+        sID.kao = species.get("kao", [])
+        sID.vsetaver = species.get("vsetaver", [])
+        sID.spec_ass = species.get("spec_ass", np.array([], dtype=np.int_))
 
         if wetdep:
             var_name = "WD_spec" + anspec
@@ -407,16 +443,14 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
                                         chunksizes=dep_chunksizes,
                                         zlib=True, complevel=COMPLEVEL)
             wdsID.units = '1e-12 kg m-2'
-            # TODO: we still need to figure out how to get the next data
-            # wdsID.weta = weta[i]
-            # wdsID.wetb = wetb[i]
-            # wdsID.weta_in = weta_in[i]
-            # wdsID.wetb_in = wetb_in[i]
-            # wdsID.wetc_in = wetc_in[i]
-            # wdsID.wetd_in = wetd_in[i]
-            # wdsID.dquer = dquer[i]
-            # wdsID.henry = henry[i]
-            ncid.variables[var_name] = wdsID
+            wdsID.weta = species.get("weta", [])
+            wdsID.wetb = species.get("wetb", [])
+            wdsID.weta_in = species.get("weta_in", [])
+            wdsID.wetb_in = species.get("wetb_in", [])
+            wdsID.wetc_in = species.get("wetc_in", [])
+            wdsID.wetd_in = species.get("wetd_in", [])
+            wdsID.dquer = species.get("dquer", [])
+            wdsID.henry = species.get("henry", [])
 
         if drydep:
             var_name = "DD_spec" + anspec
@@ -424,15 +458,13 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
                                         chunksizes=dep_chunksizes,
                                         zlib=True, complevel=COMPLEVEL)
             ddsID.units = '1e-12 kg m-2'
-            # TODO: we still need to figure out how to get the next data
-            # dsID.dryvel = dryvel[i]
-            # ddsID.reldiff = reldiff[i]
-            # ddsID.henry = henry[i]
-            # ddsID.f0 = f0[i]
-            # ddsID.dquer = dquer[i]
-            # ddsID.density = density[i]
-            # ddsID.dsigma = dsigma[i]
-            ncid.variables[var_name] = ddsID
+            ddsID.dryvel = species.get("dryvel", [])
+            ddsID.reldiff = species.get("reldiff", [])
+            ddsID.henry = species.get("henry", [])
+            ddsID.f0 = species.get("f0", [])
+            ddsID.dquer = species.get("dquer", [])
+            ddsID.density = species.get("density", [])
+            ddsID.dsigma = species.get("dsigma", [])
 
     return iout
 
@@ -565,7 +597,8 @@ def read_conffiles(filename, fddir, path):
 
 def create_ncfile(fddir, nested, wetdep=False, drydep=False,
                   command_path=None, releases_path=None,
-                  write_releases=True, dirout=None, outfile=None):
+                  species_dir=None, write_releases=True,
+                  dirout=None, outfile=None):
     """Main function that create a netCDF4 file from a FLEXPART output.
 
     Parameters
@@ -582,6 +615,8 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
       path for the associated COMMAND file.
     releases_path : string
       path for the associated RELEASES file.
+    species_dir : string
+      path for the associated SPECIES dir.
     write_releases : string
       whether output of release point information.
     dirout : string
@@ -607,6 +642,7 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
 
     command = read_conffiles("COMMAND", fddir, command_path)
     releases = read_conffiles("RELEASES", fddir, releases_path)
+    species = read_species(fddir, species_dir, H.nspec)
 
     if outfile:
         # outfile has priority over previous flags
@@ -627,7 +663,7 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
     print("About to create new netCDF4 file: '%s'" % ncfname)
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, command, ncid)
-    iout = write_header(H, ncid, wetdep, drydep, write_releases)
+    iout = write_header(H, ncid, wetdep, drydep, write_releases, species)
     write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases)
     ncid.close()
     return ncfname
@@ -675,6 +711,11 @@ def main():
               "If not specified, then the fddir/../options/RELEASES is used.")
         )
     parser.add_argument(
+        "-S", "--species-dir",
+        help=("The path for the associated SPECIES dir."
+              "If not specified, then the fddir/../options/SPECIES is used.")
+        )
+    parser.add_argument(
         "-r", "--dont-write-releases", action="store_true",
         help=("Don't write release point information.")
         )
@@ -704,6 +745,7 @@ def main():
 
     ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
                             args.command_path, args.releases_path,
+                            args.species_dir,
                             not args.dont_write_releases,
                             args.dirout, args.outfile)
     print("New netCDF4 file is available in: '%s'" % ncfname)
