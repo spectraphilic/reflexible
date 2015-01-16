@@ -345,8 +345,8 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
 
     # ORO
     if not MIN_SIZE:
-        oroID = ncid.createVariable('ORO', 'i4', ('longitude', 'latitude'),
-                                    chunksizes=(H.numxgrid, H.numygrid),
+        oroID = ncid.createVariable('ORO', 'i4', ('latitude', 'longitude'),
+                                    chunksizes=(H.numygrid, H.numxgrid),
                                     zlib=True, complevel=COMPLEVEL)
         oroID.standard_name = 'surface altitude'
         oroID.long_name = 'outgrid surface altitude'
@@ -356,13 +356,16 @@ def write_header(H, ncid, wetdep, drydep, write_releases):
 
     # Concentration output, wet and dry deposition variables (one per species)
     # Variables for concentration ouput have dimensions given by dIDs
-    # Variables for wer and dry deposition have dimensions given by depdIDs
+    # Variables for wet and dry deposition have dimensions given by depdIDs
     dIDs = (
         'longitude', 'latitude', 'height', 'time', 'pointspec', 'nageclass')
     depdIDs = ('longitude', 'latitude', 'time', 'pointspec', 'nageclass')
+    # Reverse dims because we want Fortran order on-disk (FLEXPART convention)
+    dIDs = dIDs[::-1]
+    depdIDs = depdIDs[::-1]
 
-    chunksizes = (H.numxgrid, H.numygrid, H.numzgrid, 1, 1, 1)
-    dep_chunksizes = (H.numxgrid, H.numygrid, 1, 1, 1)
+    chunksizes = (H.numxgrid, H.numygrid, H.numzgrid, 1, 1, 1)[::-1]
+    dep_chunksizes = (H.numxgrid, H.numygrid, 1, 1, 1)[::-1]
     for i in range(0, H.nspec):
         anspec = "%3.3d" % (i + 1)
         # iout: 1 conc. output (ng/m3), 2 mixing ratio (pptv), 3 both,
@@ -491,7 +494,7 @@ def write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases):
         ncid.variables['RELZZ1'][:] = H.zpoint1
         ncid.variables['RELZZ2'][:] = H.zpoint2
         ncid.variables['RELPART'][:] = H.npart
-        ncid.variables['RELXMASS'][:, :] = H.xmass
+        ncid.variables['RELXMASS'][:, :] = H.xmass.T
         relnames = releases["release_point_names"]
         ncid.variables['RELCOM'][:len(relnames)] = relnames
 
@@ -526,16 +529,16 @@ def write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases):
             conc = ncid.variables[conc_name]
             # (x, y, z, time, pointspec, nageclass) <-
             # (x, y, z, pointspec, nageclass)
-            conc[:, :, :, idt, :, :] = fd.grid[:, :, :, np.newaxis, :, :]
+            conc[:, :, idt, :, :, :] = fd.grid[:, :, :, np.newaxis, :, :].T
 
             # wet and dry depositions
             # (x, y, time, pointspec, nageclass) <- (x, y, pointspec, nageclass)
             if wetdep:
                 wet = ncid.variables["WD_spec" + anspec]
-                wet[:, :, idt, :, :] = fd.wet[:, :, np.newaxis, :, :]
+                wet[:, :, idt, :, :] = fd.wet[:, :, np.newaxis, :, :].T
             if drydep:
                 dry = ncid.variables["DD_spec" + anspec]
-                dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :]
+                dry[:, :, idt, :, :] = fd.dry[:, :, np.newaxis, :, :].T
 
 
 def read_conffiles(filename, fddir, path):
