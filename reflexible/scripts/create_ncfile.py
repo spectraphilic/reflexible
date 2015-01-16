@@ -495,8 +495,9 @@ def write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases):
         ncid.variables['RELZZ2'][:] = H.zpoint2
         ncid.variables['RELPART'][:] = H.npart
         ncid.variables['RELXMASS'][:, :] = H.xmass.T
-        relnames = releases["release_point_names"]
-        ncid.variables['RELCOM'][:len(relnames)] = relnames
+        if "release_point_names" in releases:
+            relnames = releases["release_point_names"]
+            ncid.variables['RELCOM'][:len(relnames)] = relnames
 
     # Age classes
     ncid.variables['LAGE'][:] = H.lage
