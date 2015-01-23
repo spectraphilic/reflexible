@@ -187,7 +187,7 @@ class Header(object):
 
     def __init__(self, path=None):
         self.nc = nc.Dataset(path, 'r')
-        self.FD = FD(self.nc, self.nspec, self.available_dates)
+        self.FD = FD(self.nc, self.nspec, self.available_dates, self.direction)
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -213,10 +213,11 @@ class Header(object):
 class FD(object):
     """Class that contains FD data indexed with (spec, date)."""
 
-    def __init__(self, nc, nspec, available_dates):
+    def __init__(self, nc, nspec, available_dates, direction):
         self.nc = nc
         self.nspec = nspec
         self.available_dates = available_dates
+        self.direction = direction
         self._keys = [(s, k) for s, k in itertools.product(
             range(nspec), available_dates)]
 
@@ -230,6 +231,17 @@ class FD(object):
         varname = "spec%03d_pptv" % (nspec + 1)   # XXX check this with IOUT
         fdc = FDC()
         fdc.grid = self.nc.variables[varname][:,:,idate,:,:,:].T
+        fdc.itime = self.nc.variables['time'][idate]
+        fdc.timestamp = datetime.datetime.strptime(
+            self.available_dates[idate], "%Y%m%d%H%M%S")
+        fdc.spec_i = nspec
+        if self.direction == "forward":
+            fdc.rel_i = 0
+        else:
+            fdc.rel_i = 'k'
+        # fdc.species = ...  # XXX where to find species info?
+        # fdc.wet  # TODO
+        # fdc.dry  # TODO
         return fdc
 
 
