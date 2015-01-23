@@ -3,6 +3,7 @@ Definition of the different data structures in reflexible.
 """
 
 import datetime
+import itertools
 
 import numpy as np
 import netCDF4 as nc
@@ -104,6 +105,23 @@ class Header(object):
             return "backward"
         else:
             return "forward"
+
+    @property
+    def nspec(self):
+        return len(self.nc.dimensions['numspec'])
+
+    @property
+    def numpoint(self):
+        return len(self.nc.dimensions['numpoint'])
+
+    @property
+    def numpointspec(self):
+        return len(self.nc.dimensions['pointspec'])
+
+    @property
+    def numageclasses(self):
+        return len(self.nc.dimensions['nageclass'])
+
     @property
     def numxgrid(self):
         return len(self.nc.dimensions['longitude'])
@@ -111,6 +129,10 @@ class Header(object):
     @property
     def numygrid(self):
         return len(self.nc.dimensions['latitude'])
+
+    @property
+    def numzgrid(self):
+        return len(self.nc.dimensions['height'])
 
     @property
     def longitude(self):
@@ -165,6 +187,7 @@ class Header(object):
 
     def __init__(self, path=None):
         self.nc = nc.Dataset(path, 'r')
+        self.FD = FD(self.nc, self.nspec, self.available_dates)
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -176,7 +199,6 @@ class Header(object):
 
     def _read_grid(self, **kwargs):
         """ see :func:`read_grid` """
-        self.FD = FD = FDC()
         self.FD = reflexible.conv2netcdf4.read_grid(self, **kwargs)
 
     def fill_backward(self, **kwargs):
@@ -188,9 +210,31 @@ class Header(object):
         self.trajectory = reflexible.conv2netcdf4.read_trajectories(self)
 
 
+class FD(object):
+    """Class that contains FD data indexed with (spec, date)."""
+
+    def __init__(self, nc, nspec, available_dates):
+        self.nc = nc
+        self.nspec = nspec
+        self.available_dates = available_dates
+        self._keys = [(s, k) for s, k in itertools.product(
+            range(nspec), available_dates)]
+
+    @property
+    def keys(self):
+        return self._keys()
+
+    def __getitem__(self, item):
+        nspec, date = item
+        idate = self.available_dates.index(date)
+        varname = "spec%03d_pptv" % (nspec + 1)   # XXX check this with IOUT
+        fdc = FDC()
+        fdc.grid = self.nc.variables[varname][:,:,idate,:,:,:].T
+        return fdc
+
+
 class FDC(object):
-    """ Brief explanation of what represents this class.
-    """
+    """Data container for FD and C grids."""
     def __init__(self):
         self._keys = [
             'grid', 'gridfile', 'itime', 'timestamp', 'species', 'rel_i',
