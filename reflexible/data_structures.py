@@ -22,7 +22,7 @@ class Header(object):
     Usage::
 
         > H = Header(inputpath)
-        > dir(H)   # provides a list of available attributes
+        > H.keys()   # provides a list of available attributes
 
     Parameters
     -----------
@@ -111,6 +111,15 @@ class Header(object):
         return len(self.nc.dimensions['numspec'])
 
     @property
+    def species(self):
+        l = []
+        for i in range(self.nspec):
+            varname = "spec%03d_pptv" % (i + 1)   # XXX check this with IOUT
+            ncvar = self.nc.variables[varname]
+            l.append(ncvar.long_name)
+        return l
+
+    @property
     def numpoint(self):
         return len(self.nc.dimensions['numpoint'])
 
@@ -185,10 +194,6 @@ class Header(object):
         return [b - ((b - a) / 2)
                 for a, b in zip(self.releasestart, self.releaseend)]
 
-    def __init__(self, path=None):
-        self.nc = nc.Dataset(path, 'r')
-        self.FD = FD(self.nc, self.nspec, self.available_dates, self.direction)
-
     def __getitem__(self, key):
         return getattr(self, key)
 
@@ -197,17 +202,24 @@ class Header(object):
         return [k for k in dir(self)
                 if not k.startswith('_') and k not in not_listed]
 
-    def _read_grid(self, **kwargs):
-        """ see :func:`read_grid` """
-        self.FD = reflexible.conv2netcdf4.read_grid(self, **kwargs)
-
-    def fill_backward(self, **kwargs):
-        """ see :func:`fill_backward` """
-        reflexible.conv2netcdf4.fill_grids(self, **kwargs)
+    def fill_grids(self):
+        return self.C
 
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
         self.trajectory = reflexible.conv2netcdf4.read_trajectories(self)
+
+    @property
+    def FD(self):
+        return FD(self.nc, self.nspec, self.available_dates, self.direction)
+
+    @property
+    def C(self):
+        return C(self.nc, self.releasetimes, self.species,
+                 self.available_dates, self.direction)
+
+    def __init__(self, path=None):
+        self.nc = nc.Dataset(path, 'r')
 
 
 class FD(object):
@@ -243,6 +255,85 @@ class FD(object):
         # fdc.wet  # TODO
         # fdc.dry  # TODO
         return fdc
+
+
+class C(object):
+    """Class that contains C data indexed with (spec, date)."""
+
+    def __init__(self, nc, releasetimes, species, available_dates, direction):
+        self.nc = nc
+        # self._FD = FD
+        self.nspec = len(nc.dimensions['numspec'])
+        self.pointspec = len(nc.dimensions['pointspec'])
+        self.releasetimes = releasetimes
+        self.species = species
+        self.available_dates = available_dates
+        self.direction = direction
+        self._keys = [(s, k) for s, k in itertools.product(
+            range(self.nspec), range(self.pointspec))]
+
+    @property
+    def keys(self):
+        return self._keys()
+
+    def __getitem__(self, item):
+        """
+        Calculates the 20-day sensitivity at each release point.
+
+        This will cycle through all available_dates and create the filled
+        array for each k in pointspec.
+
+        Parameters
+        ----------
+        item : tuple
+            A 2-element tuple specifying (nspec, pointspec)
+
+        Return
+        ------
+        FDC instance
+            An instance with grid, timestamp, species and other properties.
+
+        Each element in the dictionary is a 3D array (x,y,z) for each species,k
+
+        """
+        assert type(item) is tuple and len(item) == 2
+        nspec, pointspec = item
+        assert type(nspec) is int and type(pointspec) is int
+
+        if self.direction == 'backward':
+            c = FDC()
+            c.itime = None
+            c.timestamp = self.releasetimes[pointspec]
+            c.species = self.species[nspec]
+            c.gridfile = 'multiple'
+            c.rel_i = pointspec
+            c.spec_i = nspec
+
+            # read data grids and attribute/sum sensitivity
+            varname = "spec%03d_pptv" % (nspec + 1)   # XXX check this with IOUT
+            specvar = self.nc.variables[varname]
+            if False:
+                c.grid = np.zeros((
+                            len(self.nc.dimensions['longitude']),
+                            len(self.nc.dimensions['latitude']),
+                            len(self.nc.dimensions['height'])))
+                for date in self.available_dates:
+                    idate = self.available_dates.index(date)
+                    # cycle through all the date grids
+                    c.grid += specvar[:,:,:,idate,pointspec,:].T.sum(axis=-1)
+            else:
+                # Same than the above, but it probably comsumes more memory
+                c.grid = specvar[:,:,:,:,pointspec,:].T.sum(axis=(3,4))
+        else:
+            # forward direction
+            FD = self._FD
+            d = FD.grid_dates[pointspec]
+            c = FD[(nspec, d)]
+
+        # add total column
+        # XXX c.slabs = get_slabs(H, c.grid)
+
+        return c
 
 
 class FDC(object):
