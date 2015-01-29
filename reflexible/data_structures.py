@@ -211,7 +211,8 @@ class Header(object):
 
     @property
     def FD(self):
-        return FD(self.nc, self.nspec, self.available_dates, self.direction)
+        return FD(self.nc, self.nspec, self.species, self.available_dates,
+                  self.direction)
 
     @property
     def C(self):
@@ -225,9 +226,10 @@ class Header(object):
 class FD(object):
     """Class that contains FD data indexed with (spec, date)."""
 
-    def __init__(self, nc, nspec, available_dates, direction):
+    def __init__(self, nc, nspec, species, available_dates, direction):
         self.nc = nc
         self.nspec = nspec
+        self.species = species
         self.available_dates = available_dates
         self.direction = direction
         self._keys = [(s, k) for s, k in itertools.product(
@@ -251,7 +253,7 @@ class FD(object):
             fdc.rel_i = 0
         else:
             fdc.rel_i = 'k'
-        # fdc.species = ...  # XXX where to find species info?
+        fdc.species = self.species
         # fdc.wet  # TODO
         # fdc.dry  # TODO
         return fdc
