@@ -359,16 +359,14 @@ class C(object):
         return c
 
 
-def get_slabs(Heightnn, G):
+def get_slabs(Heightnn, grid):
     """Preps grid for plotting.
-
-    Accepts an 3D or 5D GRID from readgrid with optional index.
 
     Arguments
     ---------
     Heightnn : numpy array
       Height (outheight + topography).
-    G : numpy array
+    grid : numpy array
       A grid from the FLEXPARTDATA.
 
     Returns
@@ -377,31 +375,18 @@ def get_slabs(Heightnn, G):
       dictionary of rank-2 arrays corresponding to vertical levels.
 
     """
-    index = 0
-    nageclass = 0
     normAreaHeight = True
 
-    Slabs = {}
-    grid_shape = G.shape
-    if len(grid_shape) is 5:
-        g = G[:, :, :, index, nageclass]
-    elif len(grid_shape) is 3:
-        g = G
-    else:
-        raise(ValueError, "len(grid_shape) cannot be 4")
-
-    for i in range(g.shape[2]):
-        # first time sum to create Total Column
-        if i == 0:
-            TC = np.sum(g, axis=2).T
+    slabs = {}
+    for i in range(grid.shape[2]):
         if normAreaHeight:
-            data = g[:, :, i] / Heightnn[:, :, i]
+            data = grid[:, :, i] / Heightnn[:, :, i]
         else:
-            data = g[:, :, i]
-        Slabs[i + 1] = data.T
-
-    Slabs[0] = TC
-    return Slabs
+            data = grid[:, :, i]
+        slabs[i + 1] = data
+    # first time sum to create Total Column
+    slabs[0] = np.sum(grid, axis=2)
+    return slabs
 
 
 class FDC(object):
