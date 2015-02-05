@@ -32,6 +32,11 @@ class Header(object):
     """
 
     @property
+    def alt_unit(self):
+        # XXX this depends on H.kindz, which is not in netCDF4 file (I think)
+        return 'unkn.'
+
+    @property
     def outlon0(self):
         return self.nc.outlon0
 
@@ -116,11 +121,20 @@ class Header(object):
         for i in range(self.nspec):
             if self.iout in (1, 3, 5):
                 varname = "spec%03d_mr" % (i + 1)
-            if self.iout in (2, 3):
+            if self.iout in (2, ):    # XXX what to do with 3?
                 varname = "spec%03d_pptv" % (i + 1)
             ncvar = self.nc.variables[varname]
             l.append(ncvar.long_name)
         return l
+
+    @property
+    def output_unit(self):
+        if self.iout in (1, 3, 5):
+            varname = "spec001_mr"
+        if self.iout in (2, ):    # XXX what to do with 3?
+            varname = "spec001_pptv"
+        ncvar = self.nc.variables[varname]
+        return ncvar.units
 
     @property
     def numpoint(self):
@@ -242,6 +256,11 @@ class Header(object):
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
         self.trajectory = reflexible.conv2netcdf4.read_trajectories(self)
+
+    @property
+    def options(self):
+        # XXX Return a very minimalistic options dictionary.  To be completed.
+        return {'readp': None}
 
     @property
     def FD(self):

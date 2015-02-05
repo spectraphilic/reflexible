@@ -315,6 +315,7 @@ def plot_sensitivity(H, data, \
     plt.figure(fig.number)
     plt.axes(ax)
 
+    data = data.T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
     # # set up transformations for the data array
     if method == 'imshow':
         if m.projection not in ['cyl', 'merc', 'mill']:
@@ -351,7 +352,6 @@ def plot_sensitivity(H, data, \
 
         if m.projection != 'merc':
             if lons[-1] - lons[0] < 360.:
-                print "data.shape:", data.shape, len(lons)
                 topodat, lons = addcyclic(data, lons)
 
         if m.projection == 'merc':

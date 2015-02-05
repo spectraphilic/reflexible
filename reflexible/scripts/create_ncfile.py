@@ -412,7 +412,7 @@ def write_header(H, ncid, wetdep, drydep, write_releases, species):
                                       chunksizes=chunksizes,
                                       zlib=True, complevel=COMPLEVEL)
             sID.units = units
-        if iout in (2, 3):
+        if iout in (2,):   # XXX what to do with 3?
             var_name = "spec" + anspec + "_pptv"
             sID = ncid.createVariable(var_name, 'f4', dIDs,
                                       chunksizes=chunksizes,
