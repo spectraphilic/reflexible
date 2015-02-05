@@ -96,6 +96,10 @@ class Header(object):
         return self.nc.ldirect
 
     @property
+    def iout(self):
+        return self.nc.iout
+
+    @property
     def direction(self):
         if self.nc.ldirect < 0:
             return "backward"
@@ -110,7 +114,10 @@ class Header(object):
     def species(self):
         l = []
         for i in range(self.nspec):
-            varname = "spec%03d_pptv" % (i + 1)   # XXX check this with IOUT
+            if self.iout in (1, 3, 5):
+                varname = "spec%03d_mr" % (i + 1)
+            if self.iout in (2, 3):
+                varname = "spec%03d_pptv" % (i + 1)
             ncvar = self.nc.variables[varname]
             l.append(ncvar.long_name)
         return l
@@ -231,12 +238,12 @@ class Header(object):
     @property
     def FD(self):
         return FD(self.nc, self.nspec, self.species, self.available_dates,
-                  self.direction)
+                  self.direction, self.iout)
 
     @property
     def C(self):
-        return C(self.nc, self.releasetimes, self.species,
-                 self.available_dates, self.direction, self.Heightnn)
+        return C(self.nc, self.releasetimes, self.species, self.available_dates,
+                 self.direction, self.iout, self.Heightnn)
 
     def __init__(self, path=None):
         self.nc = nc.Dataset(path, 'r')
@@ -245,12 +252,13 @@ class Header(object):
 class FD(object):
     """Class that contains FD data indexed with (spec, date)."""
 
-    def __init__(self, nc, nspec, species, available_dates, direction):
+    def __init__(self, nc, nspec, species, available_dates, direction, iout):
         self.nc = nc
         self.nspec = nspec
         self.species = species
         self.available_dates = available_dates
         self.direction = direction
+        self.iout = iout
         self._keys = [(s, k) for s, k in itertools.product(
             range(nspec), available_dates)]
 
@@ -261,7 +269,10 @@ class FD(object):
     def __getitem__(self, item):
         nspec, date = item
         idate = self.available_dates.index(date)
-        varname = "spec%03d_pptv" % (nspec + 1)   # XXX check this with IOUT
+        if self.iout in (1, 3, 5):
+            varname = "spec%03d_mr" % (nspec + 1)
+        if self.iout in (2,):    # XXX what to do with the 3 case?
+            varname = "spec%03d_pptv" % (nspec + 1)
         fdc = FDC()
         fdc.grid = self.nc.variables[varname][:, :, idate, :, :, :].T
         fdc.itime = self.nc.variables['time'][idate]
@@ -282,7 +293,7 @@ class C(object):
     """Class that contains C data indexed with (spec, date)."""
 
     def __init__(self, nc, releasetimes, species, available_dates,
-                 direction, Heightnn):
+                 direction, iout, Heightnn):
         self.nc = nc
         # self._FD = FD
         self.nspec = len(nc.dimensions['numspec'])
@@ -291,6 +302,7 @@ class C(object):
         self.species = species
         self.available_dates = available_dates
         self.direction = direction
+        self.iout = iout
         self.Heightnn = Heightnn
         self._keys = [(s, k) for s, k in itertools.product(
             range(self.nspec), range(self.pointspec))]
@@ -333,7 +345,10 @@ class C(object):
             c.spec_i = nspec
 
             # read data grids and attribute/sum sensitivity
-            varname = "spec%03d_pptv" % (nspec + 1)   # XXX check this with IOUT
+            if self.iout in (1, 3, 5):
+                varname = "spec%03d_mr" % (nspec + 1)
+            if self.iout in (2,):    # XXX what to do with the 3 case?
+                varname = "spec%03d_pptv" % (nspec + 1)
             specvar = self.nc.variables[varname][:].T
             if False:
                 c.grid = np.zeros((

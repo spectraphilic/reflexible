@@ -216,6 +216,11 @@ def write_metadata(H, command, ncid):
         ncid.nested_output = command['NESTED_OUTPUT']
         # This is a new option in V9.2
         ncid.surf_only = command.get('SURF_ONLY', 0)
+    else:
+        # IOUT is not available (no COMMAND file) so guess the value:
+        unit_i = UNITS.index(H.unit) + 1
+        iout = (unit_i) + (H.nested * 5)
+        ncid.iout = iout
 
 
 def write_header(H, ncid, wetdep, drydep, write_releases, species):
@@ -235,24 +240,8 @@ def write_header(H, ncid, wetdep, drydep, write_releases, species):
     drydep : boolean
       True if dry depositions have to be written into the netCDF4 file.
 
-    Return
-    ------
-    int
-      1 -> conc. output (ng/m3)
-      2 -> mixing ratio (pptv)
-      3 -> both
-      4 -> plume traject
-      5 -> 1 + 4
     """
-    # global UNITS
-
-    if hasattr(ncid, "iout"):
-        iout = ncid.iout
-    else:
-        # If IOUT is not available (no COMMAND file), guess the value of IOUT
-        # Add 1 because the count starts with 1
-        unit_i = UNITS.index(H.unit) + 1
-        iout = (unit_i) + (H.nested * 5)
+    iout = ncid.iout
 
     # Create dimensions
 
@@ -469,7 +458,7 @@ def write_header(H, ncid, wetdep, drydep, write_releases, species):
     return iout
 
 
-def write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases):
+def write_variables(H, ncid, wetdep, drydep, write_releases, releases):
     """Fill netCDF4 variables with data.
 
     The netCDF4 variables created in the ``write_header`` function are filled
@@ -485,13 +474,9 @@ def write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases):
       True if wet depositions have to be written into the netCDF4 file.
     drydep : boolean
       True if dry depositions have to be written into the netCDF4 file.
-    iout : int
-      1 -> conc. output (ng/m3)
-      2 -> mixing ratio (pptv)
-      3 -> both
-      4 -> plume traject
-      5 -> 1+4
     """
+    iout = ncid.iout
+
     # Fill variables with data.
 
     # time
@@ -557,12 +542,13 @@ def write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases):
             # Fill concentration values
             if iout in (1, 3, 5):
                 conc_name = "spec" + anspec + "_mr"
-            if iout in (2, 3):
+                conc = ncid.variables[conc_name]
+                # (x, y, z, time, pointspec, nageclass) <-
+                # (x, y, z, pointspec, nageclass)
+                conc[:, :, idt, :, :, :] = fd.grid[:, :, :, np.newaxis, :, :].T
+            if iout in (2, 3):         # XXX what to do with the 3 case here?  John?
                 conc_name = "spec" + anspec + "_pptv"
-            conc = ncid.variables[conc_name]
-            # (x, y, z, time, pointspec, nageclass) <-
-            # (x, y, z, pointspec, nageclass)
-            conc[:, :, idt, :, :, :] = fd.grid[:, :, :, np.newaxis, :, :].T
+                # XXX fill the _pptv here...
 
             # wet and dry depositions
             # (x, y, time, pointspec, nageclass) <- (x, y, pointspec, nageclass)
@@ -663,8 +649,8 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
     print("About to create new netCDF4 file: '%s'" % ncfname)
     ncid = nc.Dataset(ncfname, 'w', chunk_cache=cache_size)
     write_metadata(H, command, ncid)
-    iout = write_header(H, ncid, wetdep, drydep, write_releases, species)
-    write_variables(H, ncid, wetdep, drydep, iout, write_releases, releases)
+    write_header(H, ncid, wetdep, drydep, write_releases, species)
+    write_variables(H, ncid, wetdep, drydep, write_releases, releases)
     ncid.close()
     return ncfname
 
