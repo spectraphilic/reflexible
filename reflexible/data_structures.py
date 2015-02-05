@@ -163,23 +163,23 @@ class Header(object):
 
     @property
     def ireleasestart(self):
-        return self.nc.variables['RELSTART']
+        return self.nc.variables['RELSTART'][:].T
 
     @property
     def ireleaseend(self):
-        return self.nc.variables['RELEND']
+        return self.nc.variables['RELEND'][:].T
 
     @property
     def releasestart(self):
-        rel_start = self.nc.variables['RELSTART'][::-1]
+        rel_start = self.ireleasestart[::-1]
         d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                        "%Y%m%d%H%M%S")
         return [(d - datetime.timedelta(seconds=int(t))) for t in rel_start]
 
     @property
     def releaseend(self):
-        rel_end = (self.nc.variables['RELEND'][::-1] +
-                   self.nc.variables['RELSTART'][-1] * 2)  # XXX ugly workaround
+        # XXX ugly workaround for getting the same values than in pflexible
+        rel_end = self.ireleaseend[::-1] + self.ireleasestart[-1] * 2
         d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                        "%Y%m%d%H%M%S")
         return [(d - datetime.timedelta(seconds=int(t))) for t in rel_end]
@@ -192,27 +192,23 @@ class Header(object):
     @property
     def ORO(self):
         if 'ORO' in self.nc.variables:
-            return self.nc.variables['ORO']
+            return self.nc.variables['ORO'][:].T
         else:
             return None
 
     @property
     def outheight(self):
-        return self.nc.variables['height']
+        return self.nc.variables['height'][:].T
 
     @property
     def Heightnn(self):
         nx, ny, nz = (self.numxgrid, self.numygrid, self.numzgrid)
         Heightnn = np.zeros((nx, ny, nz), np.float)
-        if self.ORO is not None:
-            oro = self.ORO[:].T
-        else:
-            oro = None
         for ix in range(nx):
-            if oro is not None:
-                Heightnn[ix, :, 0] = oro[ix, :]  # XXX this value is overwritten later on.  Have a look John.
+            if self.ORO is not None:
+                Heightnn[ix, :, 0] = self.ORO[ix, :]  # XXX this value is overwritten later on.  John?
                 for iz in range(nz):
-                    Heightnn[ix, :, iz] = self.outheight[iz] + oro[ix, :]
+                    Heightnn[ix, :, iz] = self.outheight[iz] + self.ORO[ix, :]
             else:
                 Heightnn[ix, :, :] = self.outheight[:]
         return Heightnn
@@ -338,7 +334,7 @@ class C(object):
 
             # read data grids and attribute/sum sensitivity
             varname = "spec%03d_pptv" % (nspec + 1)   # XXX check this with IOUT
-            specvar = self.nc.variables[varname]
+            specvar = self.nc.variables[varname][:].T
             if False:
                 c.grid = np.zeros((
                     len(self.nc.dimensions['longitude']),
@@ -347,10 +343,10 @@ class C(object):
                 for date in self.available_dates:
                     idate = self.available_dates.index(date)
                     # cycle through all the date grids
-                    c.grid += specvar[:, pointspec, idate, :, :, :].T.sum(axis=-1)
+                    c.grid += specvar[:, :, :, idate, pointspec, :].sum(axis=-1)
             else:
                 # Same than the above, but it probably comsumes more memory
-                c.grid = specvar[:, pointspec, :, :, :, :].T.sum(axis=(3, 4))
+                c.grid = specvar[:, :, :, :, pointspec, :].sum(axis=(-2, -1))
         else:
             # forward direction
             FD = self._FD
@@ -371,7 +367,7 @@ def get_slabs(Heightnn, G):
     Arguments
     ---------
     Heightnn : numpy array
-      Height (outheight + topography)
+      Height (outheight + topography).
     G : numpy array
       A grid from the FLEXPARTDATA.
 
@@ -382,7 +378,7 @@ def get_slabs(Heightnn, G):
 
     """
     index = 0
-    nageclass = 0   # XXX assume nageclass equal to 0
+    nageclass = 0
     normAreaHeight = True
 
     Slabs = {}
