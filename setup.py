@@ -57,6 +57,7 @@ setup(
     entry_points={
         'console_scripts': [
             'create_ncfile = reflexible.scripts.create_ncfile:main',
+            'readpartpositions = reflexible.scripts.readpartpositions:main',
         ]
     },
 
