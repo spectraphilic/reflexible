@@ -29,7 +29,8 @@ print "FD[(0,'20100518210000')].species", Hnc.FD[(0,'20100518210000')].species
 # print "FD[(0, '20100518210000')].rel_i:", Hnc.FD[(0, '20100518210000')].rel_i
 C = Hnc.C
 print "C:", C
-print "C[(0,1)].grid:", C[(0,1)].grid
+print "C[(0,1)].grid[1:3]:", C[(0,1)].grid[1:3]
+print "C[(0,1)].slabs[1]:", C[(0,1)].slabs[1]
 print ""
 
 # print "Calling fill_backward():"

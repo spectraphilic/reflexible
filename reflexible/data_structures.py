@@ -76,10 +76,6 @@ class Header(object):
         return self.nc.loutsample
 
     @property
-    def loutsample(self):
-        return self.nc.loutsample
-
-    @property
     def lsubgrid(self):
         return self.nc.lsubgrid
 
@@ -162,8 +158,7 @@ class Header(object):
         d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                        "%Y%m%d%H%M%S")
         l = [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
-            for t in range(loutstep * (nsteps - 1),
-                           -loutstep, -loutstep)]
+             for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
         return l
 
     @property
@@ -194,6 +189,34 @@ class Header(object):
         return [b - ((b - a) / 2)
                 for a, b in zip(self.releasestart, self.releaseend)]
 
+    @property
+    def ORO(self):
+        if 'ORO' in self.nc.variables:
+            return self.nc.variables['ORO']
+        else:
+            return None
+
+    @property
+    def outheight(self):
+        return self.nc.variables['height']
+
+    @property
+    def Heightnn(self):
+        nx, ny, nz = (self.numxgrid, self.numygrid, self.numzgrid)
+        Heightnn = np.zeros((nx, ny, nz), np.float)
+        if self.ORO is not None:
+            oro = self.ORO[:].T
+        else:
+            oro = None
+        for ix in range(nx):
+            if oro is not None:
+                Heightnn[ix, :, 0] = oro[ix, :]  # XXX this value is overwritten later on.  Have a look John.
+                for iz in range(nz):
+                    Heightnn[ix, :, iz] = self.outheight[iz] + oro[ix, :]
+            else:
+                Heightnn[ix, :, :] = self.outheight[:]
+        return Heightnn
+
     def __getitem__(self, key):
         return getattr(self, key)
 
@@ -217,7 +240,7 @@ class Header(object):
     @property
     def C(self):
         return C(self.nc, self.releasetimes, self.species,
-                 self.available_dates, self.direction)
+                 self.available_dates, self.direction, self.Heightnn)
 
     def __init__(self, path=None):
         self.nc = nc.Dataset(path, 'r')
@@ -244,7 +267,7 @@ class FD(object):
         idate = self.available_dates.index(date)
         varname = "spec%03d_pptv" % (nspec + 1)   # XXX check this with IOUT
         fdc = FDC()
-        fdc.grid = self.nc.variables[varname][:,:,idate,:,:,:].T
+        fdc.grid = self.nc.variables[varname][:, :, idate, :, :, :].T
         fdc.itime = self.nc.variables['time'][idate]
         fdc.timestamp = datetime.datetime.strptime(
             self.available_dates[idate], "%Y%m%d%H%M%S")
@@ -262,7 +285,8 @@ class FD(object):
 class C(object):
     """Class that contains C data indexed with (spec, date)."""
 
-    def __init__(self, nc, releasetimes, species, available_dates, direction):
+    def __init__(self, nc, releasetimes, species, available_dates,
+                 direction, Heightnn):
         self.nc = nc
         # self._FD = FD
         self.nspec = len(nc.dimensions['numspec'])
@@ -271,6 +295,7 @@ class C(object):
         self.species = species
         self.available_dates = available_dates
         self.direction = direction
+        self.Heightnn = Heightnn
         self._keys = [(s, k) for s, k in itertools.product(
             range(self.nspec), range(self.pointspec))]
 
@@ -316,16 +341,16 @@ class C(object):
             specvar = self.nc.variables[varname]
             if False:
                 c.grid = np.zeros((
-                            len(self.nc.dimensions['longitude']),
-                            len(self.nc.dimensions['latitude']),
-                            len(self.nc.dimensions['height'])))
+                    len(self.nc.dimensions['longitude']),
+                    len(self.nc.dimensions['latitude']),
+                    len(self.nc.dimensions['height'])))
                 for date in self.available_dates:
                     idate = self.available_dates.index(date)
                     # cycle through all the date grids
-                    c.grid += specvar[:,:,:,idate,pointspec,:].T.sum(axis=-1)
+                    c.grid += specvar[:, pointspec, idate, :, :, :].T.sum(axis=-1)
             else:
                 # Same than the above, but it probably comsumes more memory
-                c.grid = specvar[:,:,:,:,pointspec,:].T.sum(axis=(3,4))
+                c.grid = specvar[:, pointspec, :, :, :, :].T.sum(axis=(3, 4))
         else:
             # forward direction
             FD = self._FD
@@ -333,9 +358,54 @@ class C(object):
             c = FD[(nspec, d)]
 
         # add total column
-        # XXX c.slabs = get_slabs(H, c.grid)
+        c.slabs = get_slabs(self.Heightnn, c.grid)
 
         return c
+
+
+def get_slabs(Heightnn, G):
+    """Preps grid for plotting.
+
+    Accepts an 3D or 5D GRID from readgrid with optional index.
+
+    Arguments
+    ---------
+    Heightnn : numpy array
+      Height (outheight + topography)
+    G : numpy array
+      A grid from the FLEXPARTDATA.
+
+    Returns
+    -------
+    dictionary
+      dictionary of rank-2 arrays corresponding to vertical levels.
+
+    """
+    index = 0
+    nageclass = 0   # XXX assume nageclass equal to 0
+    normAreaHeight = True
+
+    Slabs = {}
+    grid_shape = G.shape
+    if len(grid_shape) is 5:
+        g = G[:, :, :, index, nageclass]
+    elif len(grid_shape) is 3:
+        g = G
+    else:
+        raise(ValueError, "len(grid_shape) cannot be 4")
+
+    for i in range(g.shape[2]):
+        # first time sum to create Total Column
+        if i == 0:
+            TC = np.sum(g, axis=2).T
+        if normAreaHeight:
+            data = g[:, :, i] / Heightnn[:, :, i]
+        else:
+            data = g[:, :, i]
+        Slabs[i + 1] = data.T
+
+    Slabs[0] = TC
+    return Slabs
 
 
 class FDC(object):
