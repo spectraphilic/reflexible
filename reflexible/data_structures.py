@@ -220,6 +220,14 @@ class Header(object):
                 Heightnn[ix, :, :] = self.outheight[:]
         return Heightnn
 
+    @property
+    def zpoint1(self):
+        return self.nc.variables['RELZZ1'][:].T
+
+    @property
+    def zpoint2(self):
+        return self.nc.variables['RELZZ2'][:].T
+
     def __getitem__(self, key):
         return getattr(self, key)
 
@@ -310,6 +318,13 @@ class C(object):
     @property
     def keys(self):
         return self._keys()
+
+    def __dir__(self):
+        """ necessary for Ipython tab-completion """
+        return self._keys
+
+    def __iter__(self):
+        return iter(self._keys)
 
     def __getitem__(self, item):
         """
