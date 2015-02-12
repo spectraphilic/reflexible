@@ -103,3 +103,4 @@ datasets = {
 from .tests.all import test
 from . import conv2netcdf4
 from .scripts.create_ncfile import create_ncfile
+from .data_structures import Header
