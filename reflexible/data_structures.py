@@ -176,34 +176,53 @@ class Header(object):
     def available_dates(self):
         loutstep = self.nc.loutstep
         nsteps = len(self.nc.dimensions['time'])
-        d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                       "%Y%m%d%H%M%S")
-        l = [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
-             for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
-        return l
+        if self.nc.ldirect < 0:
+            # backward direction
+            d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
+                                           "%Y%m%d%H%M%S")
+            return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+                    for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
+        else:
+            # forward direction
+            d = datetime.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
+                                           "%Y%m%d%H%M%S")
+            return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+                    for t in range(0, loutstep * nsteps, loutstep)]
 
     @property
     def ireleasestart(self):
-        return self.nc.variables['RELSTART'][:].T
+        return self.nc.variables['RELSTART'][:]
 
     @property
     def ireleaseend(self):
-        return self.nc.variables['RELEND'][:].T
+        return self.nc.variables['RELEND'][:]
 
     @property
     def releasestart(self):
-        rel_start = self.ireleasestart[::-1]
-        d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                       "%Y%m%d%H%M%S")
-        return [(d - datetime.timedelta(seconds=int(t))) for t in rel_start]
+        if self.nc.ldirect < 0:
+            rel_start = self.ireleasestart[::-1]
+            d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
+                                           "%Y%m%d%H%M%S")
+            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
+        else:
+            rel_start = self.ireleasestart[:]
+            d = datetime.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
+                                           "%Y%m%d%H%M%S")
+            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
 
     @property
     def releaseend(self):
-        # XXX ugly workaround for getting the same values than in pflexible
-        rel_end = self.ireleaseend[::-1] + self.ireleasestart[-1] * 2
-        d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                       "%Y%m%d%H%M%S")
-        return [(d - datetime.timedelta(seconds=int(t))) for t in rel_end]
+        if self.nc.ldirect < 0:
+            rel_end = self.ireleaseend[::-1]
+            d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
+                                           "%Y%m%d%H%M%S")
+            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
+        else:
+            rel_end = self.ireleaseend[:]
+            d = datetime.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
+                                           "%Y%m%d%H%M%S")
+            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
+
 
     @property
     def releasetimes(self):
@@ -385,7 +404,7 @@ class C(object):
             if self.iout in (2,):    # XXX what to do with the 3 case?
                 varname = "spec%03d_pptv" % (nspec + 1)
             specvar = self.nc.variables[varname][:].T
-            if False:
+            if True:
                 c.grid = np.zeros((
                     len(self.nc.dimensions['longitude']),
                     len(self.nc.dimensions['latitude']),
@@ -395,7 +414,8 @@ class C(object):
                     # cycle through all the date grids
                     c.grid += specvar[:, :, :, idate, pointspec, :].sum(axis=-1)
             else:
-                # Same than the above, but it probably comsumes more memory
+                # Same than the above, but it comsumes more memory
+                # Just let it here for future reference
                 c.grid = specvar[:, :, :, :, pointspec, :].sum(axis=(-2, -1))
         else:
             # forward direction
