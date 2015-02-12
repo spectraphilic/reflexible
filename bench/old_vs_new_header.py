@@ -1,7 +1,25 @@
+"""
+Small benchmark that compares the resource consumption (CPU and memory)
+of using the old (coming from pflexible) and new Header data structure.
+
+For running this, just do:
+
+$ python bench/old_vs_new_header.py
+
+without parameters.
+
+This will automatically download a test data file and will run the
+benchamrks on it.
+
+Note: this only runs on Linux.
+
+:Author: Francesc Alted
+
+"""
+
 import sys
 import os.path
 import subprocess
-from time import time
 
 import reflexible as rf
 import reflexible.conv2netcdf4 as conv
