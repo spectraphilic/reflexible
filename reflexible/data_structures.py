@@ -270,7 +270,7 @@ class Header(object):
     @property
     def C(self):
         return C(self.nc, self.releasetimes, self.species, self.available_dates,
-                 self.direction, self.iout, self.Heightnn)
+                 self.direction, self.iout, self.Heightnn, self.FD)
 
     def __init__(self, path=None):
         self.nc = nc.Dataset(path, 'r')
@@ -284,6 +284,7 @@ class FD(object):
         self.nspec = nspec
         self.species = species
         self.available_dates = available_dates
+        self.grid_dates = available_dates
         self.direction = direction
         self.iout = iout
         self._keys = [(s, k) for s, k in itertools.product(
@@ -320,9 +321,8 @@ class C(object):
     """Class that contains C data indexed with (spec, date)."""
 
     def __init__(self, nc, releasetimes, species, available_dates,
-                 direction, iout, Heightnn):
+                 direction, iout, Heightnn, FD):
         self.nc = nc
-        # self._FD = FD
         self.nspec = len(nc.dimensions['numspec'])
         self.pointspec = len(nc.dimensions['pointspec'])
         self.releasetimes = releasetimes
@@ -331,6 +331,7 @@ class C(object):
         self.direction = direction
         self.iout = iout
         self.Heightnn = Heightnn
+        self._FD = FD
         self._keys = [(s, k) for s, k in itertools.product(
             range(self.nspec), range(self.pointspec))]
 
