@@ -1,9 +1,9 @@
 .. _reflexible-overview:
 
 
-********************
+*********************
 The reflexible module
-********************
+*********************
 
 .. _module-description:
 
@@ -36,15 +36,20 @@ most comfortable.
     input is sought, but don't complain if something breaks!
 
 
-*****************
+******************
 The reflexible API
-*****************
+******************
 
   :Release: |version|
   :Date: |today|
   :Author: John F. Burkhart
+  :Author: Francesc Alted
 
 .. automodule:: reflexible
    :members:
+
+.. autofunction:: reflexible.scripts.create_ncfile.create_ncfile
+
+.. autoclass:: reflexible.data_structures.Header
+   :members:
    :undoc-members:
-   :private-members:

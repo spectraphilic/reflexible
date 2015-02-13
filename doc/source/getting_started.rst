@@ -235,9 +235,8 @@ The next step is to read the FLEXPART header file from a dataset::
 
 
 Now you have a variable 'H' which has all the information about the
-run that is available from the header file. This 'Header' is
-essentially a dictionary, so the first step may be to explore some of
-the keys::
+run that is available from the header file. This 'Header' is class
+instance, so the first step may be to explore some of the attibutes::
 
     H.keys()
 
@@ -246,45 +245,25 @@ FLEXPART run setup.
 
 ----
 
+:Note: From here on, this document needs to be updated for *reflexible*
+
+----
+
 Reasonably, you should now want to read in some of the data from your
-run. This is accomplished easily using the :func:`read_grid
-<reflexible.read_grid>`. This function may be called directly, or
-there are several alternative ways we can read the data. A special
-method exists for backward runs that collects all the data from the
-20-days back in time (by default) and creates accumulated totals of
-the sensitivity::
+run. At this point you should now have a variable 'FD' which is again
+a dictionary of the FLEXPART grids. This 'FD' object is either
+available directly in your workspace, or alternatively, if you called
+`H.fill_backward()` it is an attribute of the header: `H.FD`. This is
+the preferred method.
 
-    H.fill_backward()
-
-Alternatively, we may only want to read specific grids, in which case
-we can call the function directly::
-
-    FD = rf.read_grid(H,time_ret=0,nspec_ret=0)
-
-For optimal performance, this function will use the FortFlex
-module. However, this depends on having a Fortran compiler (gfortran)
-installed in your machine, so as a fall back there is a pure python
-method, but it is significantly slower.  If you receive a message
-about using the Pure Python approach it is highly recommended to build
-the FortFlex module.
-
-.. note::
-  See the :func:`read_grid <reflexible.read_grid>` function
-  for information on the keyword arguments.
-
-At this point you should now have a variable 'FD' which is again a dictionary of
-the FLEXPART grids. This 'FD' object is either available directly in your
-workspace, or alternatively, if you called `H.fill_backward()` it is an
-attribute of the header: `H.FD`. This is the preferred method.
-
-Look at the keys of the dictionary to see what information
-is stored. The actual data is keyed by tuples: (nspec, datestr) where nspec is
-the species number and datestr is a YYYYMMDDHHMMSS string for the grid
-timestep.
+Look at the keys of the dictionary to see what information is
+stored. The actual data is keyed by tuples: (nspec, datestr) where
+nspec is the species number and datestr is a YYYYMMDDHHMMSS string for
+the grid timestep.
 
 
-Working with rf... in depth
-================================
+Working with rflexible in depth
+===============================
 
 Assuming the above steps worked out, then we can proceed to play with
 the tools in a bit more detail.

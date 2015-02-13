@@ -11,12 +11,12 @@ The mapping module
 A brief description of the module
 =================================
 
-The mapping module is a helper function to the :mod:`reflexible` module.
-Primarily it is designed to perform a few tasks relating to using the 
-matplotlib `Basemap
-<http://matplotlib.sourceforge.net/basemap/doc/html/api/basemap_api.html#module-mpl_toolkits.basemap>`_ 
-module. I haven't confirmed whether how I pass the figures around or not is a
-good idea, and would welcome suggestions.
+The mapping module is a helper function to the :mod:`reflexible`
+module.  Primarily it is designed to perform a few tasks relating to
+using the matplotlib `Basemap
+<http://matplotlib.sourceforge.net/basemap/doc/html/api/basemap_api.html#module-mpl_toolkits.basemap>`_
+module. I haven't confirmed whether how I pass the figures around or
+not is a good idea, and would welcome suggestions.
 
 .. warning::
   This module is not fully prepared for public use. There are a lot of
@@ -36,7 +36,7 @@ set to your 'FIG' object.::
 
   > FIG = None
   > FIG = mp.plot_function(data,FIGURE=FIG)
-  > 
+  >
 
 The 'FIG' object can then be passed around and reused saving time and
 resources. In general, the FIGURE object has the following attributes:
@@ -49,8 +49,8 @@ fig                     A fig object, use
                         it active
 m                       A basemap instance for the plot
 ax                      The primary axis instance
-indices                 See the :func:`get_FIGURE` which 
-                        describes the indices. 
+indices                 See the :func:`get_FIGURE` which
+                        describes the indices.
 ===============         ==================================
 
 Regions
@@ -80,6 +80,6 @@ The mapping API
   :Release: |version|
   :Date: |today|
 
-.. automodule:: mapping
+.. automodule:: reflexible.legacy.mapping
    :members:
    :undoc-members:
