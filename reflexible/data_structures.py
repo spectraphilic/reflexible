@@ -242,20 +242,13 @@ class Header(object):
 
     @property
     def Heightnn(self):
-        if self._Heightnn is not None:
-            return self._Heightnn
         nx, ny, nz = (self.numxgrid, self.numygrid, self.numzgrid)
-        Heightnn = np.zeros((nx, ny, nz), np.float)
         outheight = self.outheight[:]
         if self.ORO is not None:
             oro = self.ORO[:]
-        for ix in range(nx):
-            if self.ORO is not None:
-                for iz in range(nz):
-                    Heightnn[ix, :, iz] = outheight[iz] + oro[ix, :]
-            else:
-                Heightnn[ix, :, :] = outheight
-        self._Heightnn = Heightnn
+            Heightnn = outheight + oro.reshape(nx, ny, 1)
+        else:
+            Heightnn = outheight.reshape(1, 1, nz)
         return Heightnn
 
     @property
@@ -298,7 +291,6 @@ class Header(object):
 
     def __init__(self, path=None):
         self.nc = nc.Dataset(path, 'r')
-        self._Heightnn = None
 
 
 class FD(object):
