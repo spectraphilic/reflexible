@@ -37,9 +37,9 @@ def find_package_data(pdir):
 setup(
     name = 'reflexible',
     version = VERSION,
-    author = 'John F. Burkhart',
+    author = 'John F. Burkhart, Francesc Alted',
     author_email = 'jfburkhart@gmail.com',
-    url = 'http://niflheim.nilu.no/~burkhart/reflexible',
+    url = 'https://github.com/spectraphilic/reflexible',
     description = 'A Python interface to FLEXPART data.',
     license = 'Creative Commons',
     packages = [
@@ -59,5 +59,4 @@ setup(
             'readpartpositions = reflexible.scripts.readpartpositions:main',
         ]
     },
-
 )
