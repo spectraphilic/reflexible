@@ -242,15 +242,20 @@ class Header(object):
 
     @property
     def Heightnn(self):
+        if self._Heightnn is not None:
+            return self._Heightnn
         nx, ny, nz = (self.numxgrid, self.numygrid, self.numzgrid)
         Heightnn = np.zeros((nx, ny, nz), np.float)
+        outheight = self.outheight[:]
+        if self.ORO is not None:
+            oro = self.ORO[:]
         for ix in range(nx):
             if self.ORO is not None:
-                Heightnn[ix, :, 0] = self.ORO[ix, :]  # XXX this value is overwritten later on.  John?
                 for iz in range(nz):
-                    Heightnn[ix, :, iz] = self.outheight[iz] + self.ORO[ix, :]
+                    Heightnn[ix, :, iz] = outheight[iz] + oro[ix, :]
             else:
-                Heightnn[ix, :, :] = self.outheight[:]
+                Heightnn[ix, :, :] = outheight
+        self._Heightnn = Heightnn
         return Heightnn
 
     @property
@@ -293,6 +298,7 @@ class Header(object):
 
     def __init__(self, path=None):
         self.nc = nc.Dataset(path, 'r')
+        self._Heightnn = None
 
 
 class FD(object):
@@ -453,9 +459,9 @@ def get_slabs(Heightnn, grid):
             data = grid[:, :, i] / Heightnn[:, :, i]
         else:
             data = grid[:, :, i]
-        slabs[i + 1] = data
+        slabs[i + 1] = data.T    # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
     # first time sum to create Total Column
-    slabs[0] = np.sum(grid, axis=2)
+    slabs[0] = np.sum(grid, axis=2).T    # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
     return slabs
 
 
