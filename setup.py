@@ -42,8 +42,6 @@ setup(
     url = 'http://niflheim.nilu.no/~burkhart/reflexible',
     description = 'A Python interface to FLEXPART data.',
     license = 'Creative Commons',
-    # ext_modules = [Extension('reflexible.pflexcy', ['reflexible/pflexcy.c'],
-    #                          include_dirs=[numpy.get_include()])],
     packages = [
         'reflexible',
         'reflexible.scripts',
