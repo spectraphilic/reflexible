@@ -14,28 +14,22 @@ Test Data:
 import os
 
 import numpy as np
-import mapping as mp
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import shiftgrid, addcyclic
 
-#import pflexible as pf
 import reflexible as rf
 import reflexible.conv2netcdf4 as conv
+import reflexible.legacy.mapping as mp
 
 
 def plot_backward(SOURCE_FILE, OUTPUT_DIR):
     #read the header of a FLEXPART output
-    # H = conv.Header(SOURCE_FILE)
     H = rf.Header(SOURCE_FILE)
-
-    # Below creates a D object as an attribute of H, nothing is returned
-    # H.C is keyed by (s,k) where s = speciesID, and k is rel_i
-    # NOTE: speciesID is 0-indexed
-    # H.fill_backward(nspec=(0,1)) #get the first species, all releases
 
     # # Get the trajectories, these are overlayed when we plot the
     # # sensitivities below.
+    # XXX reading trajectories does not work yet
     # T = pf.read_trajectories(H)
 
     # Plot everything up
