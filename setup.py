@@ -47,6 +47,7 @@ setup(
         'reflexible.scripts',
         'reflexible.conv2netcdf4',
         'reflexible.tests',
+        'reflexible.legacy',
         ],
     data_files = [
         ('reflexible/conv2netcdf4', ['reflexible/conv2netcdf4/FortFlex.so'])] + \
