@@ -112,7 +112,7 @@ c       write(*,*) (sparse_dump_r(ix),ix=1,sp_count_r)
              n=sparse_dump_i(ii)
              fact=fact*(-1.)
           else
-             pos=pos+1
+             n=n+1
           endif
 
           jy=n/numxgrid
@@ -142,7 +142,7 @@ c       write(*,*) (sparse_dump_r(ix),ix=1,sp_count_r)
              n=sparse_dump_i(ii)
              fact=fact*(-1.)
           else
-             pos=pos+1
+             n=n+1
           endif
 
           jy=n/numxgrid
