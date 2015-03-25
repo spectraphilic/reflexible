@@ -669,11 +669,13 @@ def readgridV8(H, **kwargs):
         print('Assumed V8 Flexpart')
         from .FortFlex import readgrid, sumgrid
         useFortFlex = True
+        print('Using readgrid from FortFlex')
     except:
         # get the original module (no memory allocation)
         try:
             from nilu.pflexpart.FortFlex import readgrid, sumgrid
             useFortFlex = True
+            print('Using old nilu.pflexpart.FortFlex')
             # print 'using nilu.pflexpart FortFlex'
         except:
             useFortFlex = False
@@ -681,6 +683,7 @@ def readgridV8(H, **kwargs):
     if not useFortFlex:
         readgrid = _readgridBF
         OPS.BinaryFile = True
+        print('Using BinaryFile')
 
     # reserve output fields
     print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
