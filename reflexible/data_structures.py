@@ -565,3 +565,284 @@ class FDC(object):
     @property
     def min(self):
         return self._min
+
+
+class Command(object):
+    """ General COMMAND input for Flexpart 
+
+    #TODO: use properties ??
+    """
+
+
+    def __init__(self, **options):
+
+        self._OPTIONS = {
+
+            'IBDATE': [None , '''String simulation date start'''],
+            'IBDATE': [None , '''string, simulation time start'''],
+            'IEDATE': [None , '''string, simulation date end'''],
+            'IETIME': [None , '''string, simulation time end'''],
+            'LDIRECT': [1, '''Simulation direction, 1 for forward, -1 for backward in time'''],
+            'LOUTSTEP': [10800, '''Average concentrations are calculated every SSSSS seconds.'''],
+            'LOUTAVER': [10800, '''The average concentrations are time averages of SSSSS seconds
+                duration. If SSSSS is 0, instantaneous concentrations are outputted.'''],
+            'LOUTSAMPLE': [900, '''The concentrations are sampled every SSSSS seconds to calculate  the time average concentration. This period must be shorter than the averaging time.'''],
+            'ITSPLIT': [999999999, '''Time constant for particle splitting. Particles are split into two after S SSSS seconds, 2xSSSSS seconds, 4xSSSSS seconds, and so on.'''],
+            'LSYNCTIME': [900, '''All processes are synchronized with this time interval (lsynctime). Therefore, all other time constants must be multiples of this value.
+                Output interval and time average of output must be at least twice lsynctime.'''],
+            'CTL': [-5.0, '''CTL must be >1 for time steps shorter than the Lagrangian time scale. If CTL<0, a purely random walk simulation is done'''],
+            'IFINE': [4, '''IFINE=Reduction factor for time step used for vertical wind'''],
+            'IOUT': [5, '''IOUT determines how the output shall be made: concentration
+                  (ng/m3, Bq/m3), mixing ratio (pptv), or both, or plume trajectory mode,
+                  or concentration + plume trajectory mode.
+                  In plume trajectory mode, output is in the form of average trajectories.'''],
+            'IPOUT': [0, '''IPOUT determines whether particle positions are outputted (in addition to the gridded concentrations or mixing ratios) or not.
+                0=no output, 1 output every output interval, 2 only at end of the
+                simulation'''],
+            'LSUBGRID': [1, '''Switch on/off subgridscale terrain parameterization (increase of
+                mixing heights due to subgridscale orographic variations)'''],
+            'LCONVECTION': [1, '''Switch on/off the convection parameterization'''],
+            'LAGESPECTRA': [1, '''Switch on/off the calculation of age spectra: if yes, the file AGECLASSES must be available'''],  
+            'IPIN': [0, '''If IPIN=1, a file "partposit_end" from a previous run must be available in the output directory. Particle positions are read in and previous simulation is continued. If IPIN=0, no particles from a previous run are used'''],
+            'IOUTPUTFOREACHRELEASE': [0, '''Switch on/off writing out each release.'''],
+            'IFLUX': [0, '''If IFLUX is set to 1, fluxes of each species through each of the output boxes are calculated. Six fluxes, corresponding to northward, southward,
+                eastward, westward, upward and downward are calculated for each grid cell of
+                the output grid. The control surfaces are placed in the middle of each
+                output grid cell. If IFLUX is set to 0, no fluxes are determined.'''],
+            'MDOMAINFILL': [0, '''If MDOMAINFILL is set to 1, the first box specified in file   RELEASES is used as the domain where domain-filling trajectory calculations are to be done. Particles are initialized uniformly distributed (according to the air mass distribution) in that domain at the beginning of the simulation, and are created at the boundaries throughout the simulation perio'''],  
+            'IND_SOURCE': [1, '''IND_SOURCE switches between different units for concentrations at  the source NOTE that in backward simulations the release of computational particles takes place at   the "receptor" and the sampling of particles at the "source".
+                1=mass units (for bwd-runs = concentration)   
+                2=mass mixing ratio units'''],    
+            'IND_RECEPTOR': [1, '''IND_RECEPTOR switches between different units for concentrations at the receptor
+                          1=mas s units (concentrations) 
+                          2=mas s mixing ratio units'''],    
+            'MQUASILAG': [0, '''MQUASILAG indicates whether particles shall be numbered consecutively (1) or with their release location number (0). The first option allows tracking of individual particles using the partposit output files'''],  
+            'NESTED_OUTPUT': [0, '''NESTED_OUTPUT decides whether model output shall be made also   for a nested output field (normally with higher resolution)'''], 
+            'LINIT_COND': [0, '''For Backward Runs, sets initial conditions: [0]=No, 1=Mass Unit, 2=Mass Mixing'''],    
+            'SURF_ONLY': [0, '''SURF_ONLY: When set to 1, concentration/emission sensitivity'''],
+            'CBLFLAG' : [0, '''CBLFLAG: When set to 1, a skewed rather than Gaussian turbulence in  the convective PBL is used.'''], 
+    
+            ## below here, not actual COMMAND input
+            'HEADER': """**********************************************\n\n\n  Input file for   FLEXPART\n\n*********************************************\n\n""", 
+            'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File''']  ,
+            'SIM_START': [dt.datetime(2000,01,01,00,00,00), '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],   
+            'SIM_END': [dt.datetime(2000,02,01,00,00,00), '''Ending date and time of simulation. Same format as 2'''],
+            }
+
+        self._overrides = options
+
+        for key,value in self._OPTIONS.iteritems():
+            setattr(self, key.lower(), value[0])
+
+        for key,value in options.iteritems():
+            setattr(self, key.lower(), value)
+
+        self.timedelta = dt.timedelta(seconds=86400*50) #50 days, time offset with start/end time 
+
+
+    def help(self, key):
+        if key.upper() in self._OPTIONS:
+            return self._OPTIONS[key.upper()][1]
+        else:
+            return 'no help available'
+
+
+    def write_command(self, cfile):
+        """ write out the command file """
+
+        if self.ldirect == -1:
+            #backward run
+            tstart = self.sim_start - self.timedelta
+            tend = self.sim_end
+        elif self.ldirect == 1:
+            tstart = self.sim_start 
+            tend = self.sim_end + self.timedelta
+
+        with open(cfile, 'w') as outf:
+
+            outf.write('&COMMAND\n')
+            outf.write(' LDIRECT={0},\n'.format(self.ldirect))
+            outf.write(' IBDATE=  {0},\n'.format(tstart.strftime('%Y%m%d')))
+            outf.write(' IBTIME=  {0},\n'.format(tstart.strftime('%H%M%S')))
+            outf.write(' IEDATE=  {0},\n'.format(tend.strftime('%Y%m%d')))
+            outf.write(' IETIME=  {0},\n'.format(tend.strftime('%H%M%S')))
+            outf.write(' LOUTSTEP=             {0},\n'.format(self.loutstep))
+            outf.write(' LOUTAVER=             {0},\n'.format(self.loutaver))
+            outf.write(' LOUTSAMPLE=           {0},\n'.format(self.loutsample))
+            outf.write(' ITSPLIT=              {0},\n'.format(self.itsplit))
+            outf.write(' LSYNCTIME=            {0},\n'.format(self.lsynctime))
+            outf.write(' CTL=                  {0},\n'.format(self.ctl))
+            outf.write(' IFINE=                {0},\n'.format(self.ifine))
+            outf.write(' IOUT=                 {0},\n'.format(self.iout))
+            outf.write(' IPOUT=                {0},\n'.format(self.ipout))
+            outf.write(' LSUBGRID=             {0},\n'.format(self.lsubgrid))
+            outf.write(' LCONVECTION=          {0},\n'.format(self.lconvection))
+            outf.write(' LAGESPECTRA=          {0},\n'.format(self.lagespectra))
+            outf.write(' IPIN=                 {0},\n'.format(self.ipin))
+            outf.write(' IOUTPUTFOREACHRELEASE={0},\n'.format(self.ioutputforeachrelease))
+            outf.write(' IFLUX=                {0},\n'.format(self.iflux))
+            outf.write(' MDOMAINFILL=          {0},\n'.format(self.mdomainfill))
+            outf.write(' IND_SOURCE=           {0},\n'.format(self.ind_source))
+            outf.write(' IND_RECEPTOR=         {0},\n'.format(self.ind_receptor))
+            outf.write(' MQUASILAG=            {0},\n'.format(self.mquasilag))
+            outf.write(' NESTED_OUTPUT=        {0},\n'.format(self.nested_output))
+            outf.write(' LINIT_COND=           {0},\n'.format(self.linit_cond))
+            outf.write(' SURF_ONLY=            {0},\n'.format(self.surf_only))
+            outf.write(' CBLFLAG=              {0},\n/\n'.format(self.cblflag))
+            outf.close()
+
+
+
+class Ageclass(object):
+    """ General COMMAND input for Flexpart 
+
+    """
+    def __init__(self, ageclasses = [86400 * 50]):
+        self._keys = ['ageclasses']
+        for key in self._keys:
+            setattr(self, "_" + key, ageclasses)
+
+    def keys(self):
+        return self._keys
+
+    def __dir__(self):
+        """ necessary for Ipython tab-completion """
+        return self._keys
+
+    def __iter__(self):
+        return iter(self._keys)
+
+    @property
+    def ageclasses(self):
+        return self._ageclasses
+
+    @ageclasses.setter
+    def ageclasses(self, value):
+        self._ageclasses = value
+
+
+
+    def write_ageclasses(self, acfile):
+        """ write out an ageclasses files """
+        # get number of AGECLASSES
+        assert isinstance(self.ageclasses, list), 'ageclasses argument must be a list of seconds'
+        nageclass = len(self.ageclasses)
+
+        with open(acfile, 'w') as outf:
+
+            # WRITE TO FILE namelist style
+            outf.write('&AGECLASS\n')
+            outf.write(' NAGECLASS={0},\n'.format(nageclass))
+            outf.write(' LAGE=')
+            for i in range(len(self.ageclasses)):
+                outf.write(' {0},'.format(self.ageclasses[i]))
+
+            outf.write('\n/\n')
+            outf.close()
+
+            print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
+
+
+
+class ReleaseEntity(object):
+
+    """ An individual release entity (point, line, or area)
+
+    """
+
+
+    def __init__(self, **options):
+
+        self._OPTIONS = {
+            'idate1' : ['20010101', '''YYYYMMDD begin date of release '''],
+            'itime1' : ['000000', '''YYYYMMDD begin time of release '''],
+            'idate2' : ['20010201', '''YYYYMMDD end date of release '''],
+            'itime2' : ['000000', '''YYYYMMDD end time of release '''],
+            'lon1'  : [ 120, '''lowerleft Longitude'''],
+            'lon2'  : [ 130, '''upperright Longitude'''],
+            'lat1'  : [ 55, '''lowerleft Latitude'''],
+            'lat2'  : [ 60, '''upperright Latitude'''],
+            'z1'    : [ 20, '''lower boundary of release point (m)'''],
+            'z2'    : [ 100, '''upper z-level of release point (m)'''],
+            'zkind' : [ 3, ''' 1 for m above ground, 2 for m above sea level, 3 for pressure in hPa'''],
+            'mass'  : [ [1.0], '''mass of species'''],
+            'nspec' : [ 1, '''number of species'''],
+            'parts' : [50000, '''total number of particles in release'''],
+            'specnum_rel': [(22,), '''tuple of species number id'''],
+            'run_ident': ['comment', '''character*40 comment''']
+            }
+
+        self._overrides = options
+
+        for key,value in self._OPTIONS.iteritems():
+            setattr(self, key.lower(), value[0])
+
+        for key,value in options.iteritems():
+            setattr(self, key.lower(), value)
+
+
+
+    def help(self, key):
+        if key in self._OPTIONS:
+            return self._OPTIONS[key.upper()][1]
+        else:
+            return 'no help available'
+
+
+    def _write_single_release(self, rfile):
+        """ write out the release to file, assumes it is appending """
+
+
+        if isinstance(rfile, str):
+
+            outf = open(rfile, 'w')
+        else:
+            outf = rfile
+
+        outf.write('&RELEASE\n')
+        outf.write(' IDATE1=  {0},\n'.format(self.idate1))
+        outf.write(' ITIME1=  {0},\n'.format(self.itime1))
+        outf.write(' IDATE2=  {0},\n'.format(self.idate2))
+        outf.write(' ITIME2=  {0},\n'.format(self.itime2))
+        outf.write(' LON1=    {0},\n'.format(self.lon1)) # LON values -180 180  
+        outf.write(' LON2=    {0},\n'.format(self.lon2))
+        outf.write(' LAT1=    {0},\n'.format(self.lat2)) # LAT values -90 90
+        outf.write(' LAT2=    {0},\n'.format(self.lat2))
+        outf.write(' Z1=      {0},\n'.format(self.z1))  # altitude in meters
+        outf.write(' Z2=      {0},\n'.format(self.z2))
+        outf.write(' ZKIND=   {0},\n'.format(self.zkind)) # M)ASL= MAG=
+        outf.write(' MASS=')
+        for j in range(self.nspec):
+            outf.write('    {0},'.format(self.mass))
+
+        outf.write('\n PARTS=   {0},\n'.format(self.parts));
+        outf.write(' COMMENT= "{0}"\n /\n'.format(self.run_ident))
+
+
+class Release(object):
+    """ class for a group of releases """
+
+    def __init__(self, releases_entities):
+        ''' takes a list of `ReleaseEntity` classes '''
+        self.releases = releases_entities
+        # hack, take the first release to get some general info
+        self.nspec = releases_entities[0].nspec
+        self.specnum_rel = releases_entities[0].specnum_rel
+
+    def write_releases(self, rfile):
+        """ write out all the releases """
+
+        with open(rfile, 'w') as outf:
+
+
+            outf.write('&RELEASES_CTRL\n')
+            outf.write(' NSPEC=        {0},\n'.format(self.nspec))
+            outf.write(' SPECNUM_REL=')
+            for i in range(self.nspec):
+                outf.write(' {0},   '.format(self.specnum_rel[i]))
+            outf.write('\n /\n')
+
+            for r in self.releases:
+                r._write_single_release(outf)
+
+            outf.close()
