@@ -686,7 +686,7 @@ def gridarea(H):
     return area
 
 
-def _get_header_version(bf):
+def _get_header_version(bf, ver_str='29S'):
     """
     Open and read the binary file (bf) header only to the point of
     the Flexpart version string, return the string, seek to the
@@ -700,15 +700,18 @@ def _get_header_version(bf):
 
     ret = bf.tell()
     bf.seek(12)  # start of version string
-    version = bf.read('13S')
+    version = bf.read(ver_str)
+    bf.seek(ret)
+    return version
+
     # Somewhere in version 9.2 beta, the version length changed to 29
     # However, one *must* check which is the final size for this
-    if '9.2 b' in version:
-         bf.seek(12)
-         version = bf.read('29S')
-    bf.seek(ret)
-
-    return version
+#    if '9.2 b' in version:
+#         bf.seek(12)
+#         version = bf.read('29S')
+#    bf.seek(ret)
+#
+#    return version
 
 
 def read_header(pathname, **kwargs):
@@ -792,10 +795,10 @@ def read_header(pathname, **kwargs):
     OPS.update(kwargs)
 
     if OPS.verbose:
-        print "Reading Header with:\n"
+        print("Reading Header with:\n")
 
         for o in OPS:
-            print "%s ==> %s" % (o, OPS[o])
+            print("%s ==> %s" % (o, OPS[o]))
 
     # Define utility functions for reading binary file
     skip = lambda n = 8: bf.seek(n, 1)
@@ -1180,7 +1183,7 @@ def _readV6(bf, h):
 
     if bf:
         # bf.read('i')
-        print h['numpoint']
+        print(h['numpoint'])
         for i in range(h['numpoint']):
             # r2=getbin('i')
             i1 = getbin('i')
