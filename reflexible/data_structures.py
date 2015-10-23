@@ -2,10 +2,11 @@
 Definition of the different data structures in reflexible.
 """
 
-import datetime
+import datetime as dt
 import itertools
 
 import numpy as np
+import pandas as pd
 import netCDF4 as nc
 
 
@@ -178,13 +179,13 @@ class Header(object):
         nsteps = len(self.nc.dimensions['time'])
         if self.nc.ldirect < 0:
             # backward direction
-            d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
+            d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
             return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
                     for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
         else:
             # forward direction
-            d = datetime.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
+            d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
             return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
                     for t in range(0, loutstep * nsteps, loutstep)]
@@ -201,12 +202,12 @@ class Header(object):
     def releasestart(self):
         if self.nc.ldirect < 0:
             rel_start = self.ireleasestart[::-1]
-            d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
+            d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
             return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
         else:
             rel_start = self.ireleasestart[:]
-            d = datetime.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
+            d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
             return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
 
@@ -214,12 +215,12 @@ class Header(object):
     def releaseend(self):
         if self.nc.ldirect < 0:
             rel_end = self.ireleaseend[::-1]
-            d = datetime.datetime.strptime(self.nc.iedate + self.nc.ietime,
+            d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
             return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
         else:
             rel_end = self.ireleaseend[:]
-            d = datetime.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
+            d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
             return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
 
@@ -321,7 +322,7 @@ class FD(object):
         fdc = FDC()
         fdc.grid = self.nc.variables[varname][:, :, idate, :, :, :].T
         fdc.itime = self.nc.variables['time'][idate]
-        fdc.timestamp = datetime.datetime.strptime(
+        fdc.timestamp = dt.datetime.strptime(
             self.available_dates[idate], "%Y%m%d%H%M%S")
         fdc.spec_i = nspec
         if self.direction == "forward":
@@ -579,7 +580,7 @@ class Command(object):
         self._OPTIONS = {
 
             'IBDATE': [None , '''String simulation date start'''],
-            'IBDATE': [None , '''string, simulation time start'''],
+            'IBTIME': [None , '''string, simulation time start'''],
             'IEDATE': [None , '''string, simulation date end'''],
             'IETIME': [None , '''string, simulation time end'''],
             'LDIRECT': [1, '''Simulation direction, 1 for forward, -1 for backward in time'''],
@@ -627,17 +628,32 @@ class Command(object):
             'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File''']  ,
             'SIM_START': [dt.datetime(2000,01,01,00,00,00), '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],   
             'SIM_END': [dt.datetime(2000,02,01,00,00,00), '''Ending date and time of simulation. Same format as 2'''],
+            'AGECLASSES' : [[86400*30], '''list of ageclasses (seconds) in the simulation''']
             }
 
         self._overrides = options
 
+        # set the default options as attributes
         for key,value in self._OPTIONS.iteritems():
             setattr(self, key.lower(), value[0])
 
+        # override the attributes with options
         for key,value in options.iteritems():
             setattr(self, key.lower(), value)
 
-        self.timedelta = dt.timedelta(seconds=86400*50) #50 days, time offset with start/end time 
+        if self.ibdate is None:
+            self.ibdate = self.sim_start.strftime('%Y%m%d')
+
+        if self.iedate is None:
+            self.iedate = self.sim_end.strftime('%Y%m%d')            
+
+        if self.ibtime is None:
+            self.ibtime = self.sim_start.strftime('%H%M%S')
+
+        if self.ietime is None:
+            self.ietime = self.sim_end.strftime('%H%M%S')
+
+        self.timedelta = dt.timedelta(seconds=max(self.ageclasses)) #50 days, time offset with start/end time 
 
 
     def help(self, key):
@@ -658,7 +674,7 @@ class Command(object):
             tstart = self.sim_start 
             tend = self.sim_end + self.timedelta
 
-        with open(cfile, 'w') as outf:
+        with open(cfile, 'wb') as outf:
 
             outf.write('&COMMAND\n')
             outf.write(' LDIRECT={0},\n'.format(self.ldirect))
@@ -743,15 +759,85 @@ class Ageclass(object):
             print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
 
 
+class Release():
 
-class ReleaseEntity(object):
+    """ subclass of a pandas dataframe to allow for some special properties
+    and methods.
+
+    The pandas object is presently set up only to handle nspec==1
+    """
+
+    def __init__(self, data):
+
+        self.releases = data
+        self.nspec = data.nspec
+
+    def write_release(self, rfile):
+        """ write out all the releases """
+
+        with open(rfile, 'w') as outf:
+
+
+            outf.write('&RELEASES_CTRL\n')
+            outf.write(' NSPEC=        {0},\n'.format(self.nspec))
+            outf.write(' SPECNUM_REL=')
+            for i in range(self.nspec):
+                outf.write(' {0},   '.format(self.releases.specnum_rel))
+            outf.write('\n /\n')
+
+            self.releases.sortlevel(["time", "lon"], inplace=True)
+            for row in self.releases.iterrows(): #for some reason itertuples is better?
+                self.rel_file = outf
+                #t = self.releases.index.get_level_values('time')[i]
+                self._write_single_release(row)
+
+
+
+    def _write_single_release(self, row, nspec=1, release_seconds=86400):
+        """ a nice exercise would be to create a custom formatter from the pandas
+        class types, but requires cythong magic. """
+
+        """ write out the release to file, assumes it is appending """
+        outf = self.rel_file
+        t = row[0][-1] #don't like this!
+        d = row[1]
+        #print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
+        t2 = t + dt.timedelta(seconds=release_seconds)
+
+        outf.write('&RELEASE\n')
+        outf.write(t.strftime(' IDATE1=  %Y%m%d,\n'))
+        outf.write(t.strftime(' ITIME1=  %H%M%S,\n'))
+        outf.write(t2.strftime(' IDATE2=  %Y%m%d,\n'))
+        outf.write(t2.strftime(' ITIME2=  %H%M%S,\n'))
+        outf.write(' LON1=    {0},\n'.format(d.lon1)) # LON values -180 180  
+        outf.write(' LON2=    {0},\n'.format(d.lon2))
+        outf.write(' LAT1=    {0},\n'.format(d.lat1)) # LAT values -90 90
+        outf.write(' LAT2=    {0},\n'.format(d.lat2))
+        outf.write(' Z1=      {0},\n'.format(d.z1))  # altitude in meters
+        outf.write(' Z2=      {0},\n'.format(d.z2))
+        outf.write(' ZKIND=   {0},\n'.format(d.zkind)) # M)ASL= MAG=
+        outf.write(' MASS=')
+        for j in range(nspec):
+            outf.write('    {:8.4f},'.format(d.mass))
+
+        outf.write('\n PARTS=   {0},\n'.format(d.parts));
+        outf.write(' COMMENT= "{0}"\n /\n'.format(d.run_ident))
+
+class ReleasePoint(object):
 
     """ An individual release entity (point, line, or area)
 
     """
 
 
-    def __init__(self, **options):
+    def __init__(self, idt1=None, idt2=None, **options):
+        """ A release point is a single entity within a Release.
+
+        Each point has the attributes of the release point.
+
+        idt1 and idt2 are datetime objects that will override anything provided
+        in idate1, itime1, idate2, or itime2
+        """
 
         self._OPTIONS = {
             'idate1' : ['20010101', '''YYYYMMDD begin date of release '''],
@@ -780,11 +866,19 @@ class ReleaseEntity(object):
         for key,value in options.iteritems():
             setattr(self, key.lower(), value)
 
-
+        if idt1:
+            assert isinstance(idt1, dt.datetime)
+            setattr(self, 'idate1', idt1.strftime('%Y%m%d'))
+            setattr(self, 'itime1', idt1.strftime('%H%M%S'))
+        
+        if idt2:
+            assert isinstance(idt2, dt.datetime)
+            setattr(self, 'idate2', idt2.strftime('%Y%m%d'))
+            setattr(self, 'itime2', idt2.strftime('%H%M%S'))
 
     def help(self, key):
         if key in self._OPTIONS:
-            return self._OPTIONS[key.upper()][1]
+            return self._OPTIONS[key.lower()][1]
         else:
             return 'no help available'
 
@@ -813,21 +907,22 @@ class ReleaseEntity(object):
         outf.write(' ZKIND=   {0},\n'.format(self.zkind)) # M)ASL= MAG=
         outf.write(' MASS=')
         for j in range(self.nspec):
-            outf.write('    {0},'.format(self.mass))
+            outf.write('    {%8.2d},'.format(self.mass))
 
         outf.write('\n PARTS=   {0},\n'.format(self.parts));
         outf.write(' COMMENT= "{0}"\n /\n'.format(self.run_ident))
 
 
-class Release(object):
+class Releases(object):
     """ class for a group of releases """
 
-    def __init__(self, releases_entities):
-        ''' takes a list of `ReleaseEntity` classes '''
-        self.releases = releases_entities
+    def __init__(self, release_points):
+        ''' takes an iterable of `ReleasePoint` classes '''
+        self.releases = release_points
         # hack, take the first release to get some general info
-        self.nspec = releases_entities[0].nspec
-        self.specnum_rel = releases_entities[0].specnum_rel
+        self.nspec = release_points[0].nspec
+        self.specnum_rel = release_points[0].specnum_rel
+        self.nreleases = len(release_points)
 
     def write_releases(self, rfile):
         """ write out all the releases """
