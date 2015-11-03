@@ -107,5 +107,6 @@ from .scripts.create_ncfile import create_ncfile
 from .data_structures import Header
 from .data_structures import Command
 from .data_structures import Release
+from .data_structures import Ageclass
 from .data_structures import ReleasePoint
 

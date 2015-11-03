@@ -4,7 +4,7 @@ Definition of the different data structures in reflexible.
 
 import datetime as dt
 import itertools
-
+from collections import Iterable
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
@@ -663,7 +663,7 @@ class Command(object):
             return 'no help available'
 
 
-    def write_command(self, cfile):
+    def to_file(self, cfile):
         """ write out the command file """
 
         if self.ldirect == -1:
@@ -738,10 +738,11 @@ class Ageclass(object):
 
 
 
-    def write_ageclasses(self, acfile):
+    def to_file(self, acfile):
         """ write out an ageclasses files """
         # get number of AGECLASSES
-        assert isinstance(self.ageclasses, list), 'ageclasses argument must be a list of seconds'
+        assert isinstance(self.ageclasses, Iterable),  'ageclasses argument must be an iterable of seconds'
+        
         nageclass = len(self.ageclasses)
 
         with open(acfile, 'w') as outf:
@@ -756,7 +757,7 @@ class Ageclass(object):
             outf.write('\n/\n')
             outf.close()
 
-            print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
+            #print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
 
 
 class Release():
@@ -764,15 +765,16 @@ class Release():
     """ subclass of a pandas dataframe to allow for some special properties
     and methods.
 
-    The pandas object is presently set up only to handle nspec==1
+    The pandas object is presently set up only to handle mass of all nspec equal
     """
 
     def __init__(self, data):
 
         self.releases = data
         self.nspec = data.nspec
+        self.release_seconds = data.release_seconds
 
-    def write_release(self, rfile):
+    def to_file(self, rfile):
         """ write out all the releases """
 
         with open(rfile, 'w') as outf:
@@ -782,14 +784,14 @@ class Release():
             outf.write(' NSPEC=        {0},\n'.format(self.nspec))
             outf.write(' SPECNUM_REL=')
             for i in range(self.nspec):
-                outf.write(' {0},   '.format(self.releases.specnum_rel))
+                outf.write(' {0},   '.format(self.releases.specnum_rel[i]))
             outf.write('\n /\n')
 
             self.releases.sortlevel(["time", "lon"], inplace=True)
             for row in self.releases.iterrows(): #for some reason itertuples is better?
                 self.rel_file = outf
                 #t = self.releases.index.get_level_values('time')[i]
-                self._write_single_release(row)
+                self._write_single_release(row, nspec=self.nspec, release_seconds=self.release_seconds)
 
 
 
@@ -799,7 +801,7 @@ class Release():
 
         """ write out the release to file, assumes it is appending """
         outf = self.rel_file
-        t = row[0][-1] #don't like this!
+        t = row[0] #[-1] #don't like this, but was required for gfed...
         d = row[1]
         #print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
         t2 = t + dt.timedelta(seconds=release_seconds)
@@ -821,7 +823,7 @@ class Release():
             outf.write('    {:8.4f},'.format(d.mass))
 
         outf.write('\n PARTS=   {0},\n'.format(d.parts));
-        outf.write(' COMMENT= "{0}"\n /\n'.format(d.run_ident))
+        outf.write(' COMMENT= "{0}"\n /\n'.format(d.rel_ident))
 
 class ReleasePoint(object):
 
