@@ -628,7 +628,8 @@ class Command(object):
             'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File''']  ,
             'SIM_START': [dt.datetime(2000,01,01,00,00,00), '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],   
             'SIM_END': [dt.datetime(2000,02,01,00,00,00), '''Ending date and time of simulation. Same format as 2'''],
-            'AGECLASSES' : [[86400*30], '''list of ageclasses (seconds) in the simulation''']
+            'AGECLASSES' : [[86400*30], '''list of ageclasses (seconds) in the simulation'''],
+            'RELEASE_SECONDS' : [86400, '''duration of the releases in seconds''']
             }
 
         self._overrides = options
@@ -654,6 +655,7 @@ class Command(object):
             self.ietime = self.sim_end.strftime('%H%M%S')
 
         self.timedelta = dt.timedelta(seconds=max(self.ageclasses)) #50 days, time offset with start/end time 
+        self.release_seconds = dt.timedelta(seconds=self.release_seconds)
 
 
     def help(self, key):
@@ -669,10 +671,10 @@ class Command(object):
         if self.ldirect == -1:
             #backward run
             tstart = self.sim_start - self.timedelta
-            tend = self.sim_end
+            tend = self.sim_end + self.release_seconds
         elif self.ldirect == 1:
             tstart = self.sim_start 
-            tend = self.sim_end + self.timedelta
+            tend = self.sim_end + self.timedelta + self.release_seconds
 
         with open(cfile, 'wb') as outf:
 
@@ -783,8 +785,11 @@ class Release():
             outf.write('&RELEASES_CTRL\n')
             outf.write(' NSPEC=        {0},\n'.format(self.nspec))
             outf.write(' SPECNUM_REL=')
-            for i in range(self.nspec):
-                outf.write(' {0},   '.format(self.releases.specnum_rel[i]))
+            idx = range(self.nspec)
+            for i in idx:
+                outf.write(' {0},'.format(self.releases.specnum_rel[i]))
+                #if i != idx[-1]:
+                #    outf.write(',')
             outf.write('\n /\n')
 
             #having a problem here on abel, older pandas?
@@ -824,9 +829,11 @@ class Release():
         outf.write(' Z2=      {0},\n'.format(d.z2))
         outf.write(' ZKIND=   {0},\n'.format(d.zkind)) # M)ASL= MAG=
         outf.write(' MASS=')
-        for j in range(nspec):
+        idx = range(self.nspec)
+        for i in idx:
             outf.write('    {:8.4f},'.format(d.mass))
-
+            #if i != idx[-1]:
+            #    outf.write(',')
         outf.write('\n PARTS=   {0},\n'.format(d.parts));
         outf.write(' COMMENT= "{0}"\n /\n'.format(d.rel_ident))
 
