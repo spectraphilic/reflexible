@@ -834,7 +834,7 @@ class Release():
             outf.write('    {:8.4f},'.format(d.mass))
             #if i != idx[-1]:
             #    outf.write(',')
-        outf.write('\n PARTS=   {0},\n'.format(d.parts));
+        outf.write('\n PARTS=   {0:d},\n'.format(int(d.parts)));
         outf.write(' COMMENT= "{0}"\n /\n'.format(d.rel_ident))
 
 class ReleasePoint(object):
