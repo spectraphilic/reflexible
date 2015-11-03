@@ -821,13 +821,13 @@ class Release():
         outf.write(t.strftime(' ITIME1=  %H%M%S,\n'))
         outf.write(t2.strftime(' IDATE2=  %Y%m%d,\n'))
         outf.write(t2.strftime(' ITIME2=  %H%M%S,\n'))
-        outf.write(' LON1=    {0},\n'.format(d.lon1)) # LON values -180 180  
-        outf.write(' LON2=    {0},\n'.format(d.lon2))
-        outf.write(' LAT1=    {0},\n'.format(d.lat1)) # LAT values -90 90
-        outf.write(' LAT2=    {0},\n'.format(d.lat2))
-        outf.write(' Z1=      {0},\n'.format(d.z1))  # altitude in meters
-        outf.write(' Z2=      {0},\n'.format(d.z2))
-        outf.write(' ZKIND=   {0},\n'.format(d.zkind)) # M)ASL= MAG=
+        outf.write(' LON1=    {0:3.4f},\n'.format(d.lon1)) # LON values -180 180  
+        outf.write(' LON2=    {0:3.4f},\n'.format(d.lon2))
+        outf.write(' LAT1=    {0:3.4f},\n'.format(d.lat1)) # LAT values -90 90
+        outf.write(' LAT2=    {0:3.4f},\n'.format(d.lat2))
+        outf.write(' Z1=      {0:f},\n'.format(d.z1))  # altitude in meters
+        outf.write(' Z2=      {0:f},\n'.format(d.z2))
+        outf.write(' ZKIND=   {0:d},\n'.format(d.zkind)) # M)ASL= MAG=
         outf.write(' MASS=')
         idx = range(self.nspec)
         for i in idx:
