@@ -787,7 +787,7 @@ class Release():
                 outf.write(' {0},   '.format(self.releases.specnum_rel[i]))
             outf.write('\n /\n')
 
-            self.releases.sortlevel(["time", "lon"], inplace=True)
+            self.releases.sortlevel(["time"], inplace=True)
             for row in self.releases.iterrows(): #for some reason itertuples is better?
                 self.rel_file = outf
                 #t = self.releases.index.get_level_values('time')[i]
