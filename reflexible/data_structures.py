@@ -787,7 +787,7 @@ class Release():
             outf.write(' SPECNUM_REL=')
             idx = range(self.nspec)
             for i in idx:
-                outf.write(' {0},'.format(self.releases.specnum_rel]))
+                outf.write(' {0},'.format(self.releases.specnum_rel))
                 #if i != idx[-1]:
                 #    outf.write(',')
             outf.write('\n /\n')
