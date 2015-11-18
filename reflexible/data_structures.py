@@ -811,7 +811,7 @@ class Release():
 
         """ write out the release to file, assumes it is appending """
         outf = self.rel_file
-        t = row[0] #[-1] #don't like this, but was required for gfed...
+        t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
         d = row[1]
         #print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
         t2 = t + dt.timedelta(seconds=release_seconds)
