@@ -773,8 +773,8 @@ class Release():
     def __init__(self, data):
 
         self.releases = data
-        self.nspec = data.nspec
-        self.release_seconds = data.release_seconds
+        #self.nspec = data.nspec
+        #self.release_seconds = data.release_seconds
 
     def to_file(self, rfile):
         """ write out all the releases """
@@ -783,11 +783,11 @@ class Release():
 
 
             outf.write('&RELEASES_CTRL\n')
-            outf.write(' NSPEC=        {0},\n'.format(self.nspec))
+            outf.write(' NSPEC=        {0},\n'.format(self.releases.attrs['nspec']))
             outf.write(' SPECNUM_REL=')
-            idx = range(self.nspec)
+            idx = range(self.releases.attrs['nspec'])
             for i in idx:
-                outf.write(' {0},'.format(self.releases.specnum_rel))
+                outf.write(' {0},'.format(self.releases.attrs['specnum_rel']))
                 #if i != idx[-1]:
                 #    outf.write(',')
             outf.write('\n /\n')
@@ -801,41 +801,58 @@ class Release():
             for row in self.releases.iterrows(): #for some reason itertuples is better?
                 self.rel_file = outf
                 #t = self.releases.index.get_level_values('time')[i]
-                self._write_single_release(row, nspec=self.nspec, release_seconds=self.release_seconds)
+                self._write_single_release(row, self.releases.attrs)
 
 
 
-    def _write_single_release(self, row, nspec=1, release_seconds=86400):
+    def _write_single_release(self, row, attrs):
         """ a nice exercise would be to create a custom formatter from the pandas
         class types, but requires cythong magic. """
 
         """ write out the release to file, assumes it is appending """
         outf = self.rel_file
         t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
+        lat = row[0][0]
+        lon = row[0][1]
+
+        #get the attrs
+        seconds = attrs['release_seconds']
+        nspec = attrs['nspec']
+        dx = attrs['dx']
+        dy = attrs['dy']
+        name = attrs['name']
+
+        #vars we can calculate
+        lon1 = lon - dx
+        lon2 = lon + dx
+        lat1 = lat - dy
+        lat2 = lat + dy
+        rel_ident = '{0}_{1}_{2}|{3}'.format(name, t.strftime('%Y%j'), lat, lon)
+
         d = row[1]
         #print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
-        t2 = t + dt.timedelta(seconds=release_seconds)
+        t2 = t + dt.timedelta(seconds=seconds)
 
         outf.write('&RELEASE\n')
         outf.write(t.strftime(' IDATE1=  %Y%m%d,\n'))
         outf.write(t.strftime(' ITIME1=  %H%M%S,\n'))
         outf.write(t2.strftime(' IDATE2=  %Y%m%d,\n'))
         outf.write(t2.strftime(' ITIME2=  %H%M%S,\n'))
-        outf.write(' LON1=    {0:3.4f},\n'.format(d.lon1)) # LON values -180 180  
-        outf.write(' LON2=    {0:3.4f},\n'.format(d.lon2))
-        outf.write(' LAT1=    {0:3.4f},\n'.format(d.lat1)) # LAT values -90 90
-        outf.write(' LAT2=    {0:3.4f},\n'.format(d.lat2))
+        outf.write(' LON1=    {0:3.4f},\n'.format(lon1)) # LON values -180 180  
+        outf.write(' LON2=    {0:3.4f},\n'.format(lon2))
+        outf.write(' LAT1=    {0:3.4f},\n'.format(lat1)) # LAT values -90 90
+        outf.write(' LAT2=    {0:3.4f},\n'.format(lat2))
         outf.write(' Z1=      {0:f},\n'.format(d.z1))  # altitude in meters
         outf.write(' Z2=      {0:f},\n'.format(d.z2))
-        outf.write(' ZKIND=   {0:d},\n'.format(d.zkind)) # M)ASL= MAG=
+        outf.write(' ZKIND=   {0:d},\n'.format(int(d.zkind))) # M)ASL= MAG=
         outf.write(' MASS=')
-        idx = range(self.nspec)
+        idx = range(nspec)
         for i in idx:
             outf.write('    {:8.4f},'.format(d.mass))
             #if i != idx[-1]:
             #    outf.write(',')
         outf.write('\n PARTS=   {0:d},\n'.format(int(d.parts)));
-        outf.write(' COMMENT= "{0}"\n /\n'.format(d.rel_ident))
+        outf.write(' COMMENT= "{0}"\n /\n'.format(rel_ident))
 
 class ReleasePoint(object):
 
