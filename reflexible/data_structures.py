@@ -8,6 +8,7 @@ from collections import Iterable
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
+import pdb
 
 
 class Header(object):
@@ -781,7 +782,7 @@ class Release():
 
         with open(rfile, 'w') as outf:
 
-
+            self.rel_file = outf
             outf.write('&RELEASES_CTRL\n')
             outf.write(' NSPEC=        {0},\n'.format(self.releases.attrs['nspec']))
             outf.write(' SPECNUM_REL=')
@@ -793,13 +794,12 @@ class Release():
             outf.write('\n /\n')
 
             #having a problem here on abel, older pandas?
-            try:
-                self.releases.sortlevel(["time", "lon"], inplace=True)
-            except:
-                pass
+            #try:
+            #    self.releases.sortlevel(["time", "lon"], inplace=True)
+            #except:
+            #    pass
 
             for row in self.releases.iterrows(): #for some reason itertuples is better?
-                self.rel_file = outf
                 #t = self.releases.index.get_level_values('time')[i]
                 self._write_single_release(row, self.releases.attrs)
 
@@ -807,13 +807,19 @@ class Release():
 
     def _write_single_release(self, row, attrs):
         """ a nice exercise would be to create a custom formatter from the pandas
-        class types, but requires cythong magic. """
+        class types, but requires cython magic. """
 
         """ write out the release to file, assumes it is appending """
         outf = self.rel_file
-        t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
-        lat = row[0][0]
-        lon = row[0][1]
+        # during OBuoy processing, lat, lon in index caused problems
+        # set only time as index, adjusted below
+        #t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
+        #lat = row[0][0]
+        #lon = row[0][1]
+        t = row[0]
+        d = row[1]
+        lat = d.lat
+        lon = d.lon
 
         #get the attrs
         seconds = attrs['release_seconds']
@@ -829,7 +835,6 @@ class Release():
         lat2 = lat + dy
         rel_ident = '{0}_{1}_{2}|{3}'.format(name, t.strftime('%Y%j'), lat, lon)
 
-        d = row[1]
         #print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
         t2 = t + dt.timedelta(seconds=seconds)
 
