@@ -248,7 +248,7 @@ def write_header(H, ncid, wetdep, drydep, write_releases, species):
 
     # time
     ncid.createDimension('time', None)
-    adate, atime = str(H.ibdate), str(H.ibtime)
+    adate, atime = str(H.ibdate), str(H.ibtime).zfill(6)
     timeunit = 'seconds since ' + adate[:4] + '-' + adate[4:6] + \
         '-' + adate[6:8] + ' ' + atime[:2] + ':' + atime[2:4]
     # lon
