@@ -1,14 +1,19 @@
 """
 Definition of the different data structures in reflexible.
 """
-
+import os
 import datetime as dt
+import glob 
 import itertools
 from collections import Iterable
+import xray
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
 import pdb
+
+
+from .base_read import read_trajectories
 
 
 class Header(object):
@@ -37,6 +42,58 @@ class Header(object):
     def alt_unit(self):
         # XXX this depends on H.kindz, which is not in netCDF4 file (I think)
         return 'unkn.'
+
+    @property
+    def area(self):
+        return self._gridarea
+
+    def _gridarea(self):
+        """returns an array of area corresponding to each nx,ny,nz
+
+        Usage::
+
+            > area = gridarea(H)
+
+
+        Returns
+            OUT = array area corresponding to nx,ny,nz
+
+        Arguments
+            H  = :class:`Header` object from readheader function.
+
+        """
+
+        pih = pi / 180.
+        r_earth = 6.371e6
+        cosfunc = lambda y : cos(y * pih) * r_earth
+
+        nx = self.numxgrid
+        ny = self.numygrid
+        outlat0 = self.outlat0
+        dyout = self.dyout
+        dxout = self.dxout
+        area = np.zeros((nx, ny))
+
+        for iy in range(ny):
+            ylata = outlat0 + (float(iy) + 0.5) * dyout  # NEED TO Check this, iy since arrays are 0-index
+            ylatp = ylata + 0.5 * dyout
+            ylatm = ylata - 0.5 * dyout
+            if (ylatm < 0 and ylatp > 0): hzone = dyout * r_earth * pih
+            else:
+                # cosfact = cosfunc(ylata)
+                cosfactp = cosfunc(ylatp)
+                cosfactm = cosfunc(ylatm)
+                if cosfactp < cosfactm:
+                    hzone = sqrt(r_earth ** 2 - cosfactp ** 2) - sqrt(r_earth ** 2 - cosfactm ** 2)
+                else:
+                    hzone = sqrt(r_earth ** 2 - cosfactm ** 2) - sqrt(r_earth ** 2 - cosfactp ** 2)
+
+            gridarea = 2.*pi * r_earth * hzone * dxout / 360.
+            for ix in range(nx):
+                area[ix, iy] = gridarea
+
+        return area
+    
 
     @property
     def outlon0(self):
@@ -115,7 +172,7 @@ class Header(object):
 
     @property
     def nspec(self):
-        return len(self.nc.dimensions['numspec'])
+        return self.nc.dims['numspec']
 
     @property
     def species(self):
@@ -140,27 +197,27 @@ class Header(object):
 
     @property
     def numpoint(self):
-        return len(self.nc.dimensions['numpoint'])
+        return self.nc.dims['numpoint']
 
     @property
     def numpointspec(self):
-        return len(self.nc.dimensions['pointspec'])
+        return self.nc.dims['pointspec']
 
     @property
     def numageclasses(self):
-        return len(self.nc.dimensions['nageclass'])
+        return self.nc.dims['nageclass']
 
     @property
     def numxgrid(self):
-        return len(self.nc.dimensions['longitude'])
+        return self.nc.dims['longitude']
 
     @property
     def numygrid(self):
-        return len(self.nc.dimensions['latitude'])
+        return self.nc.dims['latitude']
 
     @property
     def numzgrid(self):
-        return len(self.nc.dimensions['height'])
+        return self.nc.dims['height']
 
     @property
     def longitude(self):
@@ -175,21 +232,26 @@ class Header(object):
                          self.dyout)
 
     @property
-    def available_dates(self):
+    def available_dates_dt(self):
         loutstep = self.nc.loutstep
-        nsteps = len(self.nc.dimensions['time'])
+        nsteps = self.nc.dims['time']
         if self.nc.ldirect < 0:
             # backward direction
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=t))
                     for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
         else:
             # forward direction
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=t))
                     for t in range(0, loutstep * nsteps, loutstep)]
+
+    @property
+    def available_dates(self):
+        return [d.strftime("%Y%m%d%H%M%S") for d in self.available_dates_dt]
+    
 
     @property
     def ireleasestart(self):
@@ -205,12 +267,14 @@ class Header(object):
             rel_start = self.ireleasestart[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
+            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+            return [(d + t) for t in rel_start]
         else:
             rel_start = self.ireleasestart[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
+            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+            return [(d + t) for t in rel_start]
 
     @property
     def releaseend(self):
@@ -218,12 +282,12 @@ class Header(object):
             rel_end = self.ireleaseend[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
         else:
             rel_end = self.ireleaseend[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
 
 
     @property
@@ -274,7 +338,8 @@ class Header(object):
 
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
-        self.trajectory = reflexible.conv2netcdf4.read_trajectories(self)
+        
+        self.trajectory = read_trajectories(self)
 
     @property
     def options(self):
@@ -291,8 +356,22 @@ class Header(object):
         return C(self.nc, self.releasetimes, self.species, self.available_dates,
                  self.direction, self.iout, self.Heightnn, self.FD)
 
-    def __init__(self, path=None):
-        self.nc = nc.Dataset(path, 'r')
+    def __init__(self, fpdir=None, nested=False, absolute_path=False):
+        if absolute_path:
+            files = [fpdir]
+        else:
+            files = glob.glob(os.path.join(fpdir, '*nc'))
+
+        # check for nested or not, assumes only two nc files in output directory
+        if nested:
+            ncfile = [d for d in files if 'nest' in d][0]
+        else:
+            ncfile = [d for d in files if not 'nest' in d][0]
+        self.ncfile = ncfile
+        self.path = os.path.split(ncfile)[0]
+        self.nc = xray.open_dataset(ncfile) #nc.Dataset(ncfile, 'r')
+
+
 
 
 class FD(object):
@@ -342,8 +421,8 @@ class C(object):
     def __init__(self, nc, releasetimes, species, available_dates,
                  direction, iout, Heightnn, FD):
         self.nc = nc
-        self.nspec = len(nc.dimensions['numspec'])
-        self.pointspec = len(nc.dimensions['pointspec'])
+        self.nspec = nc.dims['numspec']
+        self.pointspec = nc.dims['pointspec']
         self.releasetimes = releasetimes
         self.species = species
         self.available_dates = available_dates
@@ -389,7 +468,9 @@ class C(object):
         nspec, pointspec = item
         assert type(nspec) is int and type(pointspec) is int
 
+
         if self.direction == 'backward':
+
             c = FDC()
             c.itime = None
             c.timestamp = self.releasetimes[pointspec]
@@ -403,16 +484,21 @@ class C(object):
                 varname = "spec%03d_mr" % (nspec + 1)
             if self.iout in (2,):    # XXX what to do with the 3 case?
                 varname = "spec%03d_pptv" % (nspec + 1)
-            specvar = self.nc.variables[varname][:].T
+            specvar = self.nc.variables[varname][:]
             if True:
-                c.grid = np.zeros((
-                    len(self.nc.dimensions['longitude']),
-                    len(self.nc.dimensions['latitude']),
-                    len(self.nc.dimensions['height'])))
-                for date in self.available_dates:
-                    idate = self.available_dates.index(date)
+                print('using direct summation')
+                c.grid = specvar[0,pointspec,:,:,:,:]
+                c.time_integrated = np.sum(c.grid, axis=0).T
+                c.total_column = np.sum(c.time_integrated, axis=0)
+                c.foot_print = c.time_integrated[0,:,:]
+                # c.grid = np.zeros((
+                #     len(self.nc.dims['longitude']),
+                #     len(self.nc.dims['latitude']),
+                #     len(self.nc.dims['height'])))
+                # for date in self.available_dates:
+                #     idate = self.available_dates.index(date)
                     # cycle through all the date grids
-                    c.grid += specvar[:, :, :, idate, pointspec, :].sum(axis=-1)
+                #    c.grid += specvar[:, :, :, idate, pointspec, :].sum(axis=-1)
             else:
                 # Same than the above, but it comsumes more memory
                 # Just let it here for future reference
@@ -424,7 +510,7 @@ class C(object):
             c = FD[(nspec, d)]
 
         # add total column
-        c.slabs = get_slabs(self.Heightnn, c.grid)
+        c.slabs = get_slabs(self.Heightnn, c.time_integrated)
 
         return c
 
