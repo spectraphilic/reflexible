@@ -2,7 +2,7 @@
 Definition of the different data structures in reflexible.
 """
 
-import datetime
+from datetime import datetime
 import struct
 import traceback
 

@@ -181,13 +181,13 @@ class Header(object):
             # backward direction
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
                     for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
         else:
             # forward direction
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
                     for t in range(0, loutstep * nsteps, loutstep)]
 
     @property
@@ -204,12 +204,12 @@ class Header(object):
             rel_start = self.ireleasestart[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
         else:
             rel_start = self.ireleasestart[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_start]
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
 
     @property
     def releaseend(self):
@@ -217,12 +217,12 @@ class Header(object):
             rel_end = self.ireleaseend[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
         else:
             rel_end = self.ireleaseend[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + datetime.timedelta(seconds=int(t))) for t in rel_end]
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
 
 
     @property
