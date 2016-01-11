@@ -5,7 +5,7 @@ import reflexible as rf
 #from reflexible.conv2netcdf4 import Header as OldHeader
 
 
-output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta']
+output_list = ['barrow'] #'Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta']
 
 
 class Dataset:

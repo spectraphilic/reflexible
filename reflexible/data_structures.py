@@ -239,13 +239,21 @@ class Header(object):
             # backward direction
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
+<<<<<<< HEAD
             return [(d + dt.timedelta(seconds=t))
+=======
+            return [(d + dt.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+>>>>>>> 37a7235a4c78c3cb1f751c292da1443bddec49fb
                     for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
         else:
             # forward direction
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
+<<<<<<< HEAD
             return [(d + dt.timedelta(seconds=t))
+=======
+            return [(d + dt.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+>>>>>>> 37a7235a4c78c3cb1f751c292da1443bddec49fb
                     for t in range(0, loutstep * nsteps, loutstep)]
 
     @property
@@ -267,14 +275,22 @@ class Header(object):
             rel_start = self.ireleasestart[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
+<<<<<<< HEAD
             #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
             return [(d + t) for t in rel_start]
+=======
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+>>>>>>> 37a7235a4c78c3cb1f751c292da1443bddec49fb
         else:
             rel_start = self.ireleasestart[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
+<<<<<<< HEAD
             #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
             return [(d + t) for t in rel_start]
+=======
+            return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+>>>>>>> 37a7235a4c78c3cb1f751c292da1443bddec49fb
 
     @property
     def releaseend(self):

@@ -110,3 +110,5 @@ from .data_structures import Release
 from .data_structures import Ageclass
 from .data_structures import ReleasePoint
 
+from .base_plot import plot_sensitivity
+
