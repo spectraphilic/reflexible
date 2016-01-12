@@ -8,21 +8,28 @@ before_install:
   - ulimit -a
   - ulimit -s 32768  # C++ compilers require a lot of memory
 
+  # Update Ubuntu packages
+  - sudo apt-get update -qq
+
   # Install conda
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda config --set always_yes yes --set changeps1 no
   - conda update conda
-
-  # Install dependencies
-  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy libgfortran netcdf4 matplotlib pytest coverage pip
-  - source activate reflex_env
   - python -V
 
 install:
-  - sudo apt-get update -qq
+  # Install dependencies in Ubuntu
   - sudo apt-get --assume-yes install gfortran
+
+  # Install dependencies in conda
+  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy libgfortran netcdf4 matplotlib pytest coverage pip
+  - source activate reflex_env
+
+  # Install dependencies in PyPI
+  - pip install pytest-cov
+
   - python setup.py build_ext --inplace
 
 language:
