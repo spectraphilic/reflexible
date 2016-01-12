@@ -1,28 +1,48 @@
-language: python
+sudo: required
+dist: trusty
+
+before_install:
+  - uname -a
+  - free -m
+  - df -h
+  - ulimit -a
+  - ulimit -s 32768  # C++ compilers require a lot of memory
+
+  # Install conda
+  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+
+  # Install dependencies
+  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy libgfortran netcdf4 matplotlib pytest coverage pip
+  - source activate reflex_env
+  - python -V
+
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get --assume-yes install gfortran
+  - python setup.py build_ext --inplace
+
+language:
+  - python
+  - fortran
+
+os:
+  - linux
+  # - osx
+
 python:
   - 2.7
-install:
-# Switch off virtualenv so we can use apt-get for Python packages
-  - deactivate
-
-# add repo
-  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3E5C1192
-  - sudo apt-get update
-
-# install binary deps
-  - sudo apt-get install python-numpy python-matplotlib cython gfortran
-  - sudo apt-get install libudunits2-dev libhdf5-serial-dev netcdf-bin libnetcdf-dev
-
-# instal packages in pip
-  - sudo pip install netCDF4
-  - sudo pip install -r test_requirements.txt
-  - python setup.py build_ext --inplace
 
 script:
   - py.test reflexible -v --cov reflexible --cov-report term-missing
   # reflexible is far from being PEP8 compatible yet, but in the future maybe wise to use the line below...
   # - py.test reflexible --pep8 reflexible -v --cov reflexible --cov-report term-missing
+
 after_success:
   - coveralls
+
 notifications:
   email: false
