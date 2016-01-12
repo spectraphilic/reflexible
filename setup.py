@@ -21,7 +21,8 @@ if (not os.path.exists("reflexible/conv2netcdf4/FortFlex.so") or
         print(subprocess.check_output(
             "cd reflexible/conv2netcdf4/fortflex; "
             "sh build_FortFlex.sh", shell=True))
-    except:
+    except subprocess.CalledProcessError as e:
+        print(e.output)
         print("Problems compiling the FortFlex module.  "
               "Will continue using a slower fallback...")
     else:
