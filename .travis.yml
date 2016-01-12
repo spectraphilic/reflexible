@@ -28,7 +28,7 @@ install:
   - source activate reflex_env
 
   # Install dependencies in PyPI
-  - pip install pytest-cov
+  - pip install pytest-cov coveralls
 
   - python setup.py build_ext --inplace
 
