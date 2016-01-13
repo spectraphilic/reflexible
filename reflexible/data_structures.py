@@ -1,13 +1,15 @@
 """
 Definition of the different data structures in reflexible.
 """
-
+import os
 import datetime as dt
 import itertools
+import glob
 
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
+import xray
 
 
 class Header(object):
@@ -114,7 +116,7 @@ class Header(object):
 
     @property
     def nspec(self):
-        return len(self.nc.dimensions['numspec'])
+        return self.nc.dims['numspec']
 
     @property
     def species(self):
@@ -125,7 +127,7 @@ class Header(object):
             if self.iout in (2, ):    # XXX what to do with 3?
                 varname = "spec%03d_pptv" % (i + 1)
             ncvar = self.nc.variables[varname]
-            l.append(ncvar.long_name)
+            l.append(ncvar.attrs['long_name'])
         return l
 
     @property
@@ -135,31 +137,31 @@ class Header(object):
         if self.iout in (2, ):    # XXX what to do with 3?
             varname = "spec001_pptv"
         ncvar = self.nc.variables[varname]
-        return ncvar.units
+        return ncvar.attrs['units']
 
     @property
     def numpoint(self):
-        return len(self.nc.dimensions['numpoint'])
+        return self.nc.dims['numpoint']
 
     @property
     def numpointspec(self):
-        return len(self.nc.dimensions['pointspec'])
+        return self.nc.dims['pointspec']
 
     @property
     def numageclasses(self):
-        return len(self.nc.dimensions['nageclass'])
+        return self.nc.dims['nageclass']
 
     @property
     def numxgrid(self):
-        return len(self.nc.dimensions['longitude'])
+        return self.nc.dims['longitude']
 
     @property
     def numygrid(self):
-        return len(self.nc.dimensions['latitude'])
+        return self.nc.dims['latitude']
 
     @property
     def numzgrid(self):
-        return len(self.nc.dimensions['height'])
+        return self.nc.dims['height']
 
     @property
     def longitude(self):
@@ -174,21 +176,27 @@ class Header(object):
                          self.dyout)
 
     @property
-    def available_dates(self):
+    def available_dates_dt(self):
         loutstep = self.nc.loutstep
-        nsteps = len(self.nc.dimensions['time'])
+        nsteps = self.nc.dims['time']
         if self.nc.ldirect < 0:
             # backward direction
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=t))
                     for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
         else:
             # forward direction
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=t)).strftime("%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=t))
                     for t in range(0, loutstep * nsteps, loutstep)]
+
+    @property
+    def available_dates(self):
+        return [d.strftime("%Y%m%d%H%M%S") for d in self.available_dates_dt]
+    
+
 
     @property
     def ireleasestart(self):
@@ -204,25 +212,28 @@ class Header(object):
             rel_start = self.ireleasestart[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
         else:
             rel_start = self.ireleasestart[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
-
+            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
     @property
     def releaseend(self):
         if self.nc.ldirect < 0:
             rel_end = self.ireleaseend[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
+            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
+            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
         else:
             rel_end = self.ireleaseend[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
+            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
+            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
 
 
     @property
@@ -243,13 +254,13 @@ class Header(object):
 
     @property
     def Heightnn(self):
-        nx, ny, nz = (self.numxgrid, self.numygrid, self.numzgrid)
+        
         outheight = self.outheight[:]
         if self.ORO is not None:
             oro = self.ORO[:]
-            Heightnn = outheight + oro.reshape(nx, ny, 1)
+            Heightnn = outheight + oro
         else:
-            Heightnn = outheight.reshape(1, 1, nz)
+            Heightnn = outheight
         return Heightnn
 
     @property
@@ -290,8 +301,22 @@ class Header(object):
         return C(self.nc, self.releasetimes, self.species, self.available_dates,
                  self.direction, self.iout, self.Heightnn, self.FD)
 
-    def __init__(self, path=None):
-        self.nc = nc.Dataset(path, 'r')
+    def __init__(self, path=None, nested=False, absolute_path=True):
+        if absolute_path:
+            files = [path]
+        else:
+            files = glob.glob(os.path.join(path, '*nc'))
+
+        # check for nested or not, assumes only two nc files in 
+        # output directory
+        if nested:
+            ncfile = [d for d in files if 'nest' in d][0]
+        else:
+            ncfile = [d for d in files if not 'nest' in d][0]
+
+        self.ncfile = ncfile
+        self.fp_path = os.path.split(ncfile)[0]
+        self.nc = xray.open_dataset(ncfile)
 
 
 class FD(object):
@@ -320,7 +345,7 @@ class FD(object):
         if self.iout in (2,):    # XXX what to do with the 3 case?
             varname = "spec%03d_pptv" % (nspec + 1)
         fdc = FDC()
-        fdc.grid = self.nc.variables[varname][:, :, idate, :, :, :].T
+        fdc.data_cube = self.nc.variables[varname][:, :, idate, :, :, :].T
         fdc.itime = self.nc.variables['time'][idate]
         fdc.timestamp = dt.datetime.strptime(
             self.available_dates[idate], "%Y%m%d%H%M%S")
@@ -341,8 +366,8 @@ class C(object):
     def __init__(self, nc, releasetimes, species, available_dates,
                  direction, iout, Heightnn, FD):
         self.nc = nc
-        self.nspec = len(nc.dimensions['numspec'])
-        self.pointspec = len(nc.dimensions['pointspec'])
+        self.nspec = nc.dims['numspec']
+        self.pointspec = nc.dims['pointspec']
         self.releasetimes = releasetimes
         self.species = species
         self.available_dates = available_dates
@@ -402,29 +427,26 @@ class C(object):
                 varname = "spec%03d_mr" % (nspec + 1)
             if self.iout in (2,):    # XXX what to do with the 3 case?
                 varname = "spec%03d_pptv" % (nspec + 1)
-            specvar = self.nc.variables[varname][:].T
+            specvar = self.nc.variables[varname][:]
             if True:
-                c.grid = np.zeros((
-                    len(self.nc.dimensions['longitude']),
-                    len(self.nc.dimensions['latitude']),
-                    len(self.nc.dimensions['height'])))
-                for date in self.available_dates:
-                    idate = self.available_dates.index(date)
-                    # cycle through all the date grids
-                    c.grid += specvar[:, :, :, idate, pointspec, :].sum(axis=-1)
+                # changed to use direct summation
+                c.data_cube = specvar[0,pointspec,:,:,:,:]
+                c.time_integrated = np.sum(c.data_cube, axis=0).T
+                c.total_column = np.sum(c.time_integrated, axis=0)
+                c.foot_print = c.time_integrated[0,:,:]
+                
             else:
                 # Same than the above, but it comsumes more memory
                 # Just let it here for future reference
-                c.grid = specvar[:, :, :, :, pointspec, :].sum(axis=(-2, -1))
+                c.data_cube = specvar[:, :, :, :, pointspec, :].sum(axis=(-2, -1))
+            c.slabs = get_slabs(self.Heightnn, c.time_integrated)
         else:
             # forward direction
             FD = self._FD
             d = FD.grid_dates[pointspec]
             c = FD[(nspec, d)]
-
-        # add total column
-        c.slabs = get_slabs(self.Heightnn, c.grid)
-
+            c.slabs = get_slabs(self.Heightnn, c.data_cube)
+        
         return c
 
 

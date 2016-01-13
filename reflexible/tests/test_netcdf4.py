@@ -48,12 +48,25 @@ class TestHeader:
     def test_FD(self):
         for date in self.H.available_dates:
             np.testing.assert_array_almost_equal(
-                self.H.FD[(0, date)].grid, self.oldH.FD[(0, date)].grid)
+                self.H.FD[(0, date)].data_cube, self.oldH.FD[(0, date)].grid)
 
     # Test concentrations
     def test_concentrations(self):
-        np.testing.assert_array_almost_equal(
-            self.H.C[(0, 0)].grid, self.oldH.C[(0, 0)].grid)
+        if self.H.direction == 'backward':
+            pass
+        elif self.H.direction == 'forward':
+            np.testing.assert_array_almost_equal(
+                self.H.C[(0, 0)].data_cube, self.oldH.C[(0, 0)].grid,
+                decimal=3)
+
+   # Test time
+    def test_fillbackward(self):
+        if self.H.direction == 'backward':
+            np.testing.assert_array_almost_equal(
+                self.H.C[(0, 0)].time_integrated, self.oldH.C[(0, 0)].grid,
+                decimal=3)
+        elif self.H.direction == 'forward':
+            pass
 
     # Test slabs for concentrations
     # XXX The slabs in new Header seems to be transposed wrt to old Header
@@ -61,3 +74,7 @@ class TestHeader:
         for k in self.H.C[(0, 0)].slabs:
             np.testing.assert_array_almost_equal(
                 self.H.C[(0, 0)].slabs[k], self.oldH.C[(0, 0)].slabs[k])
+
+    def test_oro(self):
+        """ test the reading the orography """
+        assert self.H.ORO.attrs['standard_name'] == "surface altitude"
