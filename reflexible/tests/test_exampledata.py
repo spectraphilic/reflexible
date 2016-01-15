@@ -1,22 +1,25 @@
 import pytest
 import netCDF4 as nc
-
+import os
 import reflexible as rf
-from reflexible import Header
 
 
-output_list = ['Fwd1_V10.0']
-
+output_list = [('Fwd1_V10.0','grid_conc_20110101000000.nc'), ('Fwd1_V10.0','grid_conc_20110101000000_nest.nc')]
 
 class Dataset:
     def __init__(self, fp_name):
-        self.fp_name = fp_name
-        self.fp_path = rf.datasets[fp_name]
+        self.fp_name = fp_name[0]
+        self.fp_filename = fp_name[1]
+        self.fp_path = rf.datasets[fp_name[0]]
+
 
     def setup(self):
-        self.H = rf.Header(self.fp_path, absolute_path=False)
-        self.ncid = nc.Dataset(self.H.ncfile, 'r')
-        return self.ncid, self.fp_path, self.H.ncfile, self.H
+
+        #self.H = rf.Header(self.fp_path, absolute_path=False)
+        ncfile = os.path.join(self.fp_path, self.fp_filename)
+
+        self.ncid = nc.Dataset(ncfile, 'r')
+        return self.ncid, self.fp_path, ncfile, None
 
     def cleanup(self):
         pass #self.tmpdir.remove(self.nc_path)
@@ -26,6 +29,7 @@ class TestStructure:
     @pytest.fixture(autouse=True, params=output_list)
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
+        print(dataset.fp_path)
         self.ncid, self.fp_path, self.nc_path, self.H = dataset.setup()
         request.addfinalizer(dataset.cleanup)
 
@@ -178,7 +182,7 @@ class TestStructure:
     def test_species_mr(self):
         attr_names = ('units', 'long_name', 'decay', 'weightmolar',
                       'ohreact', 'kao', 'vsetaver', 'spec_ass')
-        for i in range(0, self.H.nspec):
+        for i in range(0, len(self.ncid.dimensions['numspec'])):
             anspec = "%3.3d" % (i + 1)
             if self.ncid.iout in (1, 3, 5):
                 var_name = "spec" + anspec + "_mr"
@@ -193,7 +197,7 @@ class TestStructure:
     def test_species_pptv(self):
         attr_names = ('units', 'long_name', 'decay', 'weightmolar',
                       'ohreact', 'kao', 'vsetaver', 'spec_ass')
-        for i in range(0, self.H.nspec):
+        for i in range(0, len(self.ncid.dimensions['numspec'])):
             anspec = "%3.3d" % (i + 1)
             if self.ncid.iout in (2, 3):
                 var_name = "spec" + anspec + "_pptv"

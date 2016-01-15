@@ -196,8 +196,6 @@ class Header(object):
     def available_dates(self):
         return [d.strftime("%Y%m%d%H%M%S") for d in self.available_dates_dt]
     
-
-
     @property
     def ireleasestart(self):
         return self.nc.variables['RELSTART'][:]
@@ -212,29 +210,27 @@ class Header(object):
             rel_start = self.ireleasestart[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
+            # note xray converts netcdf file times to timedelta x64 [ns]
             return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
         else:
             rel_start = self.ireleasestart[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
-            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_start]
             return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
+
     @property
     def releaseend(self):
         if self.nc.ldirect < 0:
             rel_end = self.ireleaseend[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
+            # note xray converts netcdf file times to timedelta x64 [ns]
             return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
-            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
         else:
             rel_end = self.ireleaseend[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
                                            "%Y%m%d%H%M%S")
             return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
-            #return [(d + dt.timedelta(seconds=int(t))) for t in rel_end]
-
 
     @property
     def releasetimes(self):
