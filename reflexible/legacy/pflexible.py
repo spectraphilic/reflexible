@@ -80,12 +80,6 @@ except ImportError:
 
 # local imports
 import mapping as mp
-from tests.all import test
-# Some data sources (for testing purposes mainly)
-BwdV9_02_data = "./uio_examples/Bwd_V9.02/outputs"
-BwdV9_2_data = "./uio_examples/Bwd_V9.2/outputs"
-Fwd1_data = "./uio_examples/Fwd1/outputs"
-#Fwd2_data = os.path.join(this_dir, "../uio_examples/Fwd2/outputs")
 
 __version__ = '0.9.9'
 __path__ = os.path.abspath(os.curdir)

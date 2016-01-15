@@ -388,6 +388,18 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
         MapPar.lon_0=-20.
         MapPar.rsphere=(6378137.00,6356752.3142)
         FigPar.axlocs=[0.1,0.05,0.7,.85]
+        
+    elif map_region=='obuoy':
+        MapPar.llcrnrlat=50.
+        MapPar.llcrnrlon=-179.
+        MapPar.urcrnrlat=80.
+        MapPar.urcrnrlon=-119.
+        MapPar.area_thresh=1000.
+        MapPar.resolution='i'
+        MapPar.projection='merc'
+        MapPar.lat_0=70.
+        MapPar.lon_0=-150.
+        MapPar.rsphere=(6378137.00,6356752.3142)  
 
     elif map_region=='NORTHSEA' or map_region=="NorthSea":
         MapPar.llcrnrlat=35.
