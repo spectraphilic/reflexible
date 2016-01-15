@@ -144,13 +144,21 @@ class Header(object):
         return self.nc.dims['numpoint']
 
     @property
-    def numpointspec(self):
+    def pointspec(self):
         return self.nc.dims['pointspec']
 
     @property
-    def numageclasses(self):
+    def numpointspec(self):
+        return self.pointspec
+    
+    @property
+    def nageclass(self):
         return self.nc.dims['nageclass']
 
+    @property
+    def numageclasses(self):
+        return self.nageclass
+   
     @property
     def numxgrid(self):
         return self.nc.dims['longitude']
@@ -284,8 +292,9 @@ class Header(object):
 
     @property
     def options(self):
-        # XXX Return a very minimalistic options dictionary.  To be completed.
-        return {'readp': None}
+        return {'readp': None,
+                'nested': self.nested,
+                'absolute_path': self.absolute_path}
 
     @property
     def FD(self):
@@ -302,6 +311,9 @@ class Header(object):
             files = [path]
         else:
             files = glob.glob(os.path.join(path, '*nc'))
+
+        self.nested = nested
+        self.absolute_path = absolute_path
 
         # check for nested or not, assumes only two nc files in 
         # output directory
