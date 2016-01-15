@@ -4,6 +4,7 @@ import numpy as np
 import reflexible as rf
 from reflexible.conv2netcdf4 import Header as OldHeader
 
+"""Tests to check conversion from prior FP format into netcdf."""
 
 output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta']
 
