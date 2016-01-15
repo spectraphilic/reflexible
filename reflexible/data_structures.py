@@ -372,7 +372,7 @@ class Header(object):
         if nested:
             ncfile = [d for d in files if 'nest' in d][0]
         else:
-            ncfile = [d for d in files if not 'nest' in d][0]
+            ncfile = [d for d in files if not '_nest' in d][0]
 
         self.ncfile = ncfile
         self.fp_path = os.path.split(ncfile)[0]
