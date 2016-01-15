@@ -6,6 +6,7 @@ import datetime as dt
 import itertools
 import glob
 
+from math import (pi, cos, sqrt)
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
@@ -39,6 +40,57 @@ class Header(object):
         # XXX this depends on H.kindz, which is not in netCDF4 file (I think)
         return 'unkn.'
 
+    @property
+    def area(self):
+        return self._gridarea()
+
+    def _gridarea(self):
+        """returns an array of area corresponding to each nx,ny,nz
+
+        Usage::
+
+            > area = gridarea(H)
+
+
+        Returns
+            OUT = array area corresponding to nx,ny,nz
+
+        Arguments
+            H  = :class:`Header` object from readheader function.
+
+        """
+
+        pih = pi / 180.
+        r_earth = 6.371e6
+        cosfunc = lambda y : cos(y * pih) * r_earth
+
+        nx = self.numxgrid
+        ny = self.numygrid
+        outlat0 = self.outlat0
+        dyout = self.dyout
+        dxout = self.dxout
+        area = np.zeros((nx, ny))
+
+        for iy in range(ny):
+            ylata = outlat0 + (float(iy) + 0.5) * dyout  # NEED TO Check this, iy since arrays are 0-index
+            ylatp = ylata + 0.5 * dyout
+            ylatm = ylata - 0.5 * dyout
+            if (ylatm < 0 and ylatp > 0): hzone = dyout * r_earth * pih
+            else:
+                # cosfact = cosfunc(ylata)
+                cosfactp = cosfunc(ylatp)
+                cosfactm = cosfunc(ylatm)
+                if cosfactp < cosfactm:
+                    hzone = sqrt(r_earth ** 2 - cosfactp ** 2) - sqrt(r_earth ** 2 - cosfactm ** 2)
+                else:
+                    hzone = sqrt(r_earth ** 2 - cosfactm ** 2) - sqrt(r_earth ** 2 - cosfactp ** 2)
+
+            gridarea = 2.*pi * r_earth * hzone * dxout / 360.
+            for ix in range(nx):
+                area[ix, iy] = gridarea
+
+        return area
+    
     @property
     def outlon0(self):
         return self.nc.outlon0

@@ -88,6 +88,11 @@ class TestHeader:
     def test_options(self):
         assert self.H.nested == self.H.options['nested']
 
+    def test_area(self):
+        H = self.H
+        assert isinstance(H.area, np.ndarray)
+        assert H.area.shape == H.ORO.shape
+
 class TestTrajectory:
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
