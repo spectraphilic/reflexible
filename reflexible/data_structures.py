@@ -492,8 +492,8 @@ class C(object):
                 # changed to use direct summation
                 c.data_cube = specvar[0,pointspec,:,:,:,:]
                 c.time_integrated = np.sum(c.data_cube, axis=0).T
-                c.total_column = np.sum(c.time_integrated, axis=0)
-                c.foot_print = c.time_integrated[0,:,:]
+                c.total_column = np.sum(c.time_integrated, axis=2)
+                c.foot_print = c.time_integrated[:,:,0]
                 
             else:
                 # Same than the above, but it comsumes more memory
