@@ -1,6 +1,7 @@
 import os.path
 
 import pytest
+import numpy as np
 
 import reflexible as rf
 
@@ -8,6 +9,7 @@ fd_keys = [
     'dry', 'grid', 'gridfile', 'itime', 'max', 'min', 'rel_i',
     'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
 
+# tuples locating test data, nested(True) and global(False)
 test_datasets = [('Fwd1_V10.0', False), ('Fwd1_V10.0', True)]
 
 def monotonically_increasing(l):
@@ -85,6 +87,17 @@ class TestHeader:
 
     def test_options(self):
         assert self.H.nested == self.H.options['nested']
+
+class TestTrajectory:
+    @pytest.fixture(autouse=True, params=test_datasets)
+    def setup(self, request):
+        dataset = Dataset(request.param)
+        self.H, self.fp_path, self.nc_path = dataset.setup()
+        request.addfinalizer(dataset.cleanup)
+
+    def test_read_trajectories(self):
+        T = rf.read_trajectories(self.H)
+        assert isinstance(T.Trajectories, np.ndarray)
 
     # def test_read_grid(self):
     #     FD = conv.read_grid(self.H, time_ret=0, nspec_ret=0)

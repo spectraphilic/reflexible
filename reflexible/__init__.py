@@ -109,4 +109,4 @@ from .data_structures import Header
 from .data_structures import Command
 from .data_structures import Release
 from .data_structures import ReleasePoint
-
+from .base_read import read_trajectories
