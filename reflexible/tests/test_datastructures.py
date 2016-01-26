@@ -104,6 +104,21 @@ class TestTrajectory:
         T = rf.read_trajectories(self.H)
         assert isinstance(T.Trajectories, np.ndarray)
 
+class TestCommand:
+    @pytest.fixture(autouse=True, params=test_datasets)
+    def setup(self, request):
+        self.C = rf.Command()
+        #dataset = Dataset(request.param)
+        #self.H, self.fp_path, self.nc_path = dataset.setup()
+        #request.addfinalizer(dataset.cleanup)
+
+    def test_attributes(self):
+        for k in self.C._OPTIONS.keys():
+            assert hasattr(self.C, k.lower())
+
+    def test_options(self):
+        C = rf.Command(**{'LINIT_COND':1})
+        assert C.linit_cond == 1
     # def test_read_grid(self):
     #     FD = conv.read_grid(self.H, time_ret=0, nspec_ret=0)
     #     fdkeys = sorted(FD.keys())
