@@ -1,3 +1,6 @@
+
+#!/usr/bin/env python
+
 """
 Definition of the different data structures in reflexible.
 """
@@ -711,7 +714,8 @@ class Command(object):
             'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File''']  ,
             'SIM_START': [dt.datetime(2000,01,01,00,00,00), '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],   
             'SIM_END': [dt.datetime(2000,02,01,00,00,00), '''Ending date and time of simulation. Same format as 2'''],
-            'AGECLASSES' : [[86400*30], '''list of ageclasses (seconds) in the simulation''']
+            'AGECLASSES' : [[86400*30], '''list of ageclasses (seconds) in the simulation'''],
+            'RELEASE_SECONDS' : [86400, '''duration of the releases in seconds''']
             }
 
         self._overrides = options
@@ -736,7 +740,8 @@ class Command(object):
         if self.ietime is None:
             self.ietime = self.sim_end.strftime('%H%M%S')
 
-        self.timedelta = dt.timedelta(seconds=max(self.ageclasses)) #50 days, time offset with start/end time 
+        self.timedelta = dt.timedelta(seconds=max(self.ageclasses)) #50 days, time offset with start/end time
+        self.release_seconds = dt.timedelta(seconds=self.release_seconds)
 
 
     def help(self, key):
@@ -746,16 +751,16 @@ class Command(object):
             return 'no help available'
 
 
-    def write_command(self, cfile):
+    def to_file(self, cfile):
         """ write out the command file """
 
         if self.ldirect == -1:
             #backward run
             tstart = self.sim_start - self.timedelta
-            tend = self.sim_end
+            tend = self.sim_end + self.release_seconds
         elif self.ldirect == 1:
             tstart = self.sim_start 
-            tend = self.sim_end + self.timedelta
+            tend = self.sim_end + self.timedelta + self.release_seconds
 
         with open(cfile, 'wb') as outf:
 
@@ -821,10 +826,10 @@ class Ageclass(object):
 
 
 
-    def write_ageclasses(self, acfile):
+    def to_file(self, acfile):
         """ write out an ageclasses files """
         # get number of AGECLASSES
-        assert isinstance(self.ageclasses, list), 'ageclasses argument must be a list of seconds'
+        assert isinstance(self.ageclasses, Iterable),  'ageclasses argument must be an iterable of seconds'
         nageclass = len(self.ageclasses)
 
         with open(acfile, 'w') as outf:
@@ -839,7 +844,7 @@ class Ageclass(object):
             outf.write('\n/\n')
             outf.close()
 
-            print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
+            #print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
 
 
 class Release():
@@ -847,64 +852,86 @@ class Release():
     """ subclass of a pandas dataframe to allow for some special properties
     and methods.
 
-    The pandas object is presently set up only to handle nspec==1
+    The pandas object is presently set up only to handle mass of all nspec equal
     """
 
     def __init__(self, data):
 
         self.releases = data
-        self.nspec = data.nspec
+        
 
-    def write_release(self, rfile):
+    def to_file(self, rfile):
         """ write out all the releases """
 
         with open(rfile, 'w') as outf:
 
-
+            self.rel_file = outf
             outf.write('&RELEASES_CTRL\n')
-            outf.write(' NSPEC=        {0},\n'.format(self.nspec))
+            outf.write(' NSPEC=        {0},\n'.format(self.releases.attrs['nspec']))
             outf.write(' SPECNUM_REL=')
-            for i in range(self.nspec):
-                outf.write(' {0},   '.format(self.releases.specnum_rel))
+            idx = range(self.releases.attrs['nspec'])
+            for i in idx:
+                outf.write(' {0},'.format(self.releases.attrs['specnum_rel']))
             outf.write('\n /\n')
 
-            self.releases.sortlevel(["time", "lon"], inplace=True)
-            for row in self.releases.iterrows(): #for some reason itertuples is better?
-                self.rel_file = outf
-                #t = self.releases.index.get_level_values('time')[i]
-                self._write_single_release(row)
+            for row in self.releases.iterrows():
+            #for some reason itertuples would be better?
+                self._write_single_release(row, self.releases.attrs)
 
 
 
-    def _write_single_release(self, row, nspec=1, release_seconds=86400):
+    def _write_single_release(self, row, attrs):
         """ a nice exercise would be to create a custom formatter from the pandas
-        class types, but requires cythong magic. """
+        class types, but requires cython magic. """
 
-        """ write out the release to file, assumes it is appending """
+        #write out the release to file,
+        # assumes it is appending
         outf = self.rel_file
-        t = row[0][-1] #don't like this!
+        # during OBuoy processing, lat, lon in index caused problems
+        # set only time as index, adjusted below
+        #t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
+        #lat = row[0][0]
+        #lon = row[0][1]
+        t = row[0]
         d = row[1]
+        lat = d.lat
+        lon = d.lon
+
+        #get the attrs
+        seconds = attrs['release_seconds']
+        nspec = attrs['nspec']
+        dx = attrs['dx']
+        dy = attrs['dy']
+        name = attrs['name']
+
+        #vars we can calculate
+        lon1 = lon - dx
+        lon2 = lon + dx
+        lat1 = lat - dy
+        lat2 = lat + dy
+        rel_ident = '{0}_{1}_{2}|{3}'.format(name, t.strftime('%Y%j'), lat, lon)
         #print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
-        t2 = t + dt.timedelta(seconds=release_seconds)
+        t2 = t + dt.timedelta(seconds=seconds)
 
         outf.write('&RELEASE\n')
         outf.write(t.strftime(' IDATE1=  %Y%m%d,\n'))
         outf.write(t.strftime(' ITIME1=  %H%M%S,\n'))
         outf.write(t2.strftime(' IDATE2=  %Y%m%d,\n'))
         outf.write(t2.strftime(' ITIME2=  %H%M%S,\n'))
-        outf.write(' LON1=    {0},\n'.format(d.lon1)) # LON values -180 180  
-        outf.write(' LON2=    {0},\n'.format(d.lon2))
-        outf.write(' LAT1=    {0},\n'.format(d.lat1)) # LAT values -90 90
-        outf.write(' LAT2=    {0},\n'.format(d.lat2))
-        outf.write(' Z1=      {0},\n'.format(d.z1))  # altitude in meters
-        outf.write(' Z2=      {0},\n'.format(d.z2))
-        outf.write(' ZKIND=   {0},\n'.format(d.zkind)) # M)ASL= MAG=
+        outf.write(' LON1=    {0:3.4f},\n'.format(lon1)) # LON values -180 180  
+        outf.write(' LON2=    {0:3.4f},\n'.format(lon2))
+        outf.write(' LAT1=    {0:3.4f},\n'.format(lat1)) # LAT values -90 90
+        outf.write(' LAT2=    {0:3.4f},\n'.format(lat2))
+        outf.write(' Z1=      {0:f},\n'.format(d.z1))  # altitude in meters
+        outf.write(' Z2=      {0:f},\n'.format(d.z2))
+        outf.write(' ZKIND=   {0:d},\n'.format(int(d.zkind))) # M)ASL= MAG=
         outf.write(' MASS=')
-        for j in range(nspec):
-            outf.write('    {:8.4f},'.format(d.mass))
-
-        outf.write('\n PARTS=   {0},\n'.format(d.parts));
-        outf.write(' COMMENT= "{0}"\n /\n'.format(d.run_ident))
+        
+        for i in range(nspec):
+             outf.write('    {:8.4f},'.format(d.mass))
+        
+        outf.write('\n PARTS=   {0:d},\n'.format(int(d.parts)));
+        outf.write(' COMMENT= "{0}"\n /\n'.format(rel_ident))
 
 class ReleasePoint(object):
 
@@ -1007,7 +1034,7 @@ class Releases(object):
         self.specnum_rel = release_points[0].specnum_rel
         self.nreleases = len(release_points)
 
-    def write_releases(self, rfile):
+    def to_file(self, rfile):
         """ write out all the releases """
 
         with open(rfile, 'w') as outf:
