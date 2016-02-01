@@ -105,8 +105,7 @@ datasets = {
 from .tests.all import test
 from . import conv2netcdf4
 from .scripts.create_ncfile import create_ncfile
-from .data_structures import Header
-from .data_structures import Command
-from .data_structures import Release
-from .data_structures import ReleasePoint
+from .data_structures import (Header, Command, Release,
+                            ReleasePoint, Ageclass)
+
 from .base_read import read_trajectories

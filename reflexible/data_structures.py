@@ -7,6 +7,7 @@ Definition of the different data structures in reflexible.
 import os
 import datetime as dt
 import itertools
+from collections import Iterable
 import glob
 
 from math import (pi, cos, sqrt)
@@ -892,10 +893,12 @@ class Release():
         #t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
         #lat = row[0][0]
         #lon = row[0][1]
+        #import pdb
+        #pdb.set_trace()
         t = row[0]
         d = row[1]
-        lat = d.lat
-        lon = d.lon
+        lat = d['lat']
+        lon = d['lon']
 
         #get the attrs
         seconds = attrs['release_seconds']
