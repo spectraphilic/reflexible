@@ -16,6 +16,8 @@ import pandas as pd
 import netCDF4 as nc
 import xray
 
+import reflexible
+
 
 class Header(object):
     """This is the primary starting point for processing FLEXPART output.
@@ -344,7 +346,7 @@ class Header(object):
 
     def add_trajectory(self):
         """ see :func:`read_trajectories` """
-        self.trajectory = reflexible.conv2netcdf4.read_trajectories(self)
+        self.trajectory = reflexible.read_trajectories(self)
 
     @property
     def options(self):

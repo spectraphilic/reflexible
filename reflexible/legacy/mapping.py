@@ -623,18 +623,16 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
 
     elif map_region=='Svalbard':
         "Over Svalbard"
-        MapPar.llcrnrlat=75.
-        MapPar.llcrnrlon=-5.
-        MapPar.urcrnrlat=85.
-        MapPar.urcrnrlon=15.
-        MapPar.area_thresh=10.
-        MapPar.resolution='h'
-        MapPar.projection='lcc'
-        MapPar.lat_0=75.
-        MapPar.lon_0=5.
-        MapPar.rsphere=(6378137.00,6356752.3142)
-
-
+        MapPar.update({'area_thresh': 10.0,
+                     'lat_0': 80.0,
+                     'llcrnrlat': 72.0,
+                     'llcrnrlon': -5.0,
+                     'lon_0': 20.0,
+                     'projection': 'lcc',
+                     'resolution': 'h',
+                     'rsphere': (6378137.0, 6356752.3142),
+                     'urcrnrlat': 80.0,
+                     'urcrnrlon': 45.0})
 
     elif map_region=='GreenlandLaea':
         "Over Greenland"
