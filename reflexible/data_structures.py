@@ -401,7 +401,7 @@ class FD(object):
 
     @property
     def keys(self):
-        return self._keys()
+        return self._keys
 
     def __getitem__(self, item):
         nspec, date = item
@@ -541,7 +541,7 @@ def get_slabs(Heightnn, grid):
         else:
             data = grid[:, :, i]
         slabs[i + 1] = data.T    # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
-    # first time sum to create Total Column
+    
     slabs[0] = np.sum(grid, axis=2).T    # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
     return slabs
 
