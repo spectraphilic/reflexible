@@ -273,30 +273,27 @@ class Header(object):
     @property
     def releasestart(self):
         if self.nc.ldirect < 0:
-            rel_start = self.ireleasestart[::-1]
-            d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                           "%Y%m%d%H%M%S")
-            # note xray converts netcdf file times to timedelta x64 [ns]
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
+            #rel_start = self.ireleasestart[::-1]
+            d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime, "%Y%m%d%H%M%S")
         else:
-            rel_start = self.ireleasestart[:]
-            d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
-                                           "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
+            #rel_start = self.ireleasestart[:]
+            d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime, "%Y%m%d%H%M%S")
+        # note xray converts netcdf file times to timedelta x64 [ns]
+        return [d + dt.timedelta(seconds=int(t)) for t in (self.ireleasestart / np.timedelta64(1, 's'))]
+
 
     @property
     def releaseend(self):
         if self.nc.ldirect < 0:
-            rel_end = self.ireleaseend[::-1]
-            d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                           "%Y%m%d%H%M%S")
-            # note xray converts netcdf file times to timedelta x64 [ns]
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
+            #rel_end = self.ireleaseend[::-1]
+            d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime, "%Y%m%d%H%M%S")
+            
+
         else:
-            rel_end = self.ireleaseend[:]
-            d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
-                                           "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
+            #rel_end = self.ireleaseend[:]
+            d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime, "%Y%m%d%H%M%S")
+        # note xray converts netcdf file times to timedelta x64 [ns]
+        return [d + dt.timedelta(seconds=int(t)) for t in (self.ireleaseend / np.timedelta64(1, 's'))]
 
     @property
     def releasetimes(self):
