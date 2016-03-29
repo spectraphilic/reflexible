@@ -634,6 +634,19 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
                      'urcrnrlat': 80.0,
                      'urcrnrlon': 45.0})
 
+    elif map_region=='Stads':
+        "Stads nested output"
+        MapPar.update({'area_thresh': 100.0,
+                     'lat_0': 80.0,
+                     'llcrnrlat': 50.0,
+                     'llcrnrlon': -35.0,
+                     'lon_0': 5.0,
+                     'projection': 'lcc',
+                     'resolution': 'm',
+                     'rsphere': (6378137.0, 6356752.3142),
+                     'urcrnrlat': 85.0,
+                     'urcrnrlon': 35.0})
+
     elif map_region=='GreenlandLaea':
         "Over Greenland"
         MapPar.llcrnrlat=57.
