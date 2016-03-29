@@ -642,7 +642,7 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
                      'llcrnrlon': -35.0,
                      'lon_0': 5.0,
                      'projection': 'lcc',
-                     'resolution': 'm',
+                     'resolution': 'i',
                      'rsphere': (6378137.0, 6356752.3142),
                      'urcrnrlat': 85.0,
                      'urcrnrlon': 35.0})
