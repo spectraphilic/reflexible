@@ -634,18 +634,27 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
                      'urcrnrlat': 80.0,
                      'urcrnrlon': 45.0})
 
+    elif map_region=='stads-ortho':
+        "Stads nested output"
+        MapPar.update({
+                     'lat_0': 70.0,
+                     'lon_0': 10.0,
+                     'projection': 'ortho',
+                     'resolution': 'l'
+                     })
+
     elif map_region=='Stads':
         "Stads nested output"
-        MapPar.update({'area_thresh': 100.0,
-                     'lat_0': 80.0,
+        MapPar.update({
+                     'lat_0': 60.0,
                      'llcrnrlat': 50.0,
-                     'llcrnrlon': -35.0,
-                     'lon_0': 5.0,
-                     'projection': 'lcc',
-                     'resolution': 'i',
-                     'rsphere': (6378137.0, 6356752.3142),
-                     'urcrnrlat': 85.0,
-                     'urcrnrlon': 35.0})
+                     'llcrnrlon': -25.0,
+                     'lon_0': 10.0,
+                     'projection': 'tmerc',
+                     'resolution': 'h',
+                     #'rsphere': (6378137.0, 6356752.3142),
+                     'urcrnrlat': 70.0,
+                     'urcrnrlon': 55.0})
 
     elif map_region=='GreenlandLaea':
         "Over Greenland"
