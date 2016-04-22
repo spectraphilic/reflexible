@@ -14,7 +14,7 @@ from math import (pi, cos, sqrt)
 import numpy as np
 import pandas as pd
 import netCDF4 as nc
-import xray
+import xarray as xr
 
 import reflexible
 
@@ -276,7 +276,7 @@ class Header(object):
             rel_start = self.ireleasestart[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            # note xray converts netcdf file times to timedelta x64 [ns]
+            # note xarray converts netcdf file times to timedelta x64 [ns]
             return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
         else:
             rel_start = self.ireleasestart[:]
@@ -290,7 +290,7 @@ class Header(object):
             rel_end = self.ireleaseend[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
                                            "%Y%m%d%H%M%S")
-            # note xray converts netcdf file times to timedelta x64 [ns]
+            # note xarray converts netcdf file times to timedelta x64 [ns]
             return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
         else:
             rel_end = self.ireleaseend[:]
@@ -368,7 +368,8 @@ class Header(object):
         if absolute_path:
             files = [path]
         else:
-            files = glob.glob(os.path.join(path, '*nc'))
+            #print("Warning assuming files have .nc extension")
+            files = glob.glob(os.path.join(path, '*.nc'))
 
         self.nested = nested
         self.absolute_path = absolute_path
@@ -378,11 +379,11 @@ class Header(object):
         if nested:
             ncfile = [d for d in files if 'nest' in d][0]
         else:
-            ncfile = [d for d in files if not '_nest' in d][0]
+            ncfile = [d for d in files if '_nest' not in d][0]
 
         self.ncfile = ncfile
         self.fp_path = os.path.split(ncfile)[0]
-        self.nc = xray.open_dataset(ncfile)
+        self.nc = xr.open_dataset(ncfile)
 
 
 class FD(object):
