@@ -10,6 +10,7 @@ before_install:
 
   # Update Ubuntu packages
   - sudo apt-get update -qq
+  - sudo apt-get install gfortran-4.8
 
   # Install conda
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -24,7 +25,7 @@ install:
   - sudo apt-get --assume-yes install gfortran
 
   # Install dependencies in conda
-  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy libgfortran netcdf4 matplotlib pandas pytest coverage pip xray
+  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy libgfortran netcdf4 matplotlib pandas pytest coverage pip xarray
   - source activate reflex_env
 
   # Install dependencies in PyPI

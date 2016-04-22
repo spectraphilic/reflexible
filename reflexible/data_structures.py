@@ -1,5 +1,4 @@
-
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 """
 Definition of the different data structures in reflexible.
@@ -68,7 +67,7 @@ class Header(object):
 
         pih = pi / 180.
         r_earth = 6.371e6
-        cosfunc = lambda y : cos(y * pih) * r_earth
+        cosfunc = lambda y: cos(y * pih) * r_earth
 
         nx = self.numxgrid
         ny = self.numygrid
@@ -81,7 +80,8 @@ class Header(object):
             ylata = outlat0 + (float(iy) + 0.5) * dyout  # NEED TO Check this, iy since arrays are 0-index
             ylatp = ylata + 0.5 * dyout
             ylatm = ylata - 0.5 * dyout
-            if (ylatm < 0 and ylatp > 0): hzone = dyout * r_earth * pih
+            if (ylatm < 0 and ylatp > 0):
+                hzone = dyout * r_earth * pih
             else:
                 # cosfact = cosfunc(ylata)
                 cosfactp = cosfunc(ylatp)
@@ -91,12 +91,12 @@ class Header(object):
                 else:
                     hzone = sqrt(r_earth ** 2 - cosfactm ** 2) - sqrt(r_earth ** 2 - cosfactp ** 2)
 
-            gridarea = 2.*pi * r_earth * hzone * dxout / 360.
+            gridarea = 2. * pi * r_earth * hzone * dxout / 360.
             for ix in range(nx):
                 area[ix, iy] = gridarea
 
         return area
-    
+
     @property
     def outlon0(self):
         return self.nc.outlon0
@@ -182,7 +182,7 @@ class Header(object):
         for i in range(self.nspec):
             if self.iout in (1, 3, 5):
                 varname = "spec%03d_mr" % (i + 1)
-            if self.iout in (2, ):    # XXX what to do with 3?
+            if self.iout in (2,):  # XXX what to do with 3?
                 varname = "spec%03d_pptv" % (i + 1)
             ncvar = self.nc.variables[varname]
             l.append(ncvar.attrs['long_name'])
@@ -192,7 +192,7 @@ class Header(object):
     def output_unit(self):
         if self.iout in (1, 3, 5):
             varname = "spec001_mr"
-        if self.iout in (2, ):    # XXX what to do with 3?
+        if self.iout in (2,):  # XXX what to do with 3?
             varname = "spec001_pptv"
         ncvar = self.nc.variables[varname]
         return ncvar.attrs['units']
@@ -208,7 +208,7 @@ class Header(object):
     @property
     def numpointspec(self):
         return self.pointspec
-    
+
     @property
     def nageclass(self):
         return self.nc.dims['nageclass']
@@ -216,7 +216,7 @@ class Header(object):
     @property
     def numageclasses(self):
         return self.nageclass
-   
+
     @property
     def numxgrid(self):
         return self.nc.dims['longitude']
@@ -248,20 +248,20 @@ class Header(object):
         if self.nc.ldirect < 0:
             # backward direction
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                           "%Y%m%d%H%M%S")
+                                     "%Y%m%d%H%M%S")
             return [(d + dt.timedelta(seconds=t))
                     for t in range(loutstep * (nsteps - 1), -loutstep, -loutstep)]
         else:
             # forward direction
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
-                                           "%Y%m%d%H%M%S")
+                                     "%Y%m%d%H%M%S")
             return [(d + dt.timedelta(seconds=t))
                     for t in range(0, loutstep * nsteps, loutstep)]
 
     @property
     def available_dates(self):
         return [d.strftime("%Y%m%d%H%M%S") for d in self.available_dates_dt]
-    
+
     @property
     def ireleasestart(self):
         return self.nc.variables['RELSTART'][:]
@@ -275,28 +275,28 @@ class Header(object):
         if self.nc.ldirect < 0:
             rel_start = self.ireleasestart[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                           "%Y%m%d%H%M%S")
+                                     "%Y%m%d%H%M%S")
             # note xarray converts netcdf file times to timedelta x64 [ns]
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
+            return [(d + dt.timedelta(seconds=int(t) * 10e-9)) for t in rel_start]
         else:
             rel_start = self.ireleasestart[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
-                                           "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_start]
+                                     "%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=int(t) * 10e-9)) for t in rel_start]
 
     @property
     def releaseend(self):
         if self.nc.ldirect < 0:
             rel_end = self.ireleaseend[::-1]
             d = dt.datetime.strptime(self.nc.iedate + self.nc.ietime,
-                                           "%Y%m%d%H%M%S")
+                                     "%Y%m%d%H%M%S")
             # note xarray converts netcdf file times to timedelta x64 [ns]
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
+            return [(d + dt.timedelta(seconds=int(t) * 10e-9)) for t in rel_end]
         else:
             rel_end = self.ireleaseend[:]
             d = dt.datetime.strptime(self.nc.ibdate + self.nc.ibtime,
-                                           "%Y%m%d%H%M%S")
-            return [(d + dt.timedelta(seconds=int(t)*10e-9)) for t in rel_end]
+                                     "%Y%m%d%H%M%S")
+            return [(d + dt.timedelta(seconds=int(t) * 10e-9)) for t in rel_end]
 
     @property
     def releasetimes(self):
@@ -316,7 +316,7 @@ class Header(object):
 
     @property
     def Heightnn(self):
-        
+
         outheight = self.outheight[:]
         if self.ORO is not None:
             oro = self.ORO[:]
@@ -368,7 +368,7 @@ class Header(object):
         if absolute_path:
             files = [path]
         else:
-            #print("Warning assuming files have .nc extension")
+            # print("Warning assuming files have .nc extension")
             files = glob.glob(os.path.join(path, '*.nc'))
 
         self.nested = nested
@@ -409,7 +409,7 @@ class FD(object):
         idate = self.available_dates.index(date)
         if self.iout in (1, 3, 5):
             varname = "spec%03d_mr" % (nspec + 1)
-        if self.iout in (2,):    # XXX what to do with the 3 case?
+        if self.iout in (2,):  # XXX what to do with the 3 case?
             varname = "spec%03d_pptv" % (nspec + 1)
         fdc = FDC()
         fdc.data_cube = self.nc.variables[varname][:, :, idate, :, :, :].T
@@ -492,16 +492,16 @@ class C(object):
             # read data grids and attribute/sum sensitivity
             if self.iout in (1, 3, 5):
                 varname = "spec%03d_mr" % (nspec + 1)
-            if self.iout in (2,):    # XXX what to do with the 3 case?
+            if self.iout in (2,):  # XXX what to do with the 3 case?
                 varname = "spec%03d_pptv" % (nspec + 1)
-            specvar = self.nc.variables[varname][0,pointspec,:,:,:,:]
+            specvar = self.nc.variables[varname][0, pointspec, :, :, :, :]
             if True:
                 # changed to use direct summation
                 c.data_cube = specvar
                 c.time_integrated = np.sum(c.data_cube, axis=0).T
                 c.total_column = np.sum(c.time_integrated, axis=2)
-                c.foot_print = c.time_integrated[:,:,0]
-                
+                c.foot_print = c.time_integrated[:, :, 0]
+
             else:
                 # Same than the above, but it comsumes more memory
                 # Just let it here for future reference
@@ -513,7 +513,7 @@ class C(object):
             d = FD.grid_dates[pointspec]
             c = FD[(nspec, d)]
             c.slabs = get_slabs(self.Heightnn, c.data_cube)
-        
+
         return c
 
 
@@ -541,14 +541,15 @@ def get_slabs(Heightnn, grid):
             data = grid[:, :, i] / Heightnn[:, :, i]
         else:
             data = grid[:, :, i]
-        slabs[i + 1] = data.T    # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
-    
-    slabs[0] = np.sum(grid, axis=2).T    # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
+        slabs[i + 1] = data.T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
+
+    slabs[0] = np.sum(grid, axis=2).T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
     return slabs
 
 
 class FDC(object):
     """Data container for FD and C grids."""
+
     def __init__(self):
         self._keys = [
             'grid', 'gridfile', 'itime', 'timestamp', 'species', 'rel_i',
@@ -650,7 +651,6 @@ class FDC(object):
 
     @property
     def max(self):
-
         return self.time_integrated.max()
 
     @property
@@ -664,24 +664,26 @@ class Command(object):
     #TODO: use properties ??
     """
 
-
     def __init__(self, **options):
 
         self._OPTIONS = {
 
-            'IBDATE': [None , '''String simulation date start'''],
-            'IBTIME': [None , '''string, simulation time start'''],
-            'IEDATE': [None , '''string, simulation date end'''],
-            'IETIME': [None , '''string, simulation time end'''],
+            'IBDATE': [None, '''String simulation date start'''],
+            'IBTIME': [None, '''string, simulation time start'''],
+            'IEDATE': [None, '''string, simulation date end'''],
+            'IETIME': [None, '''string, simulation time end'''],
             'LDIRECT': [1, '''Simulation direction, 1 for forward, -1 for backward in time'''],
             'LOUTSTEP': [10800, '''Average concentrations are calculated every SSSSS seconds.'''],
             'LOUTAVER': [10800, '''The average concentrations are time averages of SSSSS seconds
                 duration. If SSSSS is 0, instantaneous concentrations are outputted.'''],
-            'LOUTSAMPLE': [900, '''The concentrations are sampled every SSSSS seconds to calculate  the time average concentration. This period must be shorter than the averaging time.'''],
-            'ITSPLIT': [999999999, '''Time constant for particle splitting. Particles are split into two after S SSSS seconds, 2xSSSSS seconds, 4xSSSSS seconds, and so on.'''],
+            'LOUTSAMPLE': [900,
+                           '''The concentrations are sampled every SSSSS seconds to calculate  the time average concentration. This period must be shorter than the averaging time.'''],
+            'ITSPLIT': [999999999,
+                        '''Time constant for particle splitting. Particles are split into two after S SSSS seconds, 2xSSSSS seconds, 4xSSSSS seconds, and so on.'''],
             'LSYNCTIME': [900, '''All processes are synchronized with this time interval (lsynctime). Therefore, all other time constants must be multiples of this value.
                 Output interval and time average of output must be at least twice lsynctime.'''],
-            'CTL': [-5.0, '''CTL must be >1 for time steps shorter than the Lagrangian time scale. If CTL<0, a purely random walk simulation is done'''],
+            'CTL': [-5.0,
+                    '''CTL must be >1 for time steps shorter than the Lagrangian time scale. If CTL<0, a purely random walk simulation is done'''],
             'IFINE': [4, '''IFINE=Reduction factor for time step used for vertical wind'''],
             'IOUT': [5, '''IOUT determines how the output shall be made: concentration
                   (ng/m3, Bq/m3), mixing ratio (pptv), or both, or plume trajectory mode,
@@ -693,50 +695,58 @@ class Command(object):
             'LSUBGRID': [1, '''Switch on/off subgridscale terrain parameterization (increase of
                 mixing heights due to subgridscale orographic variations)'''],
             'LCONVECTION': [1, '''Switch on/off the convection parameterization'''],
-            'LAGESPECTRA': [1, '''Switch on/off the calculation of age spectra: if yes, the file AGECLASSES must be available'''],  
-            'IPIN': [0, '''If IPIN=1, a file "partposit_end" from a previous run must be available in the output directory. Particle positions are read in and previous simulation is continued. If IPIN=0, no particles from a previous run are used'''],
+            'LAGESPECTRA': [1,
+                            '''Switch on/off the calculation of age spectra: if yes, the file AGECLASSES must be available'''],
+            'IPIN': [0,
+                     '''If IPIN=1, a file "partposit_end" from a previous run must be available in the output directory. Particle positions are read in and previous simulation is continued. If IPIN=0, no particles from a previous run are used'''],
             'IOUTPUTFOREACHRELEASE': [0, '''Switch on/off writing out each release.'''],
             'IFLUX': [0, '''If IFLUX is set to 1, fluxes of each species through each of the output boxes are calculated. Six fluxes, corresponding to northward, southward,
                 eastward, westward, upward and downward are calculated for each grid cell of
                 the output grid. The control surfaces are placed in the middle of each
                 output grid cell. If IFLUX is set to 0, no fluxes are determined.'''],
-            'MDOMAINFILL': [0, '''If MDOMAINFILL is set to 1, the first box specified in file   RELEASES is used as the domain where domain-filling trajectory calculations are to be done. Particles are initialized uniformly distributed (according to the air mass distribution) in that domain at the beginning of the simulation, and are created at the boundaries throughout the simulation perio'''],  
+            'MDOMAINFILL': [0,
+                            '''If MDOMAINFILL is set to 1, the first box specified in file   RELEASES is used as the domain where domain-filling trajectory calculations are to be done. Particles are initialized uniformly distributed (according to the air mass distribution) in that domain at the beginning of the simulation, and are created at the boundaries throughout the simulation perio'''],
             'IND_SOURCE': [1, '''IND_SOURCE switches between different units for concentrations at  the source NOTE that in backward simulations the release of computational particles takes place at   the "receptor" and the sampling of particles at the "source".
                 1=mass units (for bwd-runs = concentration)   
-                2=mass mixing ratio units'''],    
+                2=mass mixing ratio units'''],
             'IND_RECEPTOR': [1, '''IND_RECEPTOR switches between different units for concentrations at the receptor
                           1=mas s units (concentrations) 
-                          2=mas s mixing ratio units'''],    
-            'MQUASILAG': [0, '''MQUASILAG indicates whether particles shall be numbered consecutively (1) or with their release location number (0). The first option allows tracking of individual particles using the partposit output files'''],  
-            'NESTED_OUTPUT': [0, '''NESTED_OUTPUT decides whether model output shall be made also   for a nested output field (normally with higher resolution)'''], 
-            'LINIT_COND': [0, '''For Backward Runs, sets initial conditions: [0]=No, 1=Mass Unit, 2=Mass Mixing'''],    
+                          2=mas s mixing ratio units'''],
+            'MQUASILAG': [0,
+                          '''MQUASILAG indicates whether particles shall be numbered consecutively (1) or with their release location number (0). The first option allows tracking of individual particles using the partposit output files'''],
+            'NESTED_OUTPUT': [0,
+                              '''NESTED_OUTPUT decides whether model output shall be made also   for a nested output field (normally with higher resolution)'''],
+            'LINIT_COND': [0, '''For Backward Runs, sets initial conditions: [0]=No, 1=Mass Unit, 2=Mass Mixing'''],
             'SURF_ONLY': [0, '''SURF_ONLY: When set to 1, concentration/emission sensitivity'''],
-            'CBLFLAG' : [0, '''CBLFLAG: When set to 1, a skewed rather than Gaussian turbulence in  the convective PBL is used.'''], 
-    
+            'CBLFLAG': [0,
+                        '''CBLFLAG: When set to 1, a skewed rather than Gaussian turbulence in  the convective PBL is used.'''],
+
             ## below here, not actual COMMAND input
-            'HEADER': """**********************************************\n\n\n  Input file for   FLEXPART\n\n*********************************************\n\n""", 
-            'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File''']  ,
-            'SIM_START': [dt.datetime(2000,01,01,00,00,00), '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],   
-            'SIM_END': [dt.datetime(2000,02,01,00,00,00), '''Ending date and time of simulation. Same format as 2'''],
-            'AGECLASSES' : [[86400*30], '''list of ageclasses (seconds) in the simulation'''],
-            'RELEASE_SECONDS' : [86400, '''duration of the releases in seconds''']
-            }
+            'HEADER': """**********************************************\n\n\n  Input file for   FLEXPART\n\n*********************************************\n\n""",
+            'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File'''],
+            'SIM_START': [dt.datetime(2000, 01, 01, 00, 00, 00),
+                          '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],
+            'SIM_END': [dt.datetime(2000, 02, 01, 00, 00, 00),
+                        '''Ending date and time of simulation. Same format as 2'''],
+            'AGECLASSES': [[86400 * 30], '''list of ageclasses (seconds) in the simulation'''],
+            'RELEASE_SECONDS': [86400, '''duration of the releases in seconds''']
+        }
 
         self._overrides = options
 
         # set the default options as attributes
-        for key,value in self._OPTIONS.iteritems():
+        for key, value in self._OPTIONS.iteritems():
             setattr(self, key.lower(), value[0])
 
         # override the attributes with options
-        for key,value in options.iteritems():
+        for key, value in options.iteritems():
             setattr(self, key.lower(), value)
 
         if self.ibdate is None:
             self.ibdate = self.sim_start.strftime('%Y%m%d')
 
         if self.iedate is None:
-            self.iedate = self.sim_end.strftime('%Y%m%d')            
+            self.iedate = self.sim_end.strftime('%Y%m%d')
 
         if self.ibtime is None:
             self.ibtime = self.sim_start.strftime('%H%M%S')
@@ -744,9 +754,8 @@ class Command(object):
         if self.ietime is None:
             self.ietime = self.sim_end.strftime('%H%M%S')
 
-        self.timedelta = dt.timedelta(seconds=max(self.ageclasses)) #50 days, time offset with start/end time
+        self.timedelta = dt.timedelta(seconds=max(self.ageclasses))  # 50 days, time offset with start/end time
         self.release_seconds = dt.timedelta(seconds=self.release_seconds)
-
 
     def help(self, key):
         if key.upper() in self._OPTIONS:
@@ -754,16 +763,15 @@ class Command(object):
         else:
             return 'no help available'
 
-
     def to_file(self, cfile):
         """ write out the command file """
 
         if self.ldirect == -1:
-            #backward run
+            # backward run
             tstart = self.sim_start - self.timedelta
             tend = self.sim_end + self.release_seconds
         elif self.ldirect == 1:
-            tstart = self.sim_start 
+            tstart = self.sim_start
             tend = self.sim_end + self.timedelta + self.release_seconds
 
         with open(cfile, 'wb') as outf:
@@ -800,12 +808,12 @@ class Command(object):
             outf.close()
 
 
-
 class Ageclass(object):
     """ General COMMAND input for Flexpart 
 
     """
-    def __init__(self, ageclasses = [86400 * 50]):
+
+    def __init__(self, ageclasses=[86400 * 50]):
         self._keys = ['ageclasses']
         for key in self._keys:
             setattr(self, "_" + key, ageclasses)
@@ -828,16 +836,13 @@ class Ageclass(object):
     def ageclasses(self, value):
         self._ageclasses = value
 
-
-
     def to_file(self, acfile):
         """ write out an ageclasses files """
         # get number of AGECLASSES
-        assert isinstance(self.ageclasses, Iterable),  'ageclasses argument must be an iterable of seconds'
+        assert isinstance(self.ageclasses, Iterable), 'ageclasses argument must be an iterable of seconds'
         nageclass = len(self.ageclasses)
 
         with open(acfile, 'w') as outf:
-
             # WRITE TO FILE namelist style
             outf.write('&AGECLASS\n')
             outf.write(' NAGECLASS={0},\n'.format(nageclass))
@@ -848,11 +853,10 @@ class Ageclass(object):
             outf.write('\n/\n')
             outf.close()
 
-            #print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
+            # print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
 
 
 class Release():
-
     """ subclass of a pandas dataframe to allow for some special properties
     and methods.
 
@@ -862,7 +866,6 @@ class Release():
     def __init__(self, data):
 
         self.releases = data
-        
 
     def to_file(self, rfile):
         """ write out all the releases """
@@ -879,44 +882,42 @@ class Release():
             outf.write('\n /\n')
 
             for row in self.releases.iterrows():
-            #for some reason itertuples would be better?
+                # for some reason itertuples would be better?
                 self._write_single_release(row, self.releases.attrs)
-
-
 
     def _write_single_release(self, row, attrs):
         """ a nice exercise would be to create a custom formatter from the pandas
         class types, but requires cython magic. """
 
-        #write out the release to file,
+        # write out the release to file,
         # assumes it is appending
         outf = self.rel_file
         # during OBuoy processing, lat, lon in index caused problems
         # set only time as index, adjusted below
-        #t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
-        #lat = row[0][0]
-        #lon = row[0][1]
-        #import pdb
-        #pdb.set_trace()
+        # t = row[0][2] # seems row returns the MultiIndex as a tuple, 'time' is [2]
+        # lat = row[0][0]
+        # lon = row[0][1]
+        # import pdb
+        # pdb.set_trace()
         t = row[0]
         d = row[1]
         lat = d['lat']
         lon = d['lon']
 
-        #get the attrs
+        # get the attrs
         seconds = attrs['release_seconds']
         nspec = attrs['nspec']
         dx = attrs['dx']
         dy = attrs['dy']
         name = attrs['name']
 
-        #vars we can calculate
+        # vars we can calculate
         lon1 = lon - dx
         lon2 = lon + dx
         lat1 = lat - dy
         lat2 = lat + dy
         rel_ident = '{0}_{1}_{2}|{3}'.format(name, t.strftime('%Y%j'), lat, lon)
-        #print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
+        # print(t.strftime('%Y%m%d'), d.lat1, d.lon1)
         t2 = t + dt.timedelta(seconds=seconds)
 
         outf.write('&RELEASE\n')
@@ -924,27 +925,26 @@ class Release():
         outf.write(t.strftime(' ITIME1=  %H%M%S,\n'))
         outf.write(t2.strftime(' IDATE2=  %Y%m%d,\n'))
         outf.write(t2.strftime(' ITIME2=  %H%M%S,\n'))
-        outf.write(' LON1=    {0:3.4f},\n'.format(lon1)) # LON values -180 180  
+        outf.write(' LON1=    {0:3.4f},\n'.format(lon1))  # LON values -180 180
         outf.write(' LON2=    {0:3.4f},\n'.format(lon2))
-        outf.write(' LAT1=    {0:3.4f},\n'.format(lat1)) # LAT values -90 90
+        outf.write(' LAT1=    {0:3.4f},\n'.format(lat1))  # LAT values -90 90
         outf.write(' LAT2=    {0:3.4f},\n'.format(lat2))
         outf.write(' Z1=      {0:f},\n'.format(d.z1))  # altitude in meters
         outf.write(' Z2=      {0:f},\n'.format(d.z2))
-        outf.write(' ZKIND=   {0:d},\n'.format(int(d.zkind))) # M)ASL= MAG=
+        outf.write(' ZKIND=   {0:d},\n'.format(int(d.zkind)))  # M)ASL= MAG=
         outf.write(' MASS=')
-        
+
         for i in range(nspec):
-             outf.write('    {:8.4f},'.format(d.mass))
-        
+            outf.write('    {:8.4f},'.format(d.mass))
+
         outf.write('\n PARTS=   {0:d},\n'.format(int(d.parts)));
         outf.write(' COMMENT= "{0}"\n /\n'.format(rel_ident))
 
-class ReleasePoint(object):
 
+class ReleasePoint(object):
     """ An individual release entity (point, line, or area)
 
     """
-
 
     def __init__(self, idt1=None, idt2=None, **options):
         """ A release point is a single entity within a Release.
@@ -956,37 +956,37 @@ class ReleasePoint(object):
         """
 
         self._OPTIONS = {
-            'idate1' : ['20010101', '''YYYYMMDD begin date of release '''],
-            'itime1' : ['000000', '''YYYYMMDD begin time of release '''],
-            'idate2' : ['20010201', '''YYYYMMDD end date of release '''],
-            'itime2' : ['000000', '''YYYYMMDD end time of release '''],
-            'lon1'  : [ 120, '''lowerleft Longitude'''],
-            'lon2'  : [ 130, '''upperright Longitude'''],
-            'lat1'  : [ 55, '''lowerleft Latitude'''],
-            'lat2'  : [ 60, '''upperright Latitude'''],
-            'z1'    : [ 20, '''lower boundary of release point (m)'''],
-            'z2'    : [ 100, '''upper z-level of release point (m)'''],
-            'zkind' : [ 3, ''' 1 for m above ground, 2 for m above sea level, 3 for pressure in hPa'''],
-            'mass'  : [ [1.0], '''mass of species'''],
-            'nspec' : [ 1, '''number of species'''],
-            'parts' : [50000, '''total number of particles in release'''],
+            'idate1': ['20010101', '''YYYYMMDD begin date of release '''],
+            'itime1': ['000000', '''YYYYMMDD begin time of release '''],
+            'idate2': ['20010201', '''YYYYMMDD end date of release '''],
+            'itime2': ['000000', '''YYYYMMDD end time of release '''],
+            'lon1': [120, '''lowerleft Longitude'''],
+            'lon2': [130, '''upperright Longitude'''],
+            'lat1': [55, '''lowerleft Latitude'''],
+            'lat2': [60, '''upperright Latitude'''],
+            'z1': [20, '''lower boundary of release point (m)'''],
+            'z2': [100, '''upper z-level of release point (m)'''],
+            'zkind': [3, ''' 1 for m above ground, 2 for m above sea level, 3 for pressure in hPa'''],
+            'mass': [[1.0], '''mass of species'''],
+            'nspec': [1, '''number of species'''],
+            'parts': [50000, '''total number of particles in release'''],
             'specnum_rel': [(22,), '''tuple of species number id'''],
             'run_ident': ['comment', '''character*40 comment''']
-            }
+        }
 
         self._overrides = options
 
-        for key,value in self._OPTIONS.iteritems():
+        for key, value in self._OPTIONS.iteritems():
             setattr(self, key.lower(), value[0])
 
-        for key,value in options.iteritems():
+        for key, value in options.iteritems():
             setattr(self, key.lower(), value)
 
         if idt1:
             assert isinstance(idt1, dt.datetime)
             setattr(self, 'idate1', idt1.strftime('%Y%m%d'))
             setattr(self, 'itime1', idt1.strftime('%H%M%S'))
-        
+
         if idt2:
             assert isinstance(idt2, dt.datetime)
             setattr(self, 'idate2', idt2.strftime('%Y%m%d'))
@@ -998,10 +998,8 @@ class ReleasePoint(object):
         else:
             return 'no help available'
 
-
     def _write_single_release(self, rfile):
         """ write out the release to file, assumes it is appending """
-
 
         if isinstance(rfile, str):
 
@@ -1014,13 +1012,13 @@ class ReleasePoint(object):
         outf.write(' ITIME1=  {0},\n'.format(self.itime1))
         outf.write(' IDATE2=  {0},\n'.format(self.idate2))
         outf.write(' ITIME2=  {0},\n'.format(self.itime2))
-        outf.write(' LON1=    {0},\n'.format(self.lon1)) # LON values -180 180  
+        outf.write(' LON1=    {0},\n'.format(self.lon1))  # LON values -180 180
         outf.write(' LON2=    {0},\n'.format(self.lon2))
-        outf.write(' LAT1=    {0},\n'.format(self.lat2)) # LAT values -90 90
+        outf.write(' LAT1=    {0},\n'.format(self.lat2))  # LAT values -90 90
         outf.write(' LAT2=    {0},\n'.format(self.lat2))
         outf.write(' Z1=      {0},\n'.format(self.z1))  # altitude in meters
         outf.write(' Z2=      {0},\n'.format(self.z2))
-        outf.write(' ZKIND=   {0},\n'.format(self.zkind)) # M)ASL= MAG=
+        outf.write(' ZKIND=   {0},\n'.format(self.zkind))  # M)ASL= MAG=
         outf.write(' MASS=')
         for j in range(self.nspec):
             outf.write('    {%8.2d},'.format(self.mass))
@@ -1045,7 +1043,6 @@ class Releases(object):
 
         with open(rfile, 'w') as outf:
 
-
             outf.write('&RELEASES_CTRL\n')
             outf.write(' NSPEC=        {0},\n'.format(self.nspec))
             outf.write(' SPECNUM_REL=')
@@ -1064,7 +1061,7 @@ class Trajectory(dict, object):
     This should become a pandas dataframe in the future. """
 
     FutureWarning('to be a pandas.DataFrame in the future')
-    
+
     def __getattr__(self, attr):
         # Fake a __getstate__ method that returns None
         if attr == "__getstate__":
@@ -1082,4 +1079,3 @@ class Trajectory(dict, object):
         """ set attributes with a dict """
         for k in D.keys():
             self.__setattr__(k, D[k])
-
