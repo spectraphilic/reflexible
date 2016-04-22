@@ -34,7 +34,6 @@ VERSION
 """
 from __future__ import division
 from builtins import range
-from past.utils import old_div
 # builtin imports
 import os
 import datetime as dt
@@ -162,9 +161,9 @@ def read_trajectories(H, trajfile='trajectories.txt', \
 
         itimerel1 = tdelta + dt.timedelta(seconds=i1)
         itimerel2 = tdelta + dt.timedelta(seconds=i2)
-        Xp = old_div((xp1 + xp2), 2)
-        Yp = old_div((yp1 + yp2), 2)
-        Zp = old_div((zp1 + zp2), 2)
+        Xp = np.divide((xp1 + xp2), 2)
+        Yp = np.divide((yp1 + yp2), 2)
+        Zp = np.divide((zp1 + zp2), 2)
         RelTraj[alltraj[i + 1].strip()] = np.array((itimerel1, itimerel2, Xp, Yp, Zp, k, npart))
 
     for i in range(3 + (numpoint * 3), len(alltraj)):

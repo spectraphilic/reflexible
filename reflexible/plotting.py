@@ -2,21 +2,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-from past.utils import old_div
 
-# builtin imports
-# import pdb
-import sys
-import os
-import struct
-import re
-import optparse
-import time
-import datetime
-import itertools
-from math import pi, sqrt, cos
-import traceback
-import pdb
 
 
 # Dependencies:
@@ -25,9 +11,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
-from matplotlib.dates import date2num
-import matplotlib.image as image
-from matplotlib.patches import Ellipse
 # Basemap
 try:
     from mpl_toolkits.basemap import shiftgrid, addcyclic
@@ -298,7 +281,7 @@ def plot_sensitivity(H, data, \
         # # transform to nx x ny regularly spaced native projection grid
         if transform:
             dx = 2.*np.pi * m.rmajor / len(lons)
-            nx = int(old_div((m.xmax - m.xmin), dx)) + 1; ny = int(old_div((m.ymax - m.ymin), dx)) + 1
+            nx = int(np.divide((m.xmax - m.xmin), dx)) + 1; ny = int(np.divide((m.ymax - m.ymin), dx)) + 1
             if nx is 1:
                 topodat = data
             else:
@@ -338,7 +321,7 @@ def plot_sensitivity(H, data, \
         clevs = _gen_log_clevs(dat_min, dat_max)
 
     else:
-        clevs = [i for i in np.arange(dat_min, dat_max, old_div((dat_max - dat_min), 100))]
+        clevs = [i for i in np.arange(dat_min, dat_max, np.divide((dat_max - dat_min), 100))]
 
     # # draw land sea mask
     # m.fillcontinents(zorder=0)
@@ -408,7 +391,7 @@ def plot_sensitivity(H, data, \
     # # create new axis for colorbar.
         h = 0.5 * h
         l = l + w + .03
-        b = 0.5 - (old_div(h, 2))
+        b = 0.5 - (np.divide(h, 2))
         w = 0.025
         cax = plt.axes([l, b, w, h])
     # # using im2, not im (hack to prevent colors from being

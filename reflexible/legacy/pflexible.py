@@ -53,7 +53,7 @@ from builtins import zip
 from builtins import str
 from builtins import range
 from builtins import object
-from past.utils import old_div
+
 # builtin imports
 # import pdb
 import sys
@@ -435,9 +435,9 @@ def read_trajectories(H, trajfile='trajectories.txt', \
 
         itimerel1 = dt + datetime.timedelta(seconds=i1)
         itimerel2 = dt + datetime.timedelta(seconds=i2)
-        Xp = old_div((xp1 + xp2), 2)
-        Yp = old_div((yp1 + yp2), 2)
-        Zp = old_div((zp1 + zp2), 2)
+        Xp = np.divide((xp1 + xp2), 2)
+        Yp = np.divide((yp1 + yp2), 2)
+        Zp = np.divide((zp1 + zp2), 2)
         RelTraj[alltraj[i + 1].strip()] = np.array((itimerel1, itimerel2, Xp, Yp, Zp, k, npart))
 
     for i in range(3 + (numpoint * 3), len(alltraj)):
@@ -790,7 +790,7 @@ def gridarea():
     """
 
 
-    pih = old_div(pi, 180.)
+    pih = np.divide(pi, 180.)
     r_earth = 6.371e6 
     cosfunc = lambda y : cos(y * pih) * r_earth
 
@@ -1013,7 +1013,7 @@ def read_header(pathname, **kwargs):
         h['jjjjmmdd'] = bf.read('i')
         h['hhmmss'] = bf.read('i')
         junk.append(bf.read('2i'))
-        h['nspec'] = old_div(bf.read('i'), 3)  # why!?
+        h['nspec'] = np.divide(bf.read('i'), 3)  # why!?
         h['numpointspec'] = bf.read('i')
         junk.append(bf.read('2i'))
 
@@ -1213,7 +1213,7 @@ def read_header(pathname, **kwargs):
                                datetime.timedelta(seconds=int(h.ireleaseend[i])))
         h.releasestart = releasestart
         h.releaseend = releaseend[:h.numpointspec]
-        h.releasetimes = [b - (old_div((b - a), 2)) for a, b in zip(h.releasestart, h.releaseend)]
+        h.releasetimes = [b - (np.divide((b - a), 2)) for a, b in zip(h.releasestart, h.releaseend)]
 
     # Add datetime objects for dates
     available_dates_dt = []
@@ -1494,8 +1494,8 @@ def _readgrid_noFF(H, **kwargs):
             else:
                 n = n + 1
 
-            kz = old_div(n, (numxgrid * numygrid))
-            jy = old_div((n - kz * numxgrid * numygrid), numxgrid)
+            kz = np.divide(n, (numxgrid * numygrid))
+            jy = np.divide((n - kz * numxgrid * numygrid), numxgrid)
             ix = n - numxgrid * numygrid * kz - numxgrid * jy
             # print "n  ==> ix,jy,kz,k,nage"
             # print "%s ==> %s,%s,%s,%s,%s" % (n,ix,jy,kz,k,nage)
@@ -1682,8 +1682,8 @@ def _readgridBF(H, filename):
                 else:
                     n = n + 1
 
-                kz = old_div(n, (H.numxgrid * H.numygrid))
-                jy = old_div((n - kz * H.numxgrid * H.numygrid), H.numxgrid)
+                kz = np.divide(n, (H.numxgrid * H.numygrid))
+                jy = np.divide((n - kz * H.numxgrid * H.numygrid), H.numxgrid)
                 ix = n - H.numxgrid * H.numygrid * kz - H.numxgrid * jy
                 grd[ix, jy, kz - 1, k, nage] = abs(dmp_r[ir])
 
@@ -1700,7 +1700,7 @@ def _readgridBF(H, filename):
                     fact = fact * -1.
                 else:
                     n = n + 1
-                jy = old_div(n, H.numxgrid)
+                jy = np.divide(n, H.numxgrid)
                 ix = n - H.numxgrid * jy
                 grd[ix, jy, k, nage] = abs(dmp_r[ir])
 
@@ -2904,7 +2904,7 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
             TC = np.sum(g, axis=2).T
             TC = TC * scale
         if normAreaHeight:
-            data = old_div(g[:, :, i], Heightnn[:, :, i])
+            data = np.divide(g[:, :, i], Heightnn[:, :, i])
         else:
             data = g[:, :, i]
 
@@ -3146,7 +3146,7 @@ def plot_spectra(inspectra,
     if cum == 'norm':
         # # Normalize the data so it fills to 100%
         # spectra = np.zeros(inspectra.shape)
-        spectra = (old_div(inspectra.transpose(), np.sum(inspectra, axis=1))).transpose()
+        spectra = (np.divide(inspectra.transpose(), np.sum(inspectra, axis=1))).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
         # sums = np.sum(inspectra,axis=1)
         # for i,elem in enumerate(inspectra):
@@ -3157,7 +3157,7 @@ def plot_spectra(inspectra,
         spectra = inspectra
 
     # Set up plotting environment colors
-    Nc = np.array([old_div(float(i), numageclasses) for i in range(numageclasses)])
+    Nc = np.array([np.divide(float(i), numageclasses) for i in range(numageclasses)])
     norm = mpl.colors.Normalize(Nc.min(), Nc.max())
     # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
@@ -3357,7 +3357,7 @@ def plot_agespectra(H, agespectra,
         spectra = _cum_spec(inspectra, cum=cum)
 
     # Set up plotting environment colors
-    Nc = np.array([old_div(float(i), numageclasses) for i in range(numageclasses)])
+    Nc = np.array([np.divide(float(i), numageclasses) for i in range(numageclasses)])
     norm = mpl.colors.normalize(Nc.min(), Nc.max())
     # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
@@ -4314,7 +4314,7 @@ def plot_sensitivity(H, data, \
         # # transform to nx x ny regularly spaced native projection grid
         if transform:
             dx = 2.*np.pi * m.rmajor / len(lons)
-            nx = int(old_div((m.xmax - m.xmin), dx)) + 1; ny = int(old_div((m.ymax - m.ymin), dx)) + 1
+            nx = int(np.divide((m.xmax - m.xmin), dx)) + 1; ny = int(np.divide((m.ymax - m.ymin), dx)) + 1
             if nx is 1:
                 topodat = data
             else:
@@ -4354,7 +4354,7 @@ def plot_sensitivity(H, data, \
         clevs = _log_clevs(dat_min, dat_max)
 
     else:
-        clevs = [i for i in np.arange(dat_min, dat_max, old_div((dat_max - dat_min), 100))]
+        clevs = [i for i in np.arange(dat_min, dat_max, np.divide((dat_max - dat_min), 100))]
 
     # # draw land sea mask
     # m.fillcontinents(zorder=0)
@@ -4428,7 +4428,7 @@ def plot_sensitivity(H, data, \
     # # create new axis for colorbar.
         h = 0.5 * h
         l = l + w + .03
-        b = 0.5 - (old_div(h, 2))
+        b = 0.5 - (np.divide(h, 2))
         w = 0.025
         cax = plt.axes([l, b, w, h])
     # # using im2, not im (hack to prevent colors from being
@@ -4611,7 +4611,7 @@ def plot_curtain(H, data, \
     if log:
         clevs = _log_clevs(dat_min, dat_max)
     else:
-        clevs = [i for i in np.arange(dat_min, dat_max, old_div((dat_max - dat_min), 100))]
+        clevs = [i for i in np.arange(dat_min, dat_max, np.divide((dat_max - dat_min), 100))]
 
     # # Set up the IMAGE
     # # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
@@ -4657,7 +4657,7 @@ def plot_curtain(H, data, \
     # # create new axis for colorbar.
         h = 0.8 * h
         l = l + w + .02
-        b = 0.5 - (old_div(h, 2))
+        b = 0.5 - (np.divide(h, 2))
         w = 0.025
         cax = plt.axes([l, b, w, h])
     # # using im2, not im (hack to prevent colors from being
@@ -5223,7 +5223,7 @@ def _cum_spec(inspectra, cum=True):
     if cum == 'norm':
         # # Normalize the data so it fills to 100%
         # spectra = np.zeros(inspectra.shape)
-        spectra = (old_div(inspectra.transpose(), np.sum(inspectra, axis=1))).transpose()
+        spectra = (np.divide(inspectra.transpose(), np.sum(inspectra, axis=1))).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
         # sums = np.sum(inspectra,axis=1)
         # for i,elem in enumerate(inspectra):
@@ -5281,9 +5281,9 @@ def _gen_daylabels(P, H=None, dt=86400):
 
         if H:
             dt = abs(H.loutstep)
-        return str(1 + old_div(int(abs(P)), dt))
+        return str(1 + np.divide(int(abs(P)), dt))
     else:
-        return [str(1 + old_div(int(abs(p)), dt)) for p in P]
+        return [str(1 + np.divide(int(abs(p)), dt)) for p in P]
 
 
 
@@ -5298,7 +5298,7 @@ def _datarange(H, G, index=None):
         seek = [index]
 
     for i in seek:
-        zpmax = np.max(old_div(G[:, :, 0, i], Heightnn[:, :, 0]))
+        zpmax = np.max(np.divide(G[:, :, 0, i], Heightnn[:, :, 0]))
         if zpmax > fpmax:
             fpmax = zpmax
         # print fpmax
@@ -5484,7 +5484,7 @@ if __name__ == '__main__':
             exit_code = 0
         if options.verbose: print(time.asctime())
         if options.verbose: print('TOTAL TIME IN MINUTES:', end=' ')
-        if options.verbose: print(old_div((time.time() - start_time), 60.0))
+        if options.verbose: print(np.divide((time.time() - start_time), 60.0))
         sys.exit(exit_code)
     except KeyboardInterrupt as e:  # Ctrl-C
         raise e

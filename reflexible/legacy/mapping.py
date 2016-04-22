@@ -6,12 +6,12 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import map
 from builtins import range
-from past.utils import old_div
+
 from builtins import object
 
 # -*- coding: utf-8 -*-
-#John F Burkhart - 2010
-#Licence : this code is released under the matplotlib license
+# John F Burkhart - 2010
+# Licence : this code is released under the matplotlib license
 
 __author__ = "John F Burkhart <jfburkhart@gmail.com>"
 __version__ = "0.02"
@@ -21,14 +21,11 @@ import numpy as np
 import math
 import copy
 import datetime as dt
-import pdb
-#from matplotlib import interactive, use
-#use("Agg")
-#interactive(False)
+
 import matplotlib as mpl
 from matplotlib import colors, cm
 from matplotlib.collections import LineCollection
-#mpl.use('Agg')
+
 
 import matplotlib.pyplot as plt
 try:
@@ -42,6 +39,7 @@ TEX = False
 # !!NEED TO FIX!! #
 from matplotlib.ticker import NullFormatter
 
+
 class Structure(dict):
     def __getattr__(self, attr):
         return self[attr]
@@ -52,7 +50,6 @@ class Structure(dict):
         """ set attributes with a dict """
         for k in list(D.keys()):
             self.__setattr__(k,D[k])
-
 
 
 class KML_File(object):
@@ -205,9 +202,9 @@ def map_dynaMap(xxx_todo_changeme):
     area_thresh=1000
     resolution='l'
     projection='merc'
-    lat_0=y[int(old_div(len(y),2))]
+    lat_0=y[int(np.divide(len(y),2))]
     lat_1=lat_0-y_edge
-    lon_0=x[int(old_div(len(x),2))]
+    lon_0=x[int(np.divide(len(x),2))]
     #lon_1=110.
     rsphere=(6378137.00,6356752.3142)
     pd=y_edge
@@ -556,8 +553,8 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
         MapPar.llcrnry=0
         #In this case a Basemap instance is required
         #in advance
-        MapPar.urcrnrx=old_div(MapPar.m.urcrnrx,2.)
-        MapPar.urcrnry=old_div(MapPar.m.urcrnry,2.)
+        MapPar.urcrnrx=np.divide(MapPar.m.urcrnrx,2.)
+        MapPar.urcrnry=np.divide(MapPar.m.urcrnry,2.)
 
 
     elif map_region=='VAUUAV_MODIS':
@@ -1065,9 +1062,9 @@ def draw_grid(m,xdiv=10.,ydiv=5.,location=[1,0,0,1],\
     
     # setup map to have meridians:
     if xdiff > xdiv:
-        md = np.round((old_div(xdiff, xdiv) ))
+        md = np.round((np.divide(xdiff, xdiv) ))
     else:
-        md = np.round((old_div(xdiff, xdiv) ),1)
+        md = np.round((np.divide(xdiff, xdiv) ),1)
     
     md = md_options[(np.abs(np.array(md_options) - md)).argmin()]
     #print md
@@ -1081,9 +1078,9 @@ def draw_grid(m,xdiv=10.,ydiv=5.,location=[1,0,0,1],\
     
     # setup map to have parallels.
     if ydiff > ydiv:
-        pd = np.round((old_div(ydiff, ydiv) ))
+        pd = np.round((np.divide(ydiff, ydiv) ))
     else:
-        pd = np.round((old_div(ydiff, ydiv) ), 2)
+        pd = np.round((np.divide(ydiff, ydiv) ), 2)
     if not maxlat:
         maxlat = m.urcrnrlat
         
@@ -1116,7 +1113,7 @@ def plot_ECMWF(nc,variable,time,level,map_region='NorthAmerica'):
     lats = nc.variables['latitude'][:]
     lat2 = lats[::-1]
     lons = nc.variables['longitude'][:]
-    lon1 = np.arange(-180,180,old_div(360.,len(lons)))
+    lon1 = np.arange(-180,180,np.divide(360.,len(lons)))
     data = alldata[time,level,:,:]
     data = data[::-1,:] #flip lats
     #shift the grid to go from -180 to 180
@@ -1573,11 +1570,11 @@ def get_base2(**kwargs):
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open('land_shallow_topo_2048.jpg')
     rgba = pil_to_array(pilImage)
-    rgba = old_div(rgba.astype(P.Float32),255.) # convert to normalized floats.
+    rgba = np.divide(rgba.astype(P.Float32),255.) # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
     nlons = rgba.shape[1]; nlats = rgba.shape[0]
-    delta = old_div(360.,float(nlons))
+    delta = np.divide(360.,float(nlons))
     lons = P.arange(-180.+0.5*delta,180.,delta)
     lats = P.arange(-90.+0.5*delta,90.,delta)
 
@@ -1594,7 +1591,7 @@ def get_base2(**kwargs):
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original image.
     dx = 2.*P.pi*m.rmajor/float(nlons)
-    nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
+    nx = int(np.divide((m.xmax-m.xmin),dx))+1; ny = int(np.divide((m.ymax-m.ymin),dx))+1
     rgba_warped = P.zeros((ny,nx,4),P.Float64)
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     for k in range(4):
@@ -1644,7 +1641,7 @@ def get_base3(**kwargs):
     if basefile!=None:
         pilImage = Image.open(basefile)
         rgba = pil_to_array(pilImage)
-        rgba = old_div(rgba.astype(np.float32),255.) # convert to normalized floats.
+        rgba = np.divide(rgba.astype(np.float32),255.) # convert to normalized floats.
 
     interactive(False)
     ## create the figure.
@@ -1719,11 +1716,11 @@ def get_base_image(imagefile,**kwargs):
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open(imagefile)
     rgba = pil_to_array(pilImage)
-    rgba = old_div(rgba.astype(np.float32),255.) # convert to normalized floats.
+    rgba = np.divide(rgba.astype(np.float32),255.) # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
     nlons = rgba.shape[1]; nlats = rgba.shape[0]
-    delta = old_div(360.,float(nlons))
+    delta = np.divide(360.,float(nlons))
     lons = np.arange(-180.+0.5*delta,180.,delta)
     lats = np.arange(-90.+0.5*delta,90.,delta)
 
@@ -1740,7 +1737,7 @@ def get_base_image(imagefile,**kwargs):
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original image.
     dx = 2.*np.pi*m.rmajor/float(nlons)
-    nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
+    nx = int(np.divide((m.xmax-m.xmin),dx))+1; ny = int(np.divide((m.ymax-m.ymin),dx))+1
     rgba_warped = np.zeros((ny,nx,4),np.float64)
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     try:
@@ -2040,7 +2037,7 @@ def plot_grid(D,map_region='POLARCAT',dres=0.5,
         norm = colors.normalize(z.min(),z.max())
         xpt,ypt = m(x,y)
         cmap = [cm.jet(norm(i)) for i in z]
-        m.scatter(xpt,ypt,s=old_div(z,100.),edgecolors='none',color=cmap)
+        m.scatter(xpt,ypt,s=np.divide(z,100.),edgecolors='none',color=cmap)
 #        for i in range(len(y)):
 #            xpt,ypt = m(x[i],y[i])
 #            cmap = cm.jet(norm(z[i]))
@@ -2052,7 +2049,7 @@ def plot_grid(D,map_region='POLARCAT',dres=0.5,
         #transform Z data into projection
         #transform to nx x ny regularly spaced native projection grid
         dx = 2.*np.pi*m.rmajor/len(lons)
-        nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
+        nx = int(np.divide((m.xmax-m.xmin),dx))+1; ny = int(np.divide((m.ymax-m.ymin),dx))+1
         if transform:
             # Need this if we choose lon,lat approach
             Zt,xx,yy = m.transform_scalar(z,lons,lats,nx,ny,returnxy=True)
@@ -2148,7 +2145,7 @@ def plot_imshow(x,y,z,\
     ## transform to nx x ny regularly spaced native projection grid
     if transform:
         dx = 2.*np.pi*m.rmajor/len(lons)
-        nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
+        nx = int(np.divide((m.xmax-m.xmin),dx))+1; ny = int(np.divide((m.ymax-m.ymin),dx))+1
         topodat = m.transform_scalar(data,lons,lats,nx,ny)
     else:
         topodat = data
@@ -2609,15 +2606,15 @@ def greatCircleDistance(RLAT1,RLON1,RLAT2,RLON2):
     """
     RERTH=6.3712E6
     PI=3.14159265358979
-    DPR=old_div(180.,PI)
+    DPR=np.divide(180.,PI)
     if abs(RLAT1-RLAT2) < 0.03 and abs(RLON1-RLON2) < 0.03:
         DISTANCE=0.
     else:
-        CLAT1=math.cos(old_div(RLAT1,DPR))
-        SLAT1=math.sin(old_div(RLAT1,DPR))
-        CLAT2=math.cos(old_div(RLAT2,DPR))
-        SLAT2=math.sin(old_div(RLAT2,DPR))
-        CDLON=math.cos(old_div((RLON1-RLON2),DPR))
+        CLAT1=math.cos(np.divide(RLAT1,DPR))
+        SLAT1=math.sin(np.divide(RLAT1,DPR))
+        CLAT2=math.cos(np.divide(RLAT2,DPR))
+        SLAT2=math.sin(np.divide(RLAT2,DPR))
+        CDLON=math.cos(np.divide((RLON1-RLON2),DPR))
         CRD=SLAT1*SLAT2+CLAT1*CLAT2*CDLON
         DISTANCE=RERTH*math.acos(CRD)/1000.
 
@@ -2691,16 +2688,16 @@ class GreatCircle(object):
             # WGS84
             a = 6378137.0
             b = 6356752.3142
-            f = old_div((a-b),a)
-            rmajor = old_div((2*a+b),3.)
-            rminor = old_div((2*a+b),3.)
+            f = np.divide((a-b),a)
+            rmajor = np.divide((2*a+b),3.)
+            rminor = np.divide((2*a+b),3.)
         # convert to radians from degrees.
         lat1 = math.radians(lat1)
         lon1 = math.radians(lon1)
         lat2 = math.radians(lat2)
         lon2 = math.radians(lon2)
         self.a = rmajor
-        self.f = old_div((rmajor-rminor),rmajor)
+        self.f = np.divide((rmajor-rminor),rmajor)
         self.lat1 = lat1
         self.lat2 = lat2
         self.lon1 = lon1
@@ -2711,8 +2708,8 @@ class GreatCircle(object):
         self.azimuth12 = a12
         self.azimuth21 = a21
         # great circle arc-length distance (in radians).
-        self.gcarclen = 2.*math.asin(math.sqrt((math.sin(old_div((lat1-lat2),2)))**2+\
-                                               math.cos(lat1)*math.cos(lat2)*(math.sin(old_div((lon1-lon2),2)))**2))
+        self.gcarclen = 2.*math.asin(math.sqrt((math.sin(np.divide((lat1-lat2),2)))**2+\
+                                               math.cos(lat1)*math.cos(lat2)*(math.sin(np.divide((lon1-lon2),2)))**2))
         # check to see if points are antipodal (if so, route is undefined).
         if self.gcarclen == math.pi:
             self.antipodal = True
@@ -2743,17 +2740,17 @@ class GreatCircle(object):
         if self.antipodal:
             raise ValueError('cannot compute intermediate points on a great circle whose endpoints are antipodal')
         d = self.gcarclen
-        delta = old_div(1.0,(npoints-1))
+        delta = np.divide(1.0,(npoints-1))
         f = delta*np.arange(npoints) # f=0 is point 1, f=1 is point 2.
-        incdist = old_div(self.distance,(npoints-1))
+        incdist = np.divide(self.distance,(npoints-1))
         lat1 = self.lat1
         lat2 = self.lat2
         lon1 = self.lon1
         lon2 = self.lon2
         # perfect sphere, use great circle formula
         if self.f == 0.:
-            A = old_div(np.sin((1-f)*d),math.sin(d))
-            B = old_div(np.sin(f*d),math.sin(d))
+            A = np.divide(np.sin((1-f)*d),math.sin(d))
+            B = np.divide(np.sin(f*d),math.sin(d))
             x = A*math.cos(lat1)*math.cos(lon1)+B*math.cos(lat2)*math.cos(lon2)
             y = A*math.cos(lat1)*math.sin(lon1)+B*math.cos(lat2)*math.sin(lon2)
             z = A*math.sin(lat1)               +B*math.sin(lat2)
@@ -2851,7 +2848,7 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
     # Iterate the following equations, 
     #  until there is no significant change in lembda 
 
-    while ( last_lembda < -3000000.0 or lembda != 0 and abs( old_div((last_lembda - lembda),lembda)) > 1.0e-9 ) :
+    while ( last_lembda < -3000000.0 or lembda != 0 and abs( np.divide((last_lembda - lembda),lembda)) > 1.0e-9 ) :
 
         sqr_sin_sigma = pow( math.cos(U2) * math.sin(lembda), 2) + \
                       pow( (math.cos(U1) * math.sin(U2) - \
@@ -2868,7 +2865,7 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
 
         Cos2sigma_m = math.cos(sigma) - (2 * math.sin(U1) * math.sin(U2) / pow(math.cos(alpha), 2) )
 
-        C = (old_div(f,16)) * pow(math.cos(alpha), 2) * (4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
+        C = (np.divide(f,16)) * pow(math.cos(alpha), 2) * (4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
 
         last_lembda = lembda
 
@@ -2878,13 +2875,13 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
 
     u2 = pow(math.cos(alpha),2) * (a*a-b*b) / (b*b)
 
-    A = 1 + (old_div(u2,16384)) * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)))
+    A = 1 + (np.divide(u2,16384)) * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)))
 
-    B = (old_div(u2,1024)) * (256 + u2 * (-128+ u2 * (74 - 47 * u2)))
+    B = (np.divide(u2,1024)) * (256 + u2 * (-128+ u2 * (74 - 47 * u2)))
 
-    delta_sigma = B * Sin_sigma * (Cos2sigma_m + (old_div(B,4)) * \
+    delta_sigma = B * Sin_sigma * (Cos2sigma_m + (np.divide(B,4)) * \
                                    (Cos_sigma * (-1 + 2 * pow(Cos2sigma_m, 2) ) - \
-                                    (old_div(B,6)) * Cos2sigma_m * (-3 + 4 * sqr_sin_sigma) * \
+                                    (np.divide(B,6)) * Cos2sigma_m * (-3 + 4 * sqr_sin_sigma) * \
                                     (-3 + 4 * pow(Cos2sigma_m,2 ) )))
 
     s = b * A * (sigma - delta_sigma)
@@ -2900,7 +2897,7 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
     if ( alpha12 > two_pi ) : 
         alpha12 = alpha12 - two_pi
 
-    alpha21 = alpha21 + old_div(two_pi, 2.0)
+    alpha21 = alpha21 + np.divide(two_pi, 2.0)
     if ( alpha21 < 0.0 ) : 
         alpha21 = alpha21 + two_pi
     if ( alpha21 > two_pi ) : 
@@ -2951,12 +2948,12 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
     cosalpha_sq = 1.0 - Sinalpha * Sinalpha
 
     u2 = cosalpha_sq * (a * a - b * b ) / (b * b)
-    A = 1.0 + (old_div(u2, 16384)) * (4096 + u2 * (-768 + u2 * \
+    A = 1.0 + (np.divide(u2, 16384)) * (4096 + u2 * (-768 + u2 * \
                                            (320 - 175 * u2) ) )
-    B = (old_div(u2, 1024)) * (256 + u2 * (-128 + u2 * (74 - 47 * u2) ) )
+    B = (np.divide(u2, 1024)) * (256 + u2 * (-128 + u2 * (74 - 47 * u2) ) )
 
     # Starting with the approximation
-    sigma = (old_div(s, (b * A)))
+    sigma = (np.divide(s, (b * A)))
 
     last_sigma = 2.0 * sigma + 2.0  # something impossible
 
@@ -2965,18 +2962,18 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
 
     # two_sigma_m , delta_sigma
 
-    while ( abs( old_div((last_sigma - sigma), sigma)) > 1.0e-9 ) :
+    while ( abs( np.divide((last_sigma - sigma), sigma)) > 1.0e-9 ) :
 
         two_sigma_m = 2 * sigma1 + sigma
 
         delta_sigma = B * math.sin(sigma) * ( math.cos(two_sigma_m) \
-                                              + (old_div(B,4)) * (math.cos(sigma) * \
+                                              + (np.divide(B,4)) * (math.cos(sigma) * \
                                                          (-1 + 2 * math.pow( math.cos(two_sigma_m), 2 ) -  \
-                                                          (old_div(B,6)) * math.cos(two_sigma_m) * \
+                                                          (np.divide(B,6)) * math.cos(two_sigma_m) * \
                                                           (-3 + 4 * math.pow(math.sin(sigma), 2 )) *  \
                                                           (-3 + 4 * math.pow( math.cos (two_sigma_m), 2 ))))) 
         last_sigma = sigma
-        sigma = (old_div(s, (b * A))) + delta_sigma
+        sigma = (np.divide(s, (b * A))) + delta_sigma
 
 
     phi2 = math.atan2 ( (math.sin(U1) * math.cos(sigma) + math.cos(U1) * math.sin(sigma) * math.cos(alpha12) ), \
@@ -2987,7 +2984,7 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
     lembda = math.atan2( (math.sin(sigma) * math.sin(alpha12 )), (math.cos(U1) * math.cos(sigma) -  \
                                                                   math.sin(U1) *  math.sin(sigma) * math.cos(alpha12)))
 
-    C = (old_div(f,16)) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq ))
+    C = (np.divide(f,16)) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq ))
 
     omega = lembda - (1-C) * f * Sinalpha *  \
           (sigma + C * math.sin(sigma) * (math.cos(two_sigma_m) + \
@@ -2998,7 +2995,7 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
     alpha21 = math.atan2 ( Sinalpha, (-math.sin(U1) * math.sin(sigma) +  \
                                       math.cos(U1) * math.cos(sigma) * math.cos(alpha12)))
 
-    alpha21 = alpha21 + old_div(two_pi, 2.0)
+    alpha21 = alpha21 + np.divide(two_pi, 2.0)
     if ( alpha21 < 0.0 ) :
         alpha21 = alpha21 + two_pi
     if ( alpha21 > two_pi ) :

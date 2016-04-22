@@ -7,7 +7,7 @@ from __future__ import division
 from builtins import zip
 from builtins import range
 from builtins import object
-from past.utils import old_div
+
 import os
 import datetime as dt
 import itertools
@@ -16,8 +16,6 @@ import glob
 
 from math import (pi, cos, sqrt)
 import numpy as np
-import pandas as pd
-import netCDF4 as nc
 import xarray as xr
 
 import reflexible
@@ -70,7 +68,7 @@ class Header(object):
 
         """
 
-        pih = old_div(pi, 180.)
+        pih = np.divide(pi, 180.)
         r_earth = 6.371e6
         cosfunc = lambda y: cos(y * pih) * r_earth
 
@@ -305,7 +303,7 @@ class Header(object):
 
     @property
     def releasetimes(self):
-        return [b - (old_div((b - a), 2))
+        return [b - ((b - a) / 2)
                 for a, b in zip(self.releasestart, self.releaseend)]
 
     @property
@@ -543,7 +541,7 @@ def get_slabs(Heightnn, grid):
     slabs = {}
     for i in range(grid.shape[2]):
         if normAreaHeight:
-            data = old_div(grid[:, :, i], Heightnn[:, :, i])
+            data = np.divide(grid[:, :, i], Heightnn[:, :, i])
         else:
             data = grid[:, :, i]
         slabs[i + 1] = data.T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
