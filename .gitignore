@@ -1,4 +1,5 @@
 *.pyc
+*.idea/*
 *.o
 *.prefs
 MANIFEST
