@@ -10,7 +10,7 @@ before_install:
 
   # Update Ubuntu packages
   - sudo apt-get update -qq
-  - sudo apt-get install gfortran-4.8
+  - sudo apt-get install --assume-yes gfortran-4.8
 
   # Install conda
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
