@@ -24,7 +24,7 @@ install:
   # Install dependencies in Ubuntu
 
   # Install dependencies in conda
-  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy matplotlib pytest coverage pip xarray
+  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy netcdf4 matplotlib pytest coverage pip xarray basemap
   - source activate reflex_env
 
   # Install dependencies in PyPI
