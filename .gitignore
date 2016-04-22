@@ -11,3 +11,4 @@ doc/build/*
 .pydev*
 f2py_build/f90/*
 FortFlex.so
+.idea/*
