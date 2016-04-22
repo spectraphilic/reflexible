@@ -22,10 +22,10 @@ before_install:
 
 install:
   # Install dependencies in Ubuntu
-  - sudo apt-get --assume-yes install gfortran
+  #- sudo apt-get --assume-yes install gfortran
 
   # Install dependencies in conda
-  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy libgfortran netcdf4 matplotlib pandas pytest coverage pip xarray
+  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy netcdf4 matplotlib pandas pytest coverage pip xarray
   - source activate reflex_env
 
   # Install dependencies in PyPI
