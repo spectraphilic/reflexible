@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import range
+from builtins import object
 import pytest
 import netCDF4 as nc
 import os
@@ -6,7 +9,7 @@ import reflexible as rf
 
 output_list = [('Fwd1_V10.0','grid_conc_20110101000000.nc'), ('Fwd1_V10.0','grid_conc_20110101000000_nest.nc')]
 
-class Dataset:
+class Dataset(object):
     def __init__(self, fp_name):
         self.fp_name = fp_name[0]
         self.fp_filename = fp_name[1]
@@ -25,7 +28,7 @@ class Dataset:
         pass #self.tmpdir.remove(self.nc_path)
 
 
-class TestStructure:
+class TestStructure(object):
     @pytest.fixture(autouse=True, params=output_list)
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)

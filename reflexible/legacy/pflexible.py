@@ -46,6 +46,14 @@ VERSION
 
     ID: $Id$: $Rev$
 """
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 # builtin imports
 # import pdb
 import sys
@@ -79,7 +87,7 @@ except ImportError:
 
 
 # local imports
-import mapping as mp
+from . import mapping as mp
 
 __version__ = '0.9.9'
 __path__ = os.path.abspath(os.curdir)
@@ -427,9 +435,9 @@ def read_trajectories(H, trajfile='trajectories.txt', \
 
         itimerel1 = dt + datetime.timedelta(seconds=i1)
         itimerel2 = dt + datetime.timedelta(seconds=i2)
-        Xp = (xp1 + xp2) / 2
-        Yp = (yp1 + yp2) / 2
-        Zp = (zp1 + zp2) / 2
+        Xp = old_div((xp1 + xp2), 2)
+        Yp = old_div((yp1 + yp2), 2)
+        Zp = old_div((zp1 + zp2), 2)
         RelTraj[alltraj[i + 1].strip()] = np.array((itimerel1, itimerel2, Xp, Yp, Zp, k, npart))
 
     for i in range(3 + (numpoint * 3), len(alltraj)):
@@ -503,7 +511,7 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
 
     # assert(isinstance(H, Header), 'ERROR: H Wrong Data Type')
     if H.direction == 'forward':
-        if 'FD' in H.keys():
+        if 'FD' in list(H.keys()):
             pass
         else:
             # need to call H.read_grid to fill read the grids
@@ -513,7 +521,7 @@ def curtain_for_flightrack(H, flighttrack, nspec=0, npspec_int=0, index=0, get_t
                         npspec_int=npspec_int)
 
     elif H.direction == 'backward':
-        if 'C' in H.keys():
+        if 'C' in list(H.keys()):
             pass
         else:
             H.fill_backward()
@@ -636,7 +644,7 @@ def curtain_agltoasl(H, curtain_agl, coords, below_gl=0.0):
 
     casl = np.zeros((len(H.asl_axis), len(coords)))
 
-    for i in xrange(len(coords)):
+    for i in range(len(coords)):
         casl[:, i] = np.interp(H.asl_axis, xp + gl[i], \
                               curtain_agl[:, i], left=below_gl)
 
@@ -782,7 +790,7 @@ def gridarea():
     """
 
 
-    pih = pi / 180.
+    pih = old_div(pi, 180.)
     r_earth = 6.371e6 
     cosfunc = lambda y : cos(y * pih) * r_earth
 
@@ -901,21 +909,21 @@ def read_header(pathname, **kwargs):
     OPS.datefile = None
 
     # # add keyword overides and options to header
-    for k in kwargs.keys():
-        if k not in OPS.keys():
+    for k in list(kwargs.keys()):
+        if k not in list(OPS.keys()):
             print("WARNING: {0} not a valid input option.".format(k))
 
     # BW compat fixes
-    if 'nest' in kwargs.keys():
+    if 'nest' in list(kwargs.keys()):
         raise IOError("nest is no longer a valid keyword, see docs. \n Now use nested=True or nested=False")
 
 
-    if 'nested' in kwargs.keys():
+    if 'nested' in list(kwargs.keys()):
         if kwargs['nested'] is 1:
             print("WARNING, use of nested=1, deprecated converting to nested=True")
             kwargs['nested'] = True
 
-    if 'nested' in kwargs.keys():
+    if 'nested' in list(kwargs.keys()):
         if kwargs['nested'] is 0:
             print("WARNING, use of nested=0, deprecated converting to nested=False")
             kwargs['nested'] = False
@@ -923,10 +931,10 @@ def read_header(pathname, **kwargs):
     OPS.update(kwargs)
 
     if OPS.verbose:
-        print "Reading Header with:\n"
+        print("Reading Header with:\n")
 
         for o in OPS:
-            print "%s ==> %s" % (o, OPS[o])
+            print("%s ==> %s" % (o, OPS[o]))
 
     # Define utility functions for reading binary file
     skip = lambda n = 8 : bf.seek(n, 1)
@@ -1005,7 +1013,7 @@ def read_header(pathname, **kwargs):
         h['jjjjmmdd'] = bf.read('i')
         h['hhmmss'] = bf.read('i')
         junk.append(bf.read('2i'))
-        h['nspec'] = bf.read('i') / 3  # why!?
+        h['nspec'] = old_div(bf.read('i'), 3)  # why!?
         h['numpointspec'] = bf.read('i')
         junk.append(bf.read('2i'))
 
@@ -1049,7 +1057,7 @@ def read_header(pathname, **kwargs):
         I = {2:'kindz', 3:'xp1', 4:'yp1', 5:'xp2', \
            6:'yp2', 7:'zpoint1', 8:'zpoint2', 9:'npart', 10:'mpart'}
 
-        for k, v in I.iteritems():
+        for k, v in I.items():
             h[v] = np.zeros(h['numpoint'])  # create zero-filled lists in H dict
 
         h['xmass'] = np.zeros((h['numpoint'], h['nspec']))
@@ -1205,7 +1213,7 @@ def read_header(pathname, **kwargs):
                                datetime.timedelta(seconds=int(h.ireleaseend[i])))
         h.releasestart = releasestart
         h.releaseend = releaseend[:h.numpointspec]
-        h.releasetimes = [b - ((b - a) / 2) for a, b in zip(h.releasestart, h.releaseend)]
+        h.releasetimes = [b - (old_div((b - a), 2)) for a, b in zip(h.releasestart, h.releaseend)]
 
     # Add datetime objects for dates
     available_dates_dt = []
@@ -1233,7 +1241,7 @@ def read_header(pathname, **kwargs):
         h.ypoint = h.yp1
 
     # Add release unit derived from kindz
-    if 'kindz' not in h.keys():
+    if 'kindz' not in list(h.keys()):
         h.kindz = [0]
         h.alt_unit = 'unkn.'
     if 3 in h.kindz:
@@ -1310,7 +1318,7 @@ def _readV6(bf, h):
 
     if bf:
         # bf.read('i')
-        print h['numpoint']
+        print(h['numpoint'])
         for i in range(h['numpoint']):
             # r2=getbin('i')
             i1 = getbin('i')
@@ -1397,50 +1405,50 @@ def _readgrid_noFF(H, **kwargs):
     #        print 'Cannot find FortFlex.so'
     useFortFlex = 0
 
-    if 'date' in kwargs.keys():
+    if 'date' in list(kwargs.keys()):
         date = kwargs['date']
     # else: date = H['ibtime']
     else: date = None
 
-    if 'unit' in kwargs.keys():
+    if 'unit' in list(kwargs.keys()):
         unitname = kwargs['unit']
     else: unitname = 'time'
 
     units = ['conc', 'pptv', 'time', 'footprint']
     unit = units.index(unitname)
 
-    if 'nspec_ret' in kwargs.keys():
+    if 'nspec_ret' in list(kwargs.keys()):
         nspec_ret = kwargs['nspec_ret']
     else: nspec_ret = 1
 
-    if 'pspec_ret' in kwargs.keys():
+    if 'pspec_ret' in list(kwargs.keys()):
         pspec_ret = kwargs['ppsec_ret']
     else: pspec_ret = 1
 
-    if 'age_ret' in kwargs.keys():
+    if 'age_ret' in list(kwargs.keys()):
         age_ret = kwargs['age_ret']
     else: age_ret = 1
 
-    if 'nested' in kwargs.keys():
+    if 'nested' in list(kwargs.keys()):
         nested = kwargs['nested']
     else: nested = False
 
-    if 'time_ret' in kwargs.keys():
+    if 'time_ret' in list(kwargs.keys()):
         time_ret = kwargs['time_ret']
     else:
-        time_ret = range(len(H['available_dates']))
+        time_ret = list(range(len(H['available_dates'])))
 
-    if 'scaledepo' in kwargs.keys():
+    if 'scaledepo' in list(kwargs.keys()):
         scaledepo = kwargs['scaledepo']
     else:
         scaledepo = 1.0
 
-    if 'scaleconc' in kwargs.keys():
+    if 'scaleconc' in list(kwargs.keys()):
         scaleconc = kwargs['scaleconc']
     else:
         scaleconc = 1.0
 
-    if 'decaycons' in kwargs.keys():
+    if 'decaycons' in list(kwargs.keys()):
         decaycons = kwargs['decaycons']
     else:
         decaycons = 99999999990
@@ -1486,8 +1494,8 @@ def _readgrid_noFF(H, **kwargs):
             else:
                 n = n + 1
 
-            kz = n / (numxgrid * numygrid)
-            jy = (n - kz * numxgrid * numygrid) / numxgrid
+            kz = old_div(n, (numxgrid * numygrid))
+            jy = old_div((n - kz * numxgrid * numygrid), numxgrid)
             ix = n - numxgrid * numygrid * kz - numxgrid * jy
             # print "n  ==> ix,jy,kz,k,nage"
             # print "%s ==> %s,%s,%s,%s,%s" % (n,ix,jy,kz,k,nage)
@@ -1530,7 +1538,7 @@ def _readgrid_noFF(H, **kwargs):
         else:
             get_dates = available_dates
 
-        print 'getting grid for: ', get_dates
+        print('getting grid for: ', get_dates)
 
         for date_i in range(len(get_dates)):
 
@@ -1573,8 +1581,8 @@ def _readgrid_noFF(H, **kwargs):
                                     scaleconc, decayconstant)
 
                     # contribution[:,:,:] = concgrid[:,:,:,:,0]
-                    print np.min(concgrid)
-                    print np.max(concgrid)
+                    print(np.min(concgrid))
+                    print(np.max(concgrid))
 
                     # altitude = 50000
                     zplot = sumgrid(zplot, concgrid, \
@@ -1592,7 +1600,7 @@ def _readgrid_noFF(H, **kwargs):
                     f2 = BinaryFile(filename, order='fortran')
                     skip(4)
                     G['itime'] = getbin('i');
-                    print H['available_dates'][date_i]
+                    print(H['available_dates'][date_i])
 
                     # Read Wet Depostion
                     skip()
@@ -1626,7 +1634,7 @@ def _readgrid_noFF(H, **kwargs):
                     f2.close()
                 fail = 0
             else:
-                print "\n\n INPUT ERROR: Could not find file: %s" % filename
+                print("\n\n INPUT ERROR: Could not find file: %s" % filename)
                 raise IOError('No file: %s' % filename)
 
         if useFortFlex == 1: G = zplot
@@ -1674,8 +1682,8 @@ def _readgridBF(H, filename):
                 else:
                     n = n + 1
 
-                kz = n / (H.numxgrid * H.numygrid)
-                jy = (n - kz * H.numxgrid * H.numygrid) / H.numxgrid
+                kz = old_div(n, (H.numxgrid * H.numygrid))
+                jy = old_div((n - kz * H.numxgrid * H.numygrid), H.numxgrid)
                 ix = n - H.numxgrid * H.numygrid * kz - H.numxgrid * jy
                 grd[ix, jy, kz - 1, k, nage] = abs(dmp_r[ir])
 
@@ -1692,7 +1700,7 @@ def _readgridBF(H, filename):
                     fact = fact * -1.
                 else:
                     n = n + 1
-                jy = n / H.numxgrid
+                jy = old_div(n, H.numxgrid)
                 ix = n - H.numxgrid * jy
                 grd[ix, jy, k, nage] = abs(dmp_r[ir])
 
@@ -1702,13 +1710,13 @@ def _readgridBF(H, filename):
     try:
 
         from sdspflexcy import dumpdatagrid, dumpdepogrid
-        print 'using pflexcy'
+        print('using pflexcy')
     except:
-        print """WARNING: Using PURE Python to readgrid, execution will be slow.
+        print("""WARNING: Using PURE Python to readgrid, execution will be slow.
          Try compiling the FortFlex module or the pflexcy module
          for your machine. For more information see the
          pflexible/f2py_build directory or use cython with pflexcy.pyx
-        """
+        """)
         dumpdatagrid = _dumpgrid
         dumpdepogrid = _dumpgrid
 
@@ -1786,7 +1794,7 @@ def _read_headerFF(pathname, h=None,
     try:
         from FortFlex import readheader
     except:
-        print "Error with FortFlex.readheader, use read_header"
+        print("Error with FortFlex.readheader, use read_header")
 
     headervars = ['numxgrid', 'numygrid', 'numzgrid', 'outlon0', 'outlat0', 'compoint', \
                   'dxout', 'dyout', 'outheight', 'ibdate', 'ibtime', 'loutstep', \
@@ -1798,14 +1806,14 @@ def _read_headerFF(pathname, h=None,
         h = Structure()
 
     if verbose:
-        print """Reading Header with:
+        print("""Reading Header with:
                     maxpoint : %s
                     maxspec : %s
                     maxageclass : %s
                     nxmax : %s
                     nymax : %s
                     nzmax : %s
-                    """ % (maxpoint, maxspec, maxageclass, nxmax, nymax, nzmax)
+                    """ % (maxpoint, maxspec, maxageclass, nxmax, nymax, nzmax))
 
 
     numxgrid, numygrid, numzgrid, outlon0, outlat0, dxout, dyout, outheight, \
@@ -1815,7 +1823,7 @@ def _read_headerFF(pathname, h=None,
             readheader(pathname, maxpoint, maxspec, maxageclass, nxmax, nymax, nzmax)
 
     for v in headervars:
-        if v not in h.keys():
+        if v not in list(h.keys()):
             exec("h.%s = %s" % (v, v))
     return h
 
@@ -1989,7 +1997,7 @@ def readgridV9(H, **kwargs):
         # # assign grid dates for indexing fd
         fd.grid_dates = get_dates[:]
 
-    print 'getting grid for: ', get_dates
+    print('getting grid for: ', get_dates)
     # Some predifinitions
     fail = 0
     # set filename prefix
@@ -2009,7 +2017,7 @@ def readgridV9(H, **kwargs):
             from FortFlex import readgrid_v6 as readgrid
             from FortFlex import sumgrid
             useFortFlex = True
-            print 'using FortFlex VERSION 6'
+            print('using FortFlex VERSION 6')
         else:
             print('Assumed V8 Flexpart')
             from FortFlex import readgrid, sumgrid
@@ -2029,7 +2037,7 @@ def readgridV9(H, **kwargs):
 
 
    # reserve output fields
-    print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
+    print(H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint)
 
     # -------------------------------------------------
 
@@ -2043,7 +2051,7 @@ def readgridV9(H, **kwargs):
 
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
-        print datestring
+        print(datestring)
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
 
             FLEXDATA[(s, datestring)] = Structure()
@@ -2056,7 +2064,7 @@ def readgridV9(H, **kwargs):
 
             else:
                 # grid total footprint
-                print "Total footprint"
+                print("Total footprint")
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit_i) + (H.nested * 5)] + spec_fid)
                 H.zdims = 1
@@ -2065,13 +2073,13 @@ def readgridV9(H, **kwargs):
                 H.filename = filename
                 # print 'reading: ' + filename
                 if OPS.verbose:
-                    print 'with values:'
+                    print('with values:')
                     inputvars = ['filename', 'numxgrid', 'numygrid',
                                  'zdims', 'numpoint', 'nageclass', \
                                  'scaledepo', 'scaleconc',
                                  'decayconstant', 'numpointspec']
                     for v in inputvars:
-                        print v, " ==> ", H[v]
+                        print(v, " ==> ", H[v])
 
 
                 if OPS.BinaryFile:
@@ -2157,7 +2165,7 @@ def readgridV9(H, **kwargs):
             # just for testing, set the first available grid as a shortcut
             # this will be removed.
             qind = (nspec_ret[0], fd.grid_dates[0])
-            fd.grid = fd[qind][fd[qind].keys()[0]].grid
+            fd.grid = fd[qind][list(fd[qind].keys())[0]].grid
         except:
             pass
 
@@ -2260,7 +2268,7 @@ def readgridV8(H, **kwargs):
         # # assign grid dates for indexing fd
         fd.grid_dates = get_dates[:]
 
-    print 'getting grid for: ', get_dates
+    print('getting grid for: ', get_dates)
     # Some predifinitions
     fail = 0
     # set filename prefix
@@ -2280,7 +2288,7 @@ def readgridV8(H, **kwargs):
             from FortFlex import readgrid_v6 as readgrid
             from FortFlex import sumgrid
             useFortFlex = True
-            print 'using FortFlex VERSION 6'
+            print('using FortFlex VERSION 6')
         else:
             print('Assumed V8 Flexpart')
             from FortFlex import readgrid, sumgrid
@@ -2300,7 +2308,7 @@ def readgridV8(H, **kwargs):
 
 
    # reserve output fields
-    print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
+    print(H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint)
 
     # -------------------------------------------------
 
@@ -2314,7 +2322,7 @@ def readgridV8(H, **kwargs):
 
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
-        print datestring
+        print(datestring)
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
 
             FLEXDATA[(s, datestring)] = Structure()
@@ -2327,7 +2335,7 @@ def readgridV8(H, **kwargs):
 
             else:
                 # grid total footprint
-                print "Total footprint"
+                print("Total footprint")
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit_i) + (H.nested * 5)] + spec_fid)
                 H.zdims = 1
@@ -2336,13 +2344,13 @@ def readgridV8(H, **kwargs):
                 H.filename = filename
                 # print 'reading: ' + filename
                 if OPS.verbose:
-                    print 'with values:'
+                    print('with values:')
                     inputvars = ['filename', 'numxgrid', 'numygrid',
                                  'zdims', 'numpoint', 'nageclass', \
                                  'scaledepo', 'scaleconc',
                                  'decayconstant', 'numpointspec']
                     for v in inputvars:
-                        print v, " ==> ", H[v]
+                        print(v, " ==> ", H[v])
 
 
                 if OPS.BinaryFile:
@@ -2428,7 +2436,7 @@ def readgridV8(H, **kwargs):
             # just for testing, set the first available grid as a shortcut
             # this will be removed.
             qind = (nspec_ret[0], fd.grid_dates[0])
-            fd.grid = fd[qind][fd[qind].keys()[0]].grid
+            fd.grid = fd[qind][list(fd[qind].keys())[0]].grid
         except:
             pass
 
@@ -2527,7 +2535,7 @@ def readgridV6(H, **kwargs):
         # # assign grid dates for indexing fd
         fd.grid_dates = get_dates[:]
 
-    print 'getting grid for: ', get_dates
+    print('getting grid for: ', get_dates)
     # Some predifinitions
     fail = 0
     # set filename prefix
@@ -2546,7 +2554,7 @@ def readgridV6(H, **kwargs):
         from FortFlex import sumgrid
         useFortFlex = True
         OPS.useFortFlex = useFortFlex
-        print 'using FortFlex VERSION 6'
+        print('using FortFlex VERSION 6')
     except:
         # get the original module (no memory allocation)
         useFortFlex = False
@@ -2566,7 +2574,7 @@ def readgridV6(H, **kwargs):
 
 
    # reserve output fields
-    print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
+    print(H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint)
 
     # -------------------------------------------------
 
@@ -2587,7 +2595,7 @@ def readgridV6(H, **kwargs):
 
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
-        print datestring
+        print(datestring)
         FLEXDATA[datestring] = {}
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
             total_footprint = False
@@ -2601,7 +2609,7 @@ def readgridV6(H, **kwargs):
 
             else:
                 # grid total footprint
-                print "Total footprint"
+                print("Total footprint")
                 total_footprint = True
                 filename = os.path.join(H['pathname'], \
                             prefix[(unit_i) + (H.nested * 5)])
@@ -2611,13 +2619,13 @@ def readgridV6(H, **kwargs):
                 H.filename = filename
                 # print 'reading: ' + filename
                 if OPS.verbose:
-                    print 'with values:'
+                    print('with values:')
                     inputvars = ['filename', 'numxgrid', 'numygrid',
                                  'zdims', 'numpoint', 'nageclass', \
                                  'scaledepo', 'scaleconc',
                                  'decayconstant', 'numpointspec']
                     for v in inputvars:
-                        print v, " ==> ", H[v]
+                        print(v, " ==> ", H[v])
 
 
                 if OPS.BinaryFile:
@@ -2680,7 +2688,7 @@ def readgridV6(H, **kwargs):
             # just for testing, set the first available grid as a shortcut
             # this will be removed.
             qind = (0, fd.grid_dates[0])
-            fd.grid = fd[qind][fd[qind].keys()[0]].grid
+            fd.grid = fd[qind][list(fd[qind].keys())[0]].grid
         except:
             pass
 
@@ -2690,7 +2698,7 @@ def readgridV6(H, **kwargs):
 def monthly_footprints(H):
 
 
-    footprints = np.zeros((H.ny, H.nx, len(H.C.keys())))
+    footprints = np.zeros((H.ny, H.nx, len(list(H.C.keys()))))
     for i, key in enumerate(H.C):
         footprints[:, :, i] = H.C[key].slabs[0]
 
@@ -2757,7 +2765,7 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
 
     if H.direction == 'backward':
 
-        for s, k in itertools.product(species, range(H.numpointspec)):
+        for s, k in itertools.product(species, list(range(H.numpointspec))):
             C[(s, k)] = Structure()
             C[(s, k)].grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
             C[(s, k)]['itime'] = None
@@ -2768,7 +2776,7 @@ def fill_grids(H, nspec=0, FD=None, add_attributes=False):
             C[(s, k)]['spec_i'] = s
 
         # read data grids and attribute/sum sensitivity
-        print species
+        print(species)
         for s in species:
 
             for d in FD.grid_dates:
@@ -2816,7 +2824,7 @@ def read_emissions(emissionsfile, E=None, maxemissions=1):
         # set defaults for global 0.5 degree emissions
         defaults = {'nxmax':720, 'nymax':360, 'outlon0':-180, 'outlat0':-90, \
                     'numxgrid':720, 'numygrid':360, 'dxout':0.5, 'dyout':0.5}
-        for k, v in defaults.iteritems():
+        for k, v in defaults.items():
             exec("E.%s = %s" % (k, v))
 
     emissions = reademissions(emissionsfile, maxemissions, E.nxmax, E.nymax, \
@@ -2896,7 +2904,7 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
             TC = np.sum(g, axis=2).T
             TC = TC * scale
         if normAreaHeight:
-            data = g[:, :, i] / Heightnn[:, :, i]
+            data = old_div(g[:, :, i], Heightnn[:, :, i])
         else:
             data = g[:, :, i]
 
@@ -2916,7 +2924,7 @@ def _plot_dropm():
         "m dropped"
         return 1
     except:
-        print 'Cannot delete m, does not exist.'
+        print('Cannot delete m, does not exist.')
         return 0
 
 
@@ -2937,12 +2945,12 @@ def plot_trajchar(H, R, numrelease=1, varindex=[4, 15, 14], \
         fig = FIGURE.fig
         m = FIGURE.m
     except:
-        print 'problem getting ax,m, or fig.'
+        print('problem getting ax,m, or fig.')
 
     try:
         del fig.axes[0]
     except:
-        print 'ax not removed'
+        print('ax not removed')
 
 
     T = R['Trajectories']
@@ -3010,7 +3018,7 @@ def plot_releases(R, FIGURE=None, threedim=False,
 
 
         # # clear the previous track
-        if 'circles' in FIGURE.keys():
+        if 'circles' in list(FIGURE.keys()):
             del FIGURE['circles']
         if overlay is False:
             del ax.collections[FIGURE.indices.collections:]
@@ -3138,7 +3146,7 @@ def plot_spectra(inspectra,
     if cum == 'norm':
         # # Normalize the data so it fills to 100%
         # spectra = np.zeros(inspectra.shape)
-        spectra = (inspectra.transpose() / np.sum(inspectra, axis=1)).transpose()
+        spectra = (old_div(inspectra.transpose(), np.sum(inspectra, axis=1))).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
         # sums = np.sum(inspectra,axis=1)
         # for i,elem in enumerate(inspectra):
@@ -3149,7 +3157,7 @@ def plot_spectra(inspectra,
         spectra = inspectra
 
     # Set up plotting environment colors
-    Nc = np.array([float(i) / numageclasses for i in range(numageclasses)])
+    Nc = np.array([old_div(float(i), numageclasses) for i in range(numageclasses)])
     norm = mpl.colors.Normalize(Nc.min(), Nc.max())
     # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
@@ -3181,7 +3189,7 @@ def plot_spectra(inspectra,
 
     # ax.set_yscale('log')
     if y_datarange:
-        print 'setting data range'
+        print('setting data range')
         ax.set_ylim(y_datarange)
     else:
         ax.set_ylim((0, spectra.max()))
@@ -3212,7 +3220,7 @@ def plot_spectra(inspectra,
     # If a ListedColormap is used, the length of the bounds array must be
     # one greater than the length of the color list.  The bounds must be
     # monotonically increasing.
-    bounds = range(numageclasses + 1)
+    bounds = list(range(numageclasses + 1))
     # norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     cb2 = mpl.colorbar.ColorbarBase(ax2,
                                     cmap=cmap,
@@ -3349,7 +3357,7 @@ def plot_agespectra(H, agespectra,
         spectra = _cum_spec(inspectra, cum=cum)
 
     # Set up plotting environment colors
-    Nc = np.array([float(i) / numageclasses for i in range(numageclasses)])
+    Nc = np.array([old_div(float(i), numageclasses) for i in range(numageclasses)])
     norm = mpl.colors.normalize(Nc.min(), Nc.max())
     # jet = plt.cm.get_cmap('jet')
     jet = _gen_flexpart_colormap()
@@ -3405,7 +3413,7 @@ def plot_agespectra(H, agespectra,
     # If a ListedColormap is used, the length of the bounds array must be
     # one greater than the length of the color list.  The bounds must be
     # monotonically increasing.
-    bounds = range(numageclasses + 1)
+    bounds = list(range(numageclasses + 1))
     # norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     cb2 = mpl.colorbar.ColorbarBase(ax2,
                                     cmap=cmap,
@@ -3456,7 +3464,7 @@ def plot_clusters(H, T, rel_i=0,
         fig = FIGURE.fig
         m = FIGURE.m
     except:
-        print 'problem getting ax,m, or fig.'
+        print('problem getting ax,m, or fig.')
 
     # # Remove prior retroplume
     if not overlay:
@@ -3475,14 +3483,14 @@ def plot_clusters(H, T, rel_i=0,
     cindx = [16, 20, 24, 28, 32, 36]
     if ncluster == 'all':
         # plot all clusters
-        ncluster = range(5)
+        ncluster = list(range(5))
     elif isinstance(ncluster, int):
         ncluster = [ncluster]
 
     for nc in ncluster:
         # clstrindx = 16 + (5*(nc))
         clstrindx = cindx[nc]
-        indx = [1] + range(clstrindx, clstrindx + 4)
+        indx = [1] + list(range(clstrindx, clstrindx + 4))
         data = t[:, indx]
         # use ellipses
         ells = _genEllipse(data, m, sizescale=sizescale)
@@ -3539,7 +3547,7 @@ def plot_trajectory_ellipses(H, T, rel_i=0,
         fig = FIGURE.fig
         m = FIGURE.m
     except:
-        print 'problem getting ax,m, or fig.'
+        print('problem getting ax,m, or fig.')
 
     # # Remove prior retroplume
     if overlay:
@@ -3663,7 +3671,7 @@ def plot_markers(H, lon, lat, zsize=None, zlevel=None,
 
 
     # # clear the previous track
-    if 'circles' in FIGURE.keys():
+    if 'circles' in list(FIGURE.keys()):
         del FIGURE['circles']
     if overlay is False:
         del ax.collections[FIGURE.indices.collections:]
@@ -3819,7 +3827,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
 
 
     # # clear the previous track
-    if 'circles' in FIGURE.keys():
+    if 'circles' in list(FIGURE.keys()):
         del FIGURE['circles']
     if overlay is False:
         del ax.collections[FIGURE.indices.collections:]
@@ -4279,7 +4287,7 @@ def plot_sensitivity(H, data, \
             del m
             plt.close('all')
         except:
-            print 'could not drop m'
+            print('could not drop m')
 
     # # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
@@ -4306,7 +4314,7 @@ def plot_sensitivity(H, data, \
         # # transform to nx x ny regularly spaced native projection grid
         if transform:
             dx = 2.*np.pi * m.rmajor / len(lons)
-            nx = int((m.xmax - m.xmin) / dx) + 1; ny = int((m.ymax - m.ymin) / dx) + 1
+            nx = int(old_div((m.xmax - m.xmin), dx)) + 1; ny = int(old_div((m.ymax - m.ymin), dx)) + 1
             if nx is 1:
                 topodat = data
             else:
@@ -4346,7 +4354,7 @@ def plot_sensitivity(H, data, \
         clevs = _log_clevs(dat_min, dat_max)
 
     else:
-        clevs = [i for i in np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
+        clevs = [i for i in np.arange(dat_min, dat_max, old_div((dat_max - dat_min), 100))]
 
     # # draw land sea mask
     # m.fillcontinents(zorder=0)
@@ -4420,7 +4428,7 @@ def plot_sensitivity(H, data, \
     # # create new axis for colorbar.
         h = 0.5 * h
         l = l + w + .03
-        b = 0.5 - (h / 2)
+        b = 0.5 - (old_div(h, 2))
         w = 0.025
         cax = plt.axes([l, b, w, h])
     # # using im2, not im (hack to prevent colors from being
@@ -4603,7 +4611,7 @@ def plot_curtain(H, data, \
     if log:
         clevs = _log_clevs(dat_min, dat_max)
     else:
-        clevs = [i for i in np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
+        clevs = [i for i in np.arange(dat_min, dat_max, old_div((dat_max - dat_min), 100))]
 
     # # Set up the IMAGE
     # # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
@@ -4649,7 +4657,7 @@ def plot_curtain(H, data, \
     # # create new axis for colorbar.
         h = 0.8 * h
         l = l + w + .02
-        b = 0.5 - (h / 2)
+        b = 0.5 - (old_div(h, 2))
         w = 0.025
         cax = plt.axes([l, b, w, h])
     # # using im2, not im (hack to prevent colors from being
@@ -4818,7 +4826,7 @@ class BinaryFile(object):
         self.file = open(filename, mode=self.mode, buffering=1)
         """The file handler."""
         if order not in ['fortran', 'c']:
-            raise ValueError, "order should be either 'fortran' or 'c'."
+            raise ValueError("order should be either 'fortran' or 'c'.")
         self.order = order
         """The order for file ('c' or 'fortran')."""
 
@@ -4836,7 +4844,7 @@ class BinaryFile(object):
         if type(shape) is int:
             shape = (shape,)
         if type(shape) is not tuple:
-            raise ValueError, "shape must be a tuple"
+            raise ValueError("shape must be a tuple")
         length = dtype.itemsize
         rank = len(shape)
         if rank == 1:
@@ -4859,7 +4867,7 @@ class BinaryFile(object):
         # Read the data from file
         data = self.file.read(length)
         if len(data) < length:
-            raise EOFError, "Asking for more data than available in file."
+            raise EOFError("Asking for more data than available in file.")
 
         # Convert read string into a regular array, or scalar
         dts = dtype.base.str[1:]
@@ -4970,15 +4978,15 @@ class Structure(dict, object):
 
     def __dir__(self):
         """ necessary for Ipython tab-completion """
-        return self.keys()
+        return list(self.keys())
 
     def set_with_dict(self, D):
         """ set attributes with a dict """
-        for k in D.keys():
+        for k in list(D.keys()):
             self.__setattr__(k, D[k])
 
     def __dir__(self):
-        return self.keys()
+        return list(self.keys())
 
 class Header(Structure):
     """This is the primary starting point for processing FLEXPART output.
@@ -5215,7 +5223,7 @@ def _cum_spec(inspectra, cum=True):
     if cum == 'norm':
         # # Normalize the data so it fills to 100%
         # spectra = np.zeros(inspectra.shape)
-        spectra = (inspectra.transpose() / np.sum(inspectra, axis=1)).transpose()
+        spectra = (old_div(inspectra.transpose(), np.sum(inspectra, axis=1))).transpose()
         spectra = np.cumsum(spectra[:, :], axis=1)
         # sums = np.sum(inspectra,axis=1)
         # for i,elem in enumerate(inspectra):
@@ -5247,8 +5255,8 @@ def _gen_MapPar_fromHeader(H):
     MapPar.llcrnrlon = H.outlon0
     MapPar.urcrnrlat = H.outlat0 + (H.dyout * H.numygrid)
     MapPar.urcrnrlon = H.outlon0 + (H.dxout * H.numxgrid - 1)
-    for k in MapPar.keys():
-        print k, MapPar[k]
+    for k in list(MapPar.keys()):
+        print(k, MapPar[k])
 
     return MapPar
 
@@ -5273,9 +5281,9 @@ def _gen_daylabels(P, H=None, dt=86400):
 
         if H:
             dt = abs(H.loutstep)
-        return str(1 + int(abs(P)) / dt)
+        return str(1 + old_div(int(abs(P)), dt))
     else:
-        return [str(1 + int(abs(p)) / dt) for p in P]
+        return [str(1 + old_div(int(abs(p)), dt)) for p in P]
 
 
 
@@ -5285,12 +5293,12 @@ def _datarange(H, G, index=None):
     Heightnn = H['Heightnn']
     fpmax = -999.
     if index == None:
-        seek = range(G.shape[-1])
+        seek = list(range(G.shape[-1]))
     else:
         seek = [index]
 
     for i in seek:
-        zpmax = np.max(G[:, :, 0, i] / Heightnn[:, :, 0])
+        zpmax = np.max(old_div(G[:, :, 0, i], Heightnn[:, :, 0]))
         if zpmax > fpmax:
             fpmax = zpmax
         # print fpmax
@@ -5364,7 +5372,7 @@ def _gen_flexpart_colormap(ctbfile=None, colors=None):
         try:
             colors = np.loadtxt(ctbfile)
         except:
-            print "WARNING: cannot load ctbfile. using colors"
+            print("WARNING: cannot load ctbfile. using colors")
     if colors:
         name = 'user_colormap'
     if not colors:
@@ -5441,11 +5449,11 @@ def main ():
     plot_name = 'test'
     plt.title(plot_name, fontsize=10)
     plt.savefig(os.path.join(here, plot_name + '.png'))
-    print plot_name
+    print(plot_name)
 
 
 if __name__ == '__main__':
-    print 'testing'
+    print('testing')
     try:
         start_time = time.time()
         parser = optparse.OptionParser(
@@ -5461,7 +5469,7 @@ if __name__ == '__main__':
         (options, args) = parser.parse_args()
         # if len(args) < 1:
         #    parser.error ('missing argument')
-        if options.verbose: print time.asctime()
+        if options.verbose: print(time.asctime())
 
         #### LateX #####
         if options.latex:
@@ -5474,17 +5482,17 @@ if __name__ == '__main__':
         exit_code = main()
         if exit_code is None:
             exit_code = 0
-        if options.verbose: print time.asctime()
-        if options.verbose: print 'TOTAL TIME IN MINUTES:',
-        if options.verbose: print (time.time() - start_time) / 60.0
+        if options.verbose: print(time.asctime())
+        if options.verbose: print('TOTAL TIME IN MINUTES:', end=' ')
+        if options.verbose: print(old_div((time.time() - start_time), 60.0))
         sys.exit(exit_code)
-    except KeyboardInterrupt, e:  # Ctrl-C
+    except KeyboardInterrupt as e:  # Ctrl-C
         raise e
-    except SystemExit, e:  # sys.exit()
+    except SystemExit as e:  # sys.exit()
         raise e
-    except Exception, e:
-        print 'ERROR, UNEXPECTED EXCEPTION'
-        print str(e)
+    except Exception as e:
+        print('ERROR, UNEXPECTED EXCEPTION')
+        print(str(e))
         traceback.print_exc()
         os._exit(1)
 

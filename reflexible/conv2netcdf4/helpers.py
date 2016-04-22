@@ -1,3 +1,6 @@
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 ########### HELPER FUNCTIONS ##########
 
 import datetime
@@ -52,12 +55,12 @@ def _datarange(H, G, index=None):
     Heightnn = H['Heightnn']
     fpmax = -999.
     if index is None:
-        seek = range(G.shape[-1])
+        seek = list(range(G.shape[-1]))
     else:
         seek = [index]
 
     for i in seek:
-        zpmax = np.max(G[:, :, 0, i] / Heightnn[:, :, 0])
+        zpmax = np.max(old_div(G[:, :, 0, i], Heightnn[:, :, 0]))
         if zpmax > fpmax:
             fpmax = zpmax
         # print fpmax

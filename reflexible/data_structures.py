@@ -3,6 +3,11 @@
 """
 Definition of the different data structures in reflexible.
 """
+from __future__ import division
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import os
 import datetime as dt
 import itertools
@@ -65,7 +70,7 @@ class Header(object):
 
         """
 
-        pih = pi / 180.
+        pih = old_div(pi, 180.)
         r_earth = 6.371e6
         cosfunc = lambda y: cos(y * pih) * r_earth
 
@@ -300,7 +305,7 @@ class Header(object):
 
     @property
     def releasetimes(self):
-        return [b - ((b - a) / 2)
+        return [b - (old_div((b - a), 2))
                 for a, b in zip(self.releasestart, self.releaseend)]
 
     @property
@@ -398,7 +403,7 @@ class FD(object):
         self.direction = direction
         self.iout = iout
         self._keys = [(s, k) for s, k in itertools.product(
-            range(nspec), available_dates)]
+            list(range(nspec)), available_dates)]
 
     @property
     def keys(self):
@@ -443,7 +448,7 @@ class C(object):
         self.Heightnn = Heightnn
         self._FD = FD
         self._keys = [(s, k) for s, k in itertools.product(
-            range(self.nspec), range(self.pointspec))]
+            list(range(self.nspec)), list(range(self.pointspec)))]
 
     @property
     def keys(self):
@@ -538,7 +543,7 @@ def get_slabs(Heightnn, grid):
     slabs = {}
     for i in range(grid.shape[2]):
         if normAreaHeight:
-            data = grid[:, :, i] / Heightnn[:, :, i]
+            data = old_div(grid[:, :, i], Heightnn[:, :, i])
         else:
             data = grid[:, :, i]
         slabs[i + 1] = data.T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
@@ -724,9 +729,9 @@ class Command(object):
             ## below here, not actual COMMAND input
             'HEADER': """**********************************************\n\n\n  Input file for   FLEXPART\n\n*********************************************\n\n""",
             'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File'''],
-            'SIM_START': [dt.datetime(2000, 01, 01, 00, 00, 00),
+            'SIM_START': [dt.datetime(2000, 0o1, 0o1, 00, 00, 00),
                           '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],
-            'SIM_END': [dt.datetime(2000, 02, 01, 00, 00, 00),
+            'SIM_END': [dt.datetime(2000, 0o2, 0o1, 00, 00, 00),
                         '''Ending date and time of simulation. Same format as 2'''],
             'AGECLASSES': [[86400 * 30], '''list of ageclasses (seconds) in the simulation'''],
             'RELEASE_SECONDS': [86400, '''duration of the releases in seconds''']
@@ -735,11 +740,11 @@ class Command(object):
         self._overrides = options
 
         # set the default options as attributes
-        for key, value in self._OPTIONS.iteritems():
+        for key, value in self._OPTIONS.items():
             setattr(self, key.lower(), value[0])
 
         # override the attributes with options
-        for key, value in options.iteritems():
+        for key, value in options.items():
             setattr(self, key.lower(), value)
 
         if self.ibdate is None:
@@ -856,7 +861,7 @@ class Ageclass(object):
             # print('WRITE AGECLASSES: wrote: {0} \n'.format(acfile))
 
 
-class Release():
+class Release(object):
     """ subclass of a pandas dataframe to allow for some special properties
     and methods.
 
@@ -876,7 +881,7 @@ class Release():
             outf.write('&RELEASES_CTRL\n')
             outf.write(' NSPEC=        {0},\n'.format(self.releases.attrs['nspec']))
             outf.write(' SPECNUM_REL=')
-            idx = range(self.releases.attrs['nspec'])
+            idx = list(range(self.releases.attrs['nspec']))
             for i in idx:
                 outf.write(' {0},'.format(self.releases.attrs['specnum_rel']))
             outf.write('\n /\n')
@@ -976,10 +981,10 @@ class ReleasePoint(object):
 
         self._overrides = options
 
-        for key, value in self._OPTIONS.iteritems():
+        for key, value in self._OPTIONS.items():
             setattr(self, key.lower(), value[0])
 
-        for key, value in options.iteritems():
+        for key, value in options.items():
             setattr(self, key.lower(), value)
 
         if idt1:
@@ -1073,9 +1078,9 @@ class Trajectory(dict, object):
 
     def __dir__(self):
         """ necessary for Ipython tab-completion """
-        return self.keys()
+        return list(self.keys())
 
     def set_with_dict(self, D):
         """ set attributes with a dict """
-        for k in D.keys():
+        for k in list(D.keys()):
             self.__setattr__(k, D[k])

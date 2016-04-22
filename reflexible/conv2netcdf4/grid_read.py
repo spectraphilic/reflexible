@@ -1,3 +1,8 @@
+from __future__ import division
+from __future__ import print_function
+from builtins import str
+from builtins import range
+from past.utils import old_div
 ########### Grid Reading Routines ###############
 
 import itertools
@@ -49,13 +54,13 @@ def _readgrid_noFF(H, **kwargs):
     #        print 'Cannot find FortFlex.so'
     useFortFlex = 0
 
-    if 'date' in kwargs.keys():
+    if 'date' in list(kwargs.keys()):
         date = kwargs['date']
     # else: date = H['ibtime']
     else:
         date = None
 
-    if 'unit' in kwargs.keys():
+    if 'unit' in list(kwargs.keys()):
         unitname = kwargs['unit']
     else:
         unitname = 'time'
@@ -63,42 +68,42 @@ def _readgrid_noFF(H, **kwargs):
     units = ['conc', 'pptv', 'time', 'footprint']
     unit = units.index(unitname)
 
-    if 'nspec_ret' in kwargs.keys():
+    if 'nspec_ret' in list(kwargs.keys()):
         nspec_ret = kwargs['nspec_ret']
     else:
         nspec_ret = 1
 
-    if 'pspec_ret' in kwargs.keys():
+    if 'pspec_ret' in list(kwargs.keys()):
         pspec_ret = kwargs['ppsec_ret']
     else:
         pspec_ret = 1
 
-    if 'age_ret' in kwargs.keys():
+    if 'age_ret' in list(kwargs.keys()):
         age_ret = kwargs['age_ret']
     else:
         age_ret = 1
 
-    if 'nested' in kwargs.keys():
+    if 'nested' in list(kwargs.keys()):
         nested = kwargs['nested']
     else:
         nested = False
 
-    if 'time_ret' in kwargs.keys():
+    if 'time_ret' in list(kwargs.keys()):
         time_ret = kwargs['time_ret']
     else:
-        time_ret = range(len(H['available_dates']))
+        time_ret = list(range(len(H['available_dates'])))
 
-    if 'scaledepo' in kwargs.keys():
+    if 'scaledepo' in list(kwargs.keys()):
         scaledepo = kwargs['scaledepo']
     else:
         scaledepo = 1.0
 
-    if 'scaleconc' in kwargs.keys():
+    if 'scaleconc' in list(kwargs.keys()):
         scaleconc = kwargs['scaleconc']
     else:
         scaleconc = 1.0
 
-    if 'decaycons' in kwargs.keys():
+    if 'decaycons' in list(kwargs.keys()):
         decaycons = kwargs['decaycons']
     else:
         decaycons = 99999999990
@@ -145,8 +150,8 @@ def _readgrid_noFF(H, **kwargs):
             else:
                 n = n + 1  # XXX n is actually set before this?
 
-            kz = n / (numxgrid * numygrid)
-            jy = (n - kz * numxgrid * numygrid) / numxgrid
+            kz = old_div(n, (numxgrid * numygrid))
+            jy = old_div((n - kz * numxgrid * numygrid), numxgrid)
             ix = n - numxgrid * numygrid * kz - numxgrid * jy
             # print "n  ==> ix,jy,kz,k,nage"
             # print "%s ==> %s,%s,%s,%s,%s" % (n,ix,jy,kz,k,nage)
@@ -191,7 +196,7 @@ def _readgrid_noFF(H, **kwargs):
         else:
             get_dates = available_dates
 
-        print 'getting grid for: ', get_dates
+        print('getting grid for: ', get_dates)
 
         for date_i in range(len(get_dates)):
             if unit != 4:
@@ -232,8 +237,8 @@ def _readgrid_noFF(H, **kwargs):
                                         scaleconc, decayconstant)
 
                     # contribution[:,:,:] = concgrid[:,:,:,:,0]
-                    print np.min(concgrid)
-                    print np.max(concgrid)
+                    print(np.min(concgrid))
+                    print(np.max(concgrid))
 
                     # altitude = 50000
                     zplot = sumgrid(zplot, concgrid,
@@ -252,7 +257,7 @@ def _readgrid_noFF(H, **kwargs):
                     f2 = reflexible.conv2netcdf4.BinaryFile(filename, order='fortran')
                     skip(4)
                     G['itime'] = getbin('i')
-                    print H['available_dates'][date_i]
+                    print(H['available_dates'][date_i])
 
                     # Read Wet Depostion
                     skip()
@@ -285,7 +290,7 @@ def _readgrid_noFF(H, **kwargs):
                     f2.close()
                 fail = 0
             else:
-                print "\n\n INPUT ERROR: Could not find file: %s" % filename
+                print("\n\n INPUT ERROR: Could not find file: %s" % filename)
                 raise IOError('No file: %s' % filename)
 
         if useFortFlex == 1:
@@ -334,8 +339,8 @@ def _readgridBF(H, filename):
                 else:
                     n = n + 1
 
-                kz = n / (H.numxgrid * H.numygrid)
-                jy = (n - kz * H.numxgrid * H.numygrid) / H.numxgrid
+                kz = old_div(n, (H.numxgrid * H.numygrid))
+                jy = old_div((n - kz * H.numxgrid * H.numygrid), H.numxgrid)
                 ix = n - H.numxgrid * H.numygrid * kz - H.numxgrid * jy
                 grd[ix, jy, kz - 1, k, nage] = abs(dmp_r[ir])
 
@@ -352,7 +357,7 @@ def _readgridBF(H, filename):
                     fact = fact * -1.
                 else:
                     n = n + 1
-                jy = n / H.numxgrid
+                jy = old_div(n, H.numxgrid)
                 ix = n - H.numxgrid * jy
                 grd[ix, jy, k, nage] = abs(dmp_r[ir])
 
@@ -364,13 +369,13 @@ def _readgridBF(H, filename):
         # See: http://docs.cython.org/src/userguide/source_files_and_compilation.html#pyximport
         import pyximport; pyximport.install()
         from pflexcy import dumpdatagrid, dumpdepogrid
-        print 'using pflexcy'
+        print('using pflexcy')
     except:
-        print """WARNING: Using PURE Python to readgrid, execution will be slow.
+        print("""WARNING: Using PURE Python to readgrid, execution will be slow.
          Try compiling the FortFlex module or the pflexcy module
          for your machine. For more information see the
          reflexible/f2py_build directory or use cython with pflexcy.pyx
-        """
+        """)
         dumpdatagrid = _dumpgrid
         dumpdepogrid = _dumpgrid
 
@@ -450,7 +455,7 @@ def _read_headerFF(pathname, h=None,
     try:
         from .FortFlex import readheader
     except:
-        print "Error with FortFlex.readheader, use read_header"
+        print("Error with FortFlex.readheader, use read_header")
 
     headervars = ['numxgrid', 'numygrid', 'numzgrid', 'outlon0', 'outlat0',
                   'compoint', 'dxout', 'dyout', 'outheight', 'ibdate',
@@ -464,14 +469,14 @@ def _read_headerFF(pathname, h=None,
         h = reflexible.conv2netcdf4.Structure()
 
     if verbose:
-        print """Reading Header with:
+        print("""Reading Header with:
                     maxpoint : %s
                     maxspec : %s
                     maxageclass : %s
                     nxmax : %s
                     nymax : %s
                     nzmax : %s
-                    """ % (maxpoint, maxspec, maxageclass, nxmax, nymax, nzmax)
+                    """ % (maxpoint, maxspec, maxageclass, nxmax, nymax, nzmax))
 
     (numxgrid, numygrid, numzgrid, outlon0, outlat0, dxout, dyout, outheight,
      ibdate, ibtime, loutstep, nspec, nageclass, lage, ireleasestart,
@@ -481,7 +486,7 @@ def _read_headerFF(pathname, h=None,
                           nxmax, nymax, nzmax)
 
     for v in headervars:
-        if v not in h.keys():
+        if v not in list(h.keys()):
             exec("h.%s = %s" % (v, v))
     return h
 
@@ -650,7 +655,7 @@ def readgridV8(H, **kwargs):
         # assign grid dates for indexing fd
         fd.grid_dates = get_dates[:]
 
-    print 'getting grid for: ', get_dates
+    print('getting grid for: ', get_dates)
     # Some pre-definitions
     fail = 0
     # set filename prefix
@@ -686,7 +691,7 @@ def readgridV8(H, **kwargs):
         print('Using BinaryFile')
 
     # reserve output fields
-    print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
+    print(H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint)
 
     # -------------------------------------------------
 
@@ -699,7 +704,7 @@ def readgridV8(H, **kwargs):
 
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
-        print datestring
+        print(datestring)
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):A
             FLEXDATA[(s, datestring)] = fdc = reflexible.conv2netcdf4.FDC()
             spec_fid = '_' + str(s + 1).zfill(3)
@@ -712,7 +717,7 @@ def readgridV8(H, **kwargs):
 
             else:
                 # grid total footprint
-                print "Total footprint"
+                print("Total footprint")
                 filename = os.path.join(
                     H['pathname'],
                     prefix[(unit_i) + (H.nested * 5)] + spec_fid)
@@ -722,13 +727,13 @@ def readgridV8(H, **kwargs):
                 H.filename = filename
                 # print 'reading: ' + filename
                 if OPS.verbose:
-                    print 'with values:'
+                    print('with values:')
                     inputvars = ['filename', 'numxgrid', 'numygrid',
                                  'zdims', 'numpoint', 'nageclass',
                                  'scaledepo', 'scaleconc',
                                  'decayconstant', 'numpointspec']
                     for v in inputvars:
-                        print v, " ==> ", H[v]
+                        print(v, " ==> ", H[v])
 
                 if OPS.BinaryFile:
                     print("Reading {0} with BinaryFile".format(filename))
@@ -805,7 +810,7 @@ def readgridV8(H, **kwargs):
             # this will be removed.
             # TODO: this can be removed now?
             qind = (nspec_ret[0], fd.grid_dates[0])
-            fd.grid = fd[qind][fd[qind].keys()[0]].grid
+            fd.grid = fd[qind][list(fd[qind].keys())[0]].grid
         except:
             pass
 
@@ -899,7 +904,7 @@ def readgridV6(H, **kwargs):
         # assign grid dates for indexing fd
         fd.grid_dates = get_dates[:]
 
-    print 'getting grid for: ', get_dates
+    print('getting grid for: ', get_dates)
     # Some pre-definitions
     fail = 0
     # set filename prefix
@@ -918,7 +923,7 @@ def readgridV6(H, **kwargs):
         from .FortFlex import sumgrid
         useFortFlex = True
         OPS.useFortFlex = useFortFlex
-        print 'using FortFlex VERSION 6'
+        print('using FortFlex VERSION 6')
     except:
         # get the original module (no memory allocation)
         useFortFlex = False
@@ -936,7 +941,7 @@ def readgridV6(H, **kwargs):
     #    key2var(H,k)
 
    # reserve output fields
-    print H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint
+    print(H.numxgrid, H.numygrid, H.numzgrid, OPS.nspec_ret, OPS.pspec_ret, OPS.age_ret, len(get_dates), H.numpoint)
 
     # -------------------------------------------------
 
@@ -957,7 +962,7 @@ def readgridV6(H, **kwargs):
 
     for date_i in range(len(get_dates)):
         datestring = get_dates[date_i]
-        print datestring
+        print(datestring)
         for s in nspec_ret:  # range(OPS.nspec_ret,OPS.nspec_ret+1):
             FLEXDATA[(s, datestring)] = fdc = reflexible.conv2netcdf4.FDC()
             # spec_fid = '_'+str(s+1).zfill(3)
@@ -969,7 +974,7 @@ def readgridV6(H, **kwargs):
 
             else:
                 # grid total footprint
-                print "Total footprint"
+                print("Total footprint")
                 filename = os.path.join(H['pathname'],
                                         prefix[(unit_i) + (H.nested * 5)])
                 H.zdims = 1
@@ -978,13 +983,13 @@ def readgridV6(H, **kwargs):
                 H.filename = filename
                 # print 'reading: ' + filename
                 if OPS.verbose:
-                    print 'with values:'
+                    print('with values:')
                     inputvars = ['filename', 'numxgrid', 'numygrid',
                                  'zdims', 'numpoint', 'nageclass',
                                  'scaledepo', 'scaleconc',
                                  'decayconstant', 'numpointspec']
                     for v in inputvars:
-                        print v, " ==> ", H[v]
+                        print(v, " ==> ", H[v])
 
                 if OPS.BinaryFile:
                     # print 'Using BinaryFile'
@@ -1036,7 +1041,7 @@ def readgridV6(H, **kwargs):
             # just for testing, set the first available grid as a shortcut
             # this will be removed.
             qind = (0, fd.grid_dates[0])
-            fd.grid = fd[qind][fd[qind].keys()[0]].grid
+            fd.grid = fd[qind][list(fd[qind].keys())[0]].grid
         except:
             pass
 
@@ -1045,7 +1050,7 @@ def readgridV6(H, **kwargs):
 
 def monthly_footprints(H):
 
-    footprints = np.zeros((H.ny, H.nx, len(H.C.keys())))
+    footprints = np.zeros((H.ny, H.nx, len(list(H.C.keys()))))
     for i, key in enumerate(H.C):
         footprints[:, :, i] = H.C[key].slabs[0]
 
@@ -1106,7 +1111,7 @@ def fill_grids(H, nspec=0, FD=None):
 
     if H.direction == 'backward':
 
-        for s, k in itertools.product(species, range(H.numpointspec)):
+        for s, k in itertools.product(species, list(range(H.numpointspec))):
             C[(s, k)] = c = reflexible.conv2netcdf4.FDC()
             c.grid = np.zeros((H.numxgrid, H.numygrid, H.numzgrid))
             c.itime = None
@@ -1117,7 +1122,7 @@ def fill_grids(H, nspec=0, FD=None):
             c.spec_i = s
 
         # read data grids and attribute/sum sensitivity
-        print species
+        print(species)
         for s in species:
 
             for d in FD.grid_dates:
@@ -1161,7 +1166,7 @@ def read_emissions(emissionsfile, E=None, maxemissions=1):
         defaults = {'nxmax': 720, 'nymax': 360, 'outlon0': -180,
                     'outlat0': -90, 'numxgrid': 720, 'numygrid': 360,
                     'dxout': 0.5, 'dyout': 0.5}
-        for k, v in defaults.iteritems():
+        for k, v in defaults.items():
             exec("E.%s = %s" % (k, v))
 
     emissions = reademissions(emissionsfile, maxemissions, E.nxmax, E.nymax,
@@ -1243,7 +1248,7 @@ def get_slabs(H, G, index=None, normAreaHeight=True, scale=1.0):
             TC = np.sum(g, axis=2).T
             TC = TC * scale
         if normAreaHeight:
-            data = g[:, :, i] / Heightnn[:, :, i]
+            data = old_div(g[:, :, i], Heightnn[:, :, i])
         else:
             data = g[:, :, i]
 

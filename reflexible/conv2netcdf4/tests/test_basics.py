@@ -1,3 +1,4 @@
+from builtins import object
 import os.path
 
 import pytest
@@ -10,7 +11,7 @@ fd_keys = [
     'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
 
 
-class Dataset:
+class Dataset(object):
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
@@ -25,7 +26,7 @@ class Dataset:
         self.tmpdir.remove(self.nc_path)
 
 
-class TestFwdAPI:
+class TestFwdAPI(object):
     @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Fwd2_V9.02'])
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
@@ -58,7 +59,7 @@ class TestFwdAPI:
             'version']
 
 
-class TestBwdAPI:
+class TestBwdAPI(object):
     @pytest.fixture(autouse=True, params=['Bwd1_V9.02', 'Bwd2_V9.2beta'])
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
@@ -67,9 +68,9 @@ class TestBwdAPI:
 
     def test_fill_backward(self):
         self.H.fill_backward(nspec=(0,))
-        ckeys = self.H.C[(0, 0)].keys()
+        ckeys = list(self.H.C[(0, 0)].keys())
         assert sorted(ckeys) == fd_keys
-        fdkeys = self.H.FD[(0, self.H.available_dates[0])].keys()
+        fdkeys = list(self.H.FD[(0, self.H.available_dates[0])].keys())
         assert sorted(fdkeys) == fd_keys
 
     def test_read_grid(self):

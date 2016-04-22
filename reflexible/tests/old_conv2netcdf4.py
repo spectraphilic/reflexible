@@ -1,3 +1,4 @@
+from builtins import object
 import pytest
 import numpy as np
 
@@ -9,7 +10,7 @@ from reflexible.conv2netcdf4 import Header as OldHeader
 output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta']
 
 
-class Dataset:
+class Dataset(object):
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
@@ -28,7 +29,7 @@ class Dataset:
         self.tmpdir.remove(self.nc_path)
 
 
-class TestHeader:
+class TestHeader(object):
     @pytest.fixture(autouse=True, params=output_list)
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)

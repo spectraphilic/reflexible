@@ -1,3 +1,5 @@
+from builtins import range
+from builtins import object
 import pytest
 import netCDF4 as nc
 
@@ -8,7 +10,7 @@ from reflexible.conv2netcdf4 import Header
 output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta']
 
 
-class Dataset:
+class Dataset(object):
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
@@ -27,7 +29,7 @@ class Dataset:
         self.tmpdir.remove(self.nc_path)
 
 
-class TestStructure:
+class TestStructure(object):
     @pytest.fixture(autouse=True, params=output_list)
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
@@ -204,7 +206,7 @@ class TestStructure:
                 #     assert attr in var_attrs
 
 
-class TestWetDryDeps:
+class TestWetDryDeps(object):
     @pytest.fixture(autouse=True, params=output_list)
     def setup(self, request, tmpdir):
         self.dataset = dataset = Dataset(request.param)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 WELCOME = """
 DESCRIPTION
 ===========
@@ -38,13 +39,9 @@ LICENSE
     This package follows creative commons usage.
 
 """
-#print WELCOME
 
 import os
-import datetime as dt
-
 from .version import __version__
-
 
 this_dir = __path__[0]
 
@@ -103,8 +100,8 @@ datasets = {
 
 # Import the public functions here
 from .tests.all import test
-from . import conv2netcdf4
-from .scripts.create_ncfile import create_ncfile
+#from . import conv2netcdf4
+#from .scripts.create_ncfile import create_ncfile
 from .data_structures import (Header, Command, Release,
                             ReleasePoint, Ageclass)
 

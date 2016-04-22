@@ -14,6 +14,10 @@ http://stackoverflow.com/questions/8751185/fortran-unformatted-file-format
 Author: Francesc Alted
 Date: 2015-01-30
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import range
+from past.utils import old_div
 
 import sys
 from time import time
@@ -74,12 +78,12 @@ def readpartpositions(filename, nspec, xlon0, ylat0, dx, dy, dataframe=False):
         while True:
             # Try to read a complete chunk
             data = f.read(CHUNKSIZE * recsize)
-            read_records = int(len(data) / recsize)  # the actual number of records read
+            read_records = int(old_div(len(data), recsize))  # the actual number of records read
             chunk = chunk[:read_records]
             chunk.data[:] = data
             # Recompute xtra1 and ytra1 fields for the recently added chunk
-            chunk['xtra1'][:] = (chunk['xtra1'] - xlon0) / dx
-            chunk['ytra1'][:] = (chunk['ytra1'] - ylat0) / dy
+            chunk['xtra1'][:] = old_div((chunk['xtra1'] - xlon0), dx)
+            chunk['ytra1'][:] = old_div((chunk['ytra1'] - ylat0), dy)
             # Add the chunk to the out array
             out[i:i+read_records] = chunk
             i += read_records
@@ -118,16 +122,16 @@ def main():
     H = conv.Header(args.partdir)
     if args.timming:
         print("Time for reading the header: %.3fs" % (time()-t0,))
-    print("nspec, outlon0, outlat0, dxout, dyout:", H.nspec, H.outlon0, H.outlat0, H.dxout, H.dyout)
+    print(("nspec, outlon0, outlat0, dxout, dyout:", H.nspec, H.outlon0, H.outlat0, H.dxout, H.dyout))
 
     # Structured arrays
     t0 = time()
     readout = readpartpositions(args.datafile, H.nspec, H.outlon0, H.outlat0, H.dxout, H.dyout, args.dataframe)
     if args.timming:
-        print "Time for reading the data: %.3fs" % (time()-t0,)
-    print "records read:", len(readout)
-    print "3 first records:\n", repr(readout[:3])
-    print "3 last records:\n", repr(readout[-3:])
+        print("Time for reading the data: %.3fs" % (time()-t0,))
+    print("records read:", len(readout))
+    print("3 first records:\n", repr(readout[:3]))
+    print("3 last records:\n", repr(readout[-3:]))
 
 
 if __name__ == "__main__":

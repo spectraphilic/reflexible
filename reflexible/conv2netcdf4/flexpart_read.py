@@ -1,3 +1,9 @@
+from __future__ import division
+from __future__ import print_function
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 #### Functions for reading FLEXPART output #####
 
 import os
@@ -400,9 +406,9 @@ def read_trajectories(H, trajfile='trajectories.txt',
             tuple([float(j) for j in alltraj[i].strip().split()])
         itimerel1 = dt + datetime.timedelta(seconds=i1)
         itimerel2 = dt + datetime.timedelta(seconds=i2)
-        Xp = (xp1 + xp2) / 2
-        Yp = (yp1 + yp2) / 2
-        Zp = (zp1 + zp2) / 2
+        Xp = old_div((xp1 + xp2), 2)
+        Yp = old_div((yp1 + yp2), 2)
+        Zp = old_div((zp1 + zp2), 2)
         RelTraj[
             alltraj[
                 i +
@@ -505,7 +511,7 @@ def curtain_agltoasl(H, curtain_agl, coords, below_gl=0.0):
     xp = H.outheight - H.outheight[0]
     casl = np.zeros((len(H.asl_axis), len(coords)))
 
-    for i in xrange(len(coords)):
+    for i in range(len(coords)):
         casl[:, i] = np.interp(H.asl_axis, xp + gl[i],
                                curtain_agl[:, i], left=below_gl)
     return casl
@@ -650,7 +656,7 @@ def gridarea(H):
 
     """
 
-    pih = pi / 180.
+    pih = old_div(pi, 180.)
     r_earth = 6.371e6
     cosfunc = lambda y: cos(y * pih) * r_earth
 
@@ -775,27 +781,27 @@ def read_header(pathname, **kwargs):
     OPS.datefile = None
 
     # add keyword overides and options to header
-    for k in kwargs.keys():
-        if k not in OPS.keys():
+    for k in list(kwargs.keys()):
+        if k not in list(OPS.keys()):
             print("WARNING: {0} not a valid input option.".format(k))
 
     # BW compat fixes
-    if 'nest' in kwargs.keys():
+    if 'nest' in list(kwargs.keys()):
         raise IOError(
             "nest is no longer a valid keyword, see docs. \n "
             "Now use nested=True or nested=False")
 
-    if 'nested' in kwargs.keys():
+    if 'nested' in list(kwargs.keys()):
         # Force the use of true boolean values
         kwargs['nested'] = bool(kwargs['nested'])
 
     OPS.update(kwargs)
 
     if OPS.verbose:
-        print "Reading Header with:\n"
+        print("Reading Header with:\n")
 
         for o in OPS:
-            print "%s ==> %s" % (o, OPS[o])
+            print("%s ==> %s" % (o, OPS[o]))
 
     # Define utility functions for reading binary file
     skip = lambda n = 8: bf.seek(n, 1)
@@ -872,7 +878,7 @@ def read_header(pathname, **kwargs):
         h['jjjjmmdd'] = bf.read('i')
         h['hhmmss'] = bf.read('i')
         junk.append(bf.read('2i'))
-        h['nspec'] = bf.read('i') / 3  # why!?
+        h['nspec'] = old_div(bf.read('i'), 3)  # why!?
         h['numpointspec'] = bf.read('i')
         junk.append(bf.read('2i'))
 
@@ -920,7 +926,7 @@ def read_header(pathname, **kwargs):
         I = {2: 'kindz', 3: 'xp1', 4: 'yp1', 5: 'xp2',
              6: 'yp2', 7: 'zpoint1', 8: 'zpoint2', 9: 'npart', 10: 'mpart'}
 
-        for k, v in I.iteritems():
+        for k, v in I.items():
             # create zero-filled lists in H dict
             h[v] = np.zeros(h['numpoint'])
 
@@ -1076,7 +1082,7 @@ def read_header(pathname, **kwargs):
                               datetime.timedelta(seconds=int(h.ireleaseend[i])))
         h.releasestart = releasestart
         h.releaseend = releaseend[:h.numpointspec]
-        h.releasetimes = [b - ((b - a) / 2)
+        h.releasetimes = [b - (old_div((b - a), 2))
                           for a, b in zip(h.releasestart, h.releaseend)]
 
     # Add datetime objects for dates
@@ -1106,7 +1112,7 @@ def read_header(pathname, **kwargs):
         h.ypoint = h.yp1
 
     # Add release unit derived from kindz
-    if 'kindz' not in h.keys():
+    if 'kindz' not in list(h.keys()):
         h.kindz = [0]
         h.alt_unit = 'unkn.'
     if 3 in h.kindz:
@@ -1180,7 +1186,7 @@ def _readV6(bf, h):
 
     if bf:
         # bf.read('i')
-        print h['numpoint']
+        print(h['numpoint'])
         for i in range(h['numpoint']):
             # r2=getbin('i')
             i1 = getbin('i')

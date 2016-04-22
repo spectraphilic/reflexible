@@ -1,4 +1,6 @@
-import os.path
+from builtins import zip
+from builtins import object
+
 
 import pytest
 import numpy as np
@@ -15,7 +17,7 @@ test_datasets = [('Fwd1_V10.0', False), ('Fwd1_V10.0', True)]
 def monotonically_increasing(l):
     return all(x < y for x, y in zip(l, l[1:]))
 
-class Dataset:
+class Dataset(object):
     def __init__(self, fp_dataset):
         self.fp_name = fp_dataset[0]
         self.nested = fp_dataset[1]
@@ -31,7 +33,7 @@ class Dataset:
         pass
 
 
-class TestHeader:
+class TestHeader(object):
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         dataset = Dataset(request.param)
@@ -93,7 +95,7 @@ class TestHeader:
         assert isinstance(H.area, np.ndarray)
         assert H.area.shape == H.ORO.shape
 
-class TestTrajectory:
+class TestTrajectory(object):
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         dataset = Dataset(request.param)
@@ -104,7 +106,7 @@ class TestTrajectory:
         T = rf.read_trajectories(self.H)
         assert isinstance(T.Trajectories, np.ndarray)
 
-class TestCommand:
+class TestCommand(object):
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         self.C = rf.Command()
@@ -113,7 +115,7 @@ class TestCommand:
         #request.addfinalizer(dataset.cleanup)
 
     def test_attributes(self):
-        for k in self.C._OPTIONS.keys():
+        for k in list(self.C._OPTIONS.keys()):
             assert hasattr(self.C, k.lower())
 
     def test_options(self):

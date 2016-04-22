@@ -1,5 +1,13 @@
 #!/usr/bin/env python 
 """ Matplotlib Basemap Tool Suite """
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import map
+from builtins import range
+from past.utils import old_div
+from builtins import object
 
 # -*- coding: utf-8 -*-
 #John F Burkhart - 2010
@@ -42,12 +50,12 @@ class Structure(dict):
 
     def set_with_dict(self,D):
         """ set attributes with a dict """
-        for k in D.keys():
+        for k in list(D.keys()):
             self.__setattr__(k,D[k])
 
 
 
-class KML_File:
+class KML_File(object):
     "For creating KML files used for Google Earth"
     __author__ = "Jon Goodall <jon.goodall@gmail.com> \
                   http://www.duke.edu/~jgl34\
@@ -104,10 +112,10 @@ class KML_File:
         file = open(self.filepath,"a")
         if not np.iterable(longitude) and not np.iterable(latitude):
             point = True
-            print 'no lines'
+            print('no lines')
         else:
             point = False
-            print 'lines!'
+            print('lines!')
 
         if point:
             file.write(
@@ -167,7 +175,7 @@ def _val2var(val,var):
 
     exec(cmfd)
 
-def map_dynaMap((x,y)):
+def map_dynaMap(xxx_todo_changeme):
     """Attempts to define the basemap instance settings based
     on lon/lat input.
 
@@ -182,6 +190,7 @@ def map_dynaMap((x,y)):
          This function is not reliable yet.
 
      """
+    (x,y) = xxx_todo_changeme
     ymin=min(y); ymax=max(y); y_edge=abs(ymax-ymin)*0.75
     xmin=min(x); xmax=max(x); x_edge=abs(xmax-xmin)*0.75
 
@@ -196,9 +205,9 @@ def map_dynaMap((x,y)):
     area_thresh=1000
     resolution='l'
     projection='merc'
-    lat_0=y[int(len(y)/2)]
+    lat_0=y[int(old_div(len(y),2))]
     lat_1=lat_0-y_edge
-    lon_0=x[int(len(x)/2)]
+    lon_0=x[int(old_div(len(x),2))]
     #lon_1=110.
     rsphere=(6378137.00,6356752.3142)
     pd=y_edge
@@ -285,7 +294,7 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
 
     if map_region==0:
         if coords == None:
-            print "ERROR: for region 0 must provide coordinate tuple (x,y)"
+            print("ERROR: for region 0 must provide coordinate tuple (x,y)")
             raise IOError
         MapPar.urcrnrlon,MapPar.urcrnrlat,MapPar.llcrnrlat,MapPar.llcrnrlon,\
               pd,md,MapPar.lat_0,MapPar.lat_1,MapPar.lon_0,\
@@ -547,8 +556,8 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
         MapPar.llcrnry=0
         #In this case a Basemap instance is required
         #in advance
-        MapPar.urcrnrx=MapPar.m.urcrnrx/2.
-        MapPar.urcrnry=MapPar.m.urcrnry/2.
+        MapPar.urcrnrx=old_div(MapPar.m.urcrnrx,2.)
+        MapPar.urcrnry=old_div(MapPar.m.urcrnry,2.)
 
 
     elif map_region=='VAUUAV_MODIS':
@@ -1056,9 +1065,9 @@ def draw_grid(m,xdiv=10.,ydiv=5.,location=[1,0,0,1],\
     
     # setup map to have meridians:
     if xdiff > xdiv:
-        md = np.round((xdiff / xdiv ))
+        md = np.round((old_div(xdiff, xdiv) ))
     else:
-        md = np.round((xdiff / xdiv ),1)
+        md = np.round((old_div(xdiff, xdiv) ),1)
     
     md = md_options[(np.abs(np.array(md_options) - md)).argmin()]
     #print md
@@ -1072,9 +1081,9 @@ def draw_grid(m,xdiv=10.,ydiv=5.,location=[1,0,0,1],\
     
     # setup map to have parallels.
     if ydiff > ydiv:
-        pd = np.round((ydiff / ydiv ))
+        pd = np.round((old_div(ydiff, ydiv) ))
     else:
-        pd = np.round((ydiff / ydiv ), 2)
+        pd = np.round((old_div(ydiff, ydiv) ), 2)
     if not maxlat:
         maxlat = m.urcrnrlat
         
@@ -1088,7 +1097,7 @@ def draw_grid(m,xdiv=10.,ydiv=5.,location=[1,0,0,1],\
         else:
             parallels = np.arange(m.llcrnrlat,maxlat,pd)
 
-    print parallels, m.llcrnrlat, maxlat, pd
+    print(parallels, m.llcrnrlat, maxlat, pd)
     MP = m.drawparallels(parallels,labels=location,
                          linewidth=linewidth,color=color,fontproperties=p_leg)
     return MP,MD
@@ -1107,7 +1116,7 @@ def plot_ECMWF(nc,variable,time,level,map_region='NorthAmerica'):
     lats = nc.variables['latitude'][:]
     lat2 = lats[::-1]
     lons = nc.variables['longitude'][:]
-    lon1 = np.arange(-180,180,360./len(lons))
+    lon1 = np.arange(-180,180,old_div(360.,len(lons)))
     data = alldata[time,level,:,:]
     data = data[::-1,:] #flip lats
     #shift the grid to go from -180 to 180
@@ -1153,7 +1162,7 @@ def get_OpenDAP(analysistime,date_range=None,level_range=None,
         #use the basemap NetCDFFile to retrieve OpenDAP
         data = mpl_NetCDFFile(URLbase)
     except:
-        raise IOError, 'opendap server not providing the requested data'
+        raise IOError('opendap server not providing the requested data')
     D['extracted_levels'] = []
     D['extracted_dates'] = []
     lev_units = data.variables['lev'].units
@@ -1330,7 +1339,7 @@ def grid_to_netcdf(H,D,nco_filename,spc,time):
         nco.sync()
         nco.close()
     """
-    print "Not working"
+    print("Not working")
 
     return
 """
@@ -1466,7 +1475,7 @@ def get_FIGURE(fig=None,ax=None,m=None,map_region=None,
     FIGURE.indices.collections = len(FIGURE.ax.collections)
     FIGURE.indices.lines = len(FIGURE.ax.lines)
 
-    print "Using figure: %s" % FIGURE.fig.number
+    print("Using figure: %s" % FIGURE.fig.number)
     return FIGURE
 
 def get_base1(map_region=1,
@@ -1506,10 +1515,10 @@ def get_base1(map_region=1,
     else:
         ax=fig.gca()
 
-    print Basemap
+    print(Basemap)
     m=Basemap(**MapPar_sd)
-    print 'getting base1'
-    print m
+    print('getting base1')
+    print(m)
     plt.axes(ax)  ## make sure axes ax are current
     ## draw coastlines and political boundaries.
     m.drawcoastlines(linewidth=0.8)
@@ -1532,19 +1541,19 @@ def get_base2(**kwargs):
     returns a figure and a basemap instance:
     usage: fig,m=get_base1(map_region=2) """
     ## Get Keyword Arguments
-    if 'map_region' in kwargs.keys():
+    if 'map_region' in list(kwargs.keys()):
         reg = kwargs['map_region']
     else:
         reg = 1
-    if 'figname' in kwargs.keys():
+    if 'figname' in list(kwargs.keys()):
         figname = kwargs['figname']
     else:
         figname = None
-    if 'figure' in kwargs.keys():
+    if 'figure' in list(kwargs.keys()):
         fig = kwargs['figure']
     else:
         fig = None
-    if 'coords' in kwargs.keys():
+    if 'coords' in list(kwargs.keys()):
         coord = kwargs['coords']
     else:
         coord = None
@@ -1564,11 +1573,11 @@ def get_base2(**kwargs):
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open('land_shallow_topo_2048.jpg')
     rgba = pil_to_array(pilImage)
-    rgba = rgba.astype(P.Float32)/255. # convert to normalized floats.
+    rgba = old_div(rgba.astype(P.Float32),255.) # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
     nlons = rgba.shape[1]; nlats = rgba.shape[0]
-    delta = 360./float(nlons)
+    delta = old_div(360.,float(nlons))
     lons = P.arange(-180.+0.5*delta,180.,delta)
     lats = P.arange(-90.+0.5*delta,90.,delta)
 
@@ -1585,7 +1594,7 @@ def get_base2(**kwargs):
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original image.
     dx = 2.*P.pi*m.rmajor/float(nlons)
-    nx = int((m.xmax-m.xmin)/dx)+1; ny = int((m.ymax-m.ymin)/dx)+1
+    nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
     rgba_warped = P.zeros((ny,nx,4),P.Float64)
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     for k in range(4):
@@ -1603,19 +1612,19 @@ def get_base3(**kwargs):
     """ Custom version for sea ice. """
 
     ## Get Keyword Arguments
-    if 'map_region' in kwargs.keys():
+    if 'map_region' in list(kwargs.keys()):
         map_region = kwargs['map_region']
     else:
         map_region = 1
-    if 'figname' in kwargs.keys():
+    if 'figname' in list(kwargs.keys()):
         figname = kwargs['figname']
     else:
         figname = None
-    if 'figure' in kwargs.keys():
+    if 'figure' in list(kwargs.keys()):
         fig = kwargs['figure']
     else:
         fig = None
-    if 'basefile' in kwargs.keys():
+    if 'basefile' in list(kwargs.keys()):
         basefile = kwargs['basefile']
     else:
         basefile = None
@@ -1635,7 +1644,7 @@ def get_base3(**kwargs):
     if basefile!=None:
         pilImage = Image.open(basefile)
         rgba = pil_to_array(pilImage)
-        rgba = rgba.astype(np.float32)/255. # convert to normalized floats.
+        rgba = old_div(rgba.astype(np.float32),255.) # convert to normalized floats.
 
     interactive(False)
     ## create the figure.
@@ -1678,19 +1687,19 @@ def get_base_image(imagefile,**kwargs):
 
     """
     ## Get Keyword Arguments
-    if 'map_region' in kwargs.keys():
+    if 'map_region' in list(kwargs.keys()):
         reg = kwargs['map_region']
     else:
         reg = 1
-    if 'figname' in kwargs.keys():
+    if 'figname' in list(kwargs.keys()):
         figname = kwargs['figname']
     else:
         figname = None
-    if 'figure' in kwargs.keys():
+    if 'figure' in list(kwargs.keys()):
         fig = kwargs['figure']
     else:
         fig = None
-    if 'coords' in kwargs.keys():
+    if 'coords' in list(kwargs.keys()):
         coord = kwargs['coords']
     else:
         coord = None
@@ -1710,11 +1719,11 @@ def get_base_image(imagefile,**kwargs):
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open(imagefile)
     rgba = pil_to_array(pilImage)
-    rgba = rgba.astype(np.float32)/255. # convert to normalized floats.
+    rgba = old_div(rgba.astype(np.float32),255.) # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
     nlons = rgba.shape[1]; nlats = rgba.shape[0]
-    delta = 360./float(nlons)
+    delta = old_div(360.,float(nlons))
     lons = np.arange(-180.+0.5*delta,180.,delta)
     lats = np.arange(-90.+0.5*delta,90.,delta)
 
@@ -1731,7 +1740,7 @@ def get_base_image(imagefile,**kwargs):
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original image.
     dx = 2.*np.pi*m.rmajor/float(nlons)
-    nx = int((m.xmax-m.xmin)/dx)+1; ny = int((m.ymax-m.ymin)/dx)+1
+    nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
     rgba_warped = np.zeros((ny,nx,4),np.float64)
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     try:
@@ -1739,7 +1748,7 @@ def get_base_image(imagefile,**kwargs):
             rgba_warped[:,:,k] = m.transform_scalar(rgba[:,:,k],lons,lats,nx,ny)
     except:
         rgba_warped = rgba
-        print 'problem with transform_scalar'
+        print('problem with transform_scalar')
     # plot warped rgba image.
     im = m.imshow(rgba_warped)
     # draw coastlines.
@@ -1764,7 +1773,7 @@ def set_plotkwargs(kwargs,plot_kwargs=None):
                     'visible','xdata','ydata','zorder']
     if plot_kwargs is None:
         plot_kwargs = {}
-    for arg in kwargs.keys():
+    for arg in list(kwargs.keys()):
         if arg in valid_kwargs:
             plot_kwargs[arg] = kwargs[arg]
     return plot_kwargs
@@ -1915,7 +1924,7 @@ def plot_track(lon,lat,
                 lc.set_linewidth(3)
                 plt.gca().add_collection(lc)
             elif np.rank(cx) == 2:
-                for i in xrange(cx.shape[0]):
+                for i in range(cx.shape[0]):
                     points = np.array([cx[i,:],cy[i,:]]).T.reshape(-1, 1, 2)
                     segments = np.concatenate([points[:-1], points[1:]], axis=1)
             
@@ -1932,7 +1941,7 @@ def plot_track(lon,lat,
             m.scatter(cx,cy,**plot_kwargs)
         else:
             m.plot(cx,cy,**plot_kwargs)
-        print 'boring'
+        print('boring')
     plt.axes(ax)
     ax.xaxis.set_major_formatter( nullfmt )
     ax.yaxis.set_major_formatter( nullfmt )
@@ -1973,7 +1982,7 @@ def plot_grid(D,map_region='POLARCAT',dres=0.5,
 
 
     """
-    print "length of D: %s" % len(D)
+    print("length of D: %s" % len(D))
 
 
     if isinstance(D,np.ndarray): 
@@ -1981,7 +1990,7 @@ def plot_grid(D,map_region='POLARCAT',dres=0.5,
         assert len(D.shape) == 2, "D grid must be 2d"
     #if len(D)==1:
         #assume full earth grid with dres
-        print 'received grid of shape:', D.shape
+        print('received grid of shape:', D.shape)
         if D.shape[0] == 720:
             lons = np.arange(-180,180,dres)
         elif D.shape[0] == 721:
@@ -2009,7 +2018,7 @@ def plot_grid(D,map_region='POLARCAT',dres=0.5,
     ## CHANGED THIS HERE FOR THE CODEX ##
 ## Be sure to set map_region=None                          ##
     if isinstance(map_region,str):
-        print "getting basemap with map_region: %s" % map_region
+        print("getting basemap with map_region: %s" % map_region)
         fig,m = get_base1(map_region=map_region)
     else:
         fig = plt.figure()
@@ -2031,7 +2040,7 @@ def plot_grid(D,map_region='POLARCAT',dres=0.5,
         norm = colors.normalize(z.min(),z.max())
         xpt,ypt = m(x,y)
         cmap = [cm.jet(norm(i)) for i in z]
-        m.scatter(xpt,ypt,s=z/100.,edgecolors='none',color=cmap)
+        m.scatter(xpt,ypt,s=old_div(z,100.),edgecolors='none',color=cmap)
 #        for i in range(len(y)):
 #            xpt,ypt = m(x[i],y[i])
 #            cmap = cm.jet(norm(z[i]))
@@ -2043,13 +2052,13 @@ def plot_grid(D,map_region='POLARCAT',dres=0.5,
         #transform Z data into projection
         #transform to nx x ny regularly spaced native projection grid
         dx = 2.*np.pi*m.rmajor/len(lons)
-        nx = int((m.xmax-m.xmin)/dx)+1; ny = int((m.ymax-m.ymin)/dx)+1
+        nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
         if transform:
             # Need this if we choose lon,lat approach
             Zt,xx,yy = m.transform_scalar(z,lons,lats,nx,ny,returnxy=True)
         else:
             Zt = z
-        print m.projection
+        print(m.projection)
 
         if 'moll' in m.projection:
             x,y = m(xx,yy)
@@ -2096,7 +2105,7 @@ def plot_imshow(x,y,z,\
             del m
             plt.close('all')
         except:
-            print 'could not drop m'
+            print('could not drop m')
 
 
     ## Extract grid and release info from header
@@ -2139,7 +2148,7 @@ def plot_imshow(x,y,z,\
     ## transform to nx x ny regularly spaced native projection grid
     if transform:
         dx = 2.*np.pi*m.rmajor/len(lons)
-        nx = int((m.xmax-m.xmin)/dx)+1; ny = int((m.ymax-m.ymin)/dx)+1
+        nx = int(old_div((m.xmax-m.xmin),dx))+1; ny = int(old_div((m.ymax-m.ymin),dx))+1
         topodat = m.transform_scalar(data,lons,lats,nx,ny)
     else:
         topodat = data
@@ -2272,73 +2281,73 @@ def plot_sattracks(**kwargs):
         a mess... see code for help.
 
     """
-    if 'tstart' in kwargs.keys():
+    if 'tstart' in list(kwargs.keys()):
         tstart = kwargs['tstart']
     else:
         tstart = None
-    if 'tstop' in kwargs.keys():
+    if 'tstop' in list(kwargs.keys()):
         tstop = kwargs['tstop']
     else:
         tstop = None
-    if 'ifile' in kwargs.keys():
+    if 'ifile' in list(kwargs.keys()):
         ifile = kwargs['ifile']
     else:
         ifile = None
-    if 'satellite' in kwargs.keys():
+    if 'satellite' in list(kwargs.keys()):
         satellite = kwargs['satellite']
     else:
         satellite = None
-    if 'map_region' in kwargs.keys():
+    if 'map_region' in list(kwargs.keys()):
         map_region = kwargs['map_region']
     else:
         map_region = 1
-    if 'projection' in kwargs.keys():
+    if 'projection' in list(kwargs.keys()):
         projection = kwargs['projection']
     else:
         projection = None
-    if 'coords' in kwargs.keys():
+    if 'coords' in list(kwargs.keys()):
         coords = kwargs['coords']
     else:
         coords = None
-    if 'figname' in kwargs.keys():
+    if 'figname' in list(kwargs.keys()):
         figname = kwargs['figname']
     else:
         figname = None
-    if 'FIGURE' in kwargs.keys():
+    if 'FIGURE' in list(kwargs.keys()):
         FIGURE = kwargs['FIGURE']
     else:
         FIGURE = None
-    if 'title' in kwargs.keys():
+    if 'title' in list(kwargs.keys()):
         title = kwargs['title']
     else:
         title = None
-    if 'overlay' in kwargs.keys():
+    if 'overlay' in list(kwargs.keys()):
         overlay = kwargs['overlay']
     else:
         overlay = False
-    if 'plotargs' in kwargs.keys():
+    if 'plotargs' in list(kwargs.keys()):
         plotargs = kwargs['plotargs']
         plot_kwargs = set_plotkwargs(plotargs,plot_kwargs)
     else:
         plotargs = None
-    if 'print_times' in kwargs.keys():
+    if 'print_times' in list(kwargs.keys()):
         print_times = kwargs['print_times']
     else:
         print_times = True
-    if 'Sets' in kwargs.keys():
+    if 'Sets' in list(kwargs.keys()):
         Sets = kwargs['Sets']
     else:
         Sets = None
 
     ##IMPORTS
-    import mapping as mp
+    from . import mapping as mp
     import datetime
     from matplotlib.ticker import NullFormatter
     from pylab import  figure, axes, setp, title, text, savefig, show, close, gca
 
     #DEBUG
-    for k,v in kwargs.iteritems():
-        print 'for %s ==> %s' % (k,v)
+    for k,v in kwargs.items():
+        print('for %s ==> %s' % (k,v))
 
     #A few plot definitions
     if FIGURE==None:
@@ -2438,7 +2447,7 @@ def read_satdata(c,dat,D,start_time,stop_time=None,satellite='Calipso'):
                                 lat,lon,hdg,ltlat,ltlon,rtlat,rtlon = l[1:]
                                 D.append((t,lon,lat,hdg))
 
-    t0 = datetime.datetime(2009,04,15)
+    t0 = datetime.datetime(2009,0o4,15)
     Sets = {}
     i = 0
 
@@ -2477,7 +2486,7 @@ def read_LARC_predict(filepath):
     i = 0
 
     for t in out:
-        if not Sets.keys():
+        if not list(Sets.keys()):
             Sets[i] = [t]
             t0 = t[0]
         else:
@@ -2520,10 +2529,10 @@ def Sat_tracks(map,start_time=None,stop_time=None,
                 SATELLITEDAT='/mnt/win/07_jfb/jfbin/pybin/data/terra.dat'
             else: SATELLITEDAT='C:\07_jfb\jfbin\pybin\data\terra.dat'
         else:
-            SATELLITEDAT=None; print 'Need satellite data file!!!'; AttributeError
+            SATELLITEDAT=None; print('Need satellite data file!!!'); AttributeError
     else:
         SATELLITEDAT=ifile
-        print 'Using: '+ifile
+        print('Using: '+ifile)
 
     if plotargs == None:
         plot_kwargs = {'linewidth':1,
@@ -2533,7 +2542,7 @@ def Sat_tracks(map,start_time=None,stop_time=None,
         plot_kwargs = set_plotkwargs(plotargs)
 
     if start_time==None:
-        start_time=datetime.datetime(2010,05,11)
+        start_time=datetime.datetime(2010,0o5,11)
     if stop_time==None:
         stop_time=start_time+datetime.timedelta(30)
     if Sets == None:
@@ -2553,7 +2562,7 @@ def Sat_tracks(map,start_time=None,stop_time=None,
         cmap = cm.jet(norm(k))
         clon=[-1* float(i[1]) for i in D]
         clat=[float(i[2]) for i in D]
-        cx,cy = map(clon,clat)
+        cx,cy = list(map(clon,clat))
         plot_kwargs.update({'color':cmap})
         map.plot(cx,cy,**plot_kwargs)
         #Print legends
@@ -2565,7 +2574,7 @@ def Sat_tracks(map,start_time=None,stop_time=None,
             frq=plot_frq
             tlon=[-1* float(i[1]) for i in D[::frq]];
             tlat=[float(i[2]) for i in D[::frq]];
-            tx,ty=map(tlon,tlat)
+            tx,ty=list(map(tlon,tlat))
             map.plot(tx,ty,'r+',label=label,**plot_kwargs)
             ty=[i+1000 for i in ty] #reposition for text placement
             tx=[i+1000 for i in tx]
@@ -2600,15 +2609,15 @@ def greatCircleDistance(RLAT1,RLON1,RLAT2,RLON2):
     """
     RERTH=6.3712E6
     PI=3.14159265358979
-    DPR=180./PI
+    DPR=old_div(180.,PI)
     if abs(RLAT1-RLAT2) < 0.03 and abs(RLON1-RLON2) < 0.03:
         DISTANCE=0.
     else:
-        CLAT1=math.cos(RLAT1/DPR)
-        SLAT1=math.sin(RLAT1/DPR)
-        CLAT2=math.cos(RLAT2/DPR)
-        SLAT2=math.sin(RLAT2/DPR)
-        CDLON=math.cos((RLON1-RLON2)/DPR)
+        CLAT1=math.cos(old_div(RLAT1,DPR))
+        SLAT1=math.sin(old_div(RLAT1,DPR))
+        CLAT2=math.cos(old_div(RLAT2,DPR))
+        SLAT2=math.sin(old_div(RLAT2,DPR))
+        CDLON=math.cos(old_div((RLON1-RLON2),DPR))
         CRD=SLAT1*SLAT2+CLAT1*CLAT2*CDLON
         DISTANCE=RERTH*math.acos(CRD)/1000.
 
@@ -2682,16 +2691,16 @@ class GreatCircle(object):
             # WGS84
             a = 6378137.0
             b = 6356752.3142
-            f = (a-b)/a
-            rmajor = (2*a+b)/3.
-            rminor = (2*a+b)/3.
+            f = old_div((a-b),a)
+            rmajor = old_div((2*a+b),3.)
+            rminor = old_div((2*a+b),3.)
         # convert to radians from degrees.
         lat1 = math.radians(lat1)
         lon1 = math.radians(lon1)
         lat2 = math.radians(lat2)
         lon2 = math.radians(lon2)
         self.a = rmajor
-        self.f = (rmajor-rminor)/rmajor
+        self.f = old_div((rmajor-rminor),rmajor)
         self.lat1 = lat1
         self.lat2 = lat2
         self.lon1 = lon1
@@ -2702,8 +2711,8 @@ class GreatCircle(object):
         self.azimuth12 = a12
         self.azimuth21 = a21
         # great circle arc-length distance (in radians).
-        self.gcarclen = 2.*math.asin(math.sqrt((math.sin((lat1-lat2)/2))**2+\
-                                               math.cos(lat1)*math.cos(lat2)*(math.sin((lon1-lon2)/2))**2))
+        self.gcarclen = 2.*math.asin(math.sqrt((math.sin(old_div((lat1-lat2),2)))**2+\
+                                               math.cos(lat1)*math.cos(lat2)*(math.sin(old_div((lon1-lon2),2)))**2))
         # check to see if points are antipodal (if so, route is undefined).
         if self.gcarclen == math.pi:
             self.antipodal = True
@@ -2726,32 +2735,32 @@ class GreatCircle(object):
         """
         # must ask for at least 2 points.
         if npoints <= 1:
-            raise ValueError,'npoints must be greater than 1'
+            raise ValueError('npoints must be greater than 1')
         elif npoints == 2:
             return [math.degrees(self.lon1),math.degrees(self.lon2)],[math.degrees(self.lat1),math.degrees(self.lat2)]
         # can't do it if endpoints are antipodal, since
         # route is undefined.
         if self.antipodal:
-            raise ValueError,'cannot compute intermediate points on a great circle whose endpoints are antipodal'
+            raise ValueError('cannot compute intermediate points on a great circle whose endpoints are antipodal')
         d = self.gcarclen
-        delta = 1.0/(npoints-1)
+        delta = old_div(1.0,(npoints-1))
         f = delta*np.arange(npoints) # f=0 is point 1, f=1 is point 2.
-        incdist = self.distance/(npoints-1)
+        incdist = old_div(self.distance,(npoints-1))
         lat1 = self.lat1
         lat2 = self.lat2
         lon1 = self.lon1
         lon2 = self.lon2
         # perfect sphere, use great circle formula
         if self.f == 0.:
-            A = np.sin((1-f)*d)/math.sin(d)
-            B = np.sin(f*d)/math.sin(d)
+            A = old_div(np.sin((1-f)*d),math.sin(d))
+            B = old_div(np.sin(f*d),math.sin(d))
             x = A*math.cos(lat1)*math.cos(lon1)+B*math.cos(lat2)*math.cos(lon2)
             y = A*math.cos(lat1)*math.sin(lon1)+B*math.cos(lat2)*math.sin(lon2)
             z = A*math.sin(lat1)               +B*math.sin(lat2)
             lats=np.arctan2(z,np.sqrt(x**2+y**2))
             lons=np.arctan2(y,x)
-            lons = map(math.degrees,lons.tolist())
-            lats = map(math.degrees,lats.tolist())
+            lons = list(map(math.degrees,lons.tolist()))
+            lats = list(map(math.degrees,lats.tolist()))
         # use ellipsoid formulas
         else:
             latpt = self.lat1
@@ -2842,7 +2851,7 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
     # Iterate the following equations, 
     #  until there is no significant change in lembda 
 
-    while ( last_lembda < -3000000.0 or lembda != 0 and abs( (last_lembda - lembda)/lembda) > 1.0e-9 ) :
+    while ( last_lembda < -3000000.0 or lembda != 0 and abs( old_div((last_lembda - lembda),lembda)) > 1.0e-9 ) :
 
         sqr_sin_sigma = pow( math.cos(U2) * math.sin(lembda), 2) + \
                       pow( (math.cos(U1) * math.sin(U2) - \
@@ -2859,7 +2868,7 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
 
         Cos2sigma_m = math.cos(sigma) - (2 * math.sin(U1) * math.sin(U2) / pow(math.cos(alpha), 2) )
 
-        C = (f/16) * pow(math.cos(alpha), 2) * (4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
+        C = (old_div(f,16)) * pow(math.cos(alpha), 2) * (4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
 
         last_lembda = lembda
 
@@ -2869,13 +2878,13 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
 
     u2 = pow(math.cos(alpha),2) * (a*a-b*b) / (b*b)
 
-    A = 1 + (u2/16384) * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)))
+    A = 1 + (old_div(u2,16384)) * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)))
 
-    B = (u2/1024) * (256 + u2 * (-128+ u2 * (74 - 47 * u2)))
+    B = (old_div(u2,1024)) * (256 + u2 * (-128+ u2 * (74 - 47 * u2)))
 
-    delta_sigma = B * Sin_sigma * (Cos2sigma_m + (B/4) * \
+    delta_sigma = B * Sin_sigma * (Cos2sigma_m + (old_div(B,4)) * \
                                    (Cos_sigma * (-1 + 2 * pow(Cos2sigma_m, 2) ) - \
-                                    (B/6) * Cos2sigma_m * (-3 + 4 * sqr_sin_sigma) * \
+                                    (old_div(B,6)) * Cos2sigma_m * (-3 + 4 * sqr_sin_sigma) * \
                                     (-3 + 4 * pow(Cos2sigma_m,2 ) )))
 
     s = b * A * (sigma - delta_sigma)
@@ -2891,7 +2900,7 @@ def vinc_dist(  f,  a,  phi1,  lembda1,  phi2,  lembda2 ) :
     if ( alpha12 > two_pi ) : 
         alpha12 = alpha12 - two_pi
 
-    alpha21 = alpha21 + two_pi / 2.0
+    alpha21 = alpha21 + old_div(two_pi, 2.0)
     if ( alpha21 < 0.0 ) : 
         alpha21 = alpha21 + two_pi
     if ( alpha21 > two_pi ) : 
@@ -2942,12 +2951,12 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
     cosalpha_sq = 1.0 - Sinalpha * Sinalpha
 
     u2 = cosalpha_sq * (a * a - b * b ) / (b * b)
-    A = 1.0 + (u2 / 16384) * (4096 + u2 * (-768 + u2 * \
+    A = 1.0 + (old_div(u2, 16384)) * (4096 + u2 * (-768 + u2 * \
                                            (320 - 175 * u2) ) )
-    B = (u2 / 1024) * (256 + u2 * (-128 + u2 * (74 - 47 * u2) ) )
+    B = (old_div(u2, 1024)) * (256 + u2 * (-128 + u2 * (74 - 47 * u2) ) )
 
     # Starting with the approximation
-    sigma = (s / (b * A))
+    sigma = (old_div(s, (b * A)))
 
     last_sigma = 2.0 * sigma + 2.0  # something impossible
 
@@ -2956,18 +2965,18 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
 
     # two_sigma_m , delta_sigma
 
-    while ( abs( (last_sigma - sigma) / sigma) > 1.0e-9 ) :
+    while ( abs( old_div((last_sigma - sigma), sigma)) > 1.0e-9 ) :
 
         two_sigma_m = 2 * sigma1 + sigma
 
         delta_sigma = B * math.sin(sigma) * ( math.cos(two_sigma_m) \
-                                              + (B/4) * (math.cos(sigma) * \
+                                              + (old_div(B,4)) * (math.cos(sigma) * \
                                                          (-1 + 2 * math.pow( math.cos(two_sigma_m), 2 ) -  \
-                                                          (B/6) * math.cos(two_sigma_m) * \
+                                                          (old_div(B,6)) * math.cos(two_sigma_m) * \
                                                           (-3 + 4 * math.pow(math.sin(sigma), 2 )) *  \
                                                           (-3 + 4 * math.pow( math.cos (two_sigma_m), 2 ))))) 
         last_sigma = sigma
-        sigma = (s / (b * A)) + delta_sigma
+        sigma = (old_div(s, (b * A))) + delta_sigma
 
 
     phi2 = math.atan2 ( (math.sin(U1) * math.cos(sigma) + math.cos(U1) * math.sin(sigma) * math.cos(alpha12) ), \
@@ -2978,7 +2987,7 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
     lembda = math.atan2( (math.sin(sigma) * math.sin(alpha12 )), (math.cos(U1) * math.cos(sigma) -  \
                                                                   math.sin(U1) *  math.sin(sigma) * math.cos(alpha12)))
 
-    C = (f/16) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq ))
+    C = (old_div(f,16)) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq ))
 
     omega = lembda - (1-C) * f * Sinalpha *  \
           (sigma + C * math.sin(sigma) * (math.cos(two_sigma_m) + \
@@ -2989,7 +2998,7 @@ def  vinc_pt( f, a, phi1, lembda1, alpha12, s ) :
     alpha21 = math.atan2 ( Sinalpha, (-math.sin(U1) * math.sin(sigma) +  \
                                       math.cos(U1) * math.cos(sigma) * math.cos(alpha12)))
 
-    alpha21 = alpha21 + two_pi / 2.0
+    alpha21 = alpha21 + old_div(two_pi, 2.0)
     if ( alpha21 < 0.0 ) :
         alpha21 = alpha21 + two_pi
     if ( alpha21 > two_pi ) :

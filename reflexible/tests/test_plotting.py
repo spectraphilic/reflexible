@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
+from builtins import zip
+from builtins import object
 
 import os.path
 
@@ -15,7 +17,7 @@ test_datasets = [('Fwd1_V10.0', False), ('Fwd1_V10.0', True)]
 def monotonically_increasing(l):
     return all(x < y for x, y in zip(l, l[1:]))
 
-class Dataset:
+class Dataset(object):
     def __init__(self, fp_dataset):
         self.fp_name = fp_dataset[0]
         self.nested = fp_dataset[1]
@@ -31,7 +33,7 @@ class Dataset:
         pass
 
 
-class TestPlotting:
+class TestPlotting(object):
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         pass

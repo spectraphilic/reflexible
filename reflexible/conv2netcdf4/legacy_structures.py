@@ -1,6 +1,9 @@
 """
 Definition of the different data structures in reflexible.
 """
+from __future__ import print_function
+from builtins import str
+from builtins import object
 
 from datetime import datetime
 import struct
@@ -184,15 +187,15 @@ class Structure(dict, object):
 
     def __dir__(self):
         """ necessary for Ipython tab-completion """
-        return self.keys()
+        return list(self.keys())
 
     def set_with_dict(self, D):
         """ set attributes with a dict """
-        for k in D.keys():
+        for k in list(D.keys()):
             self.__setattr__(k, D[k])
 
     def __dir__(self):
-        return self.keys()
+        return list(self.keys())
 
 
 class Header(Structure):

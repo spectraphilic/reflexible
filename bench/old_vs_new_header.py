@@ -16,6 +16,9 @@ Note: this only runs on Linux.
 :Author: Francesc Alted
 
 """
+from __future__ import print_function
+from builtins import zip
+from builtins import range
 
 import sys
 import os.path
@@ -41,10 +44,10 @@ def check_test_data(dirname):
                 "wget -O %s http://folk.uio.no/johnbur/sharing/%s" % (ptarball, tarball),
                 shell=True)
             if retcode < 0:
-                print >>sys.stderr, "wget was terminated by signal", -retcode
+                print("wget was terminated by signal", -retcode, file=sys.stderr)
         retcode = subprocess.call("tar xvfz %s -C %s" % (ptarball, wdir), shell=True)
         if retcode < 0:
-            print >>sys.stderr, "tar was terminated by signal", -retcode
+            print("tar was terminated by signal", -retcode, file=sys.stderr)
     return datadir
 
 
@@ -62,10 +65,10 @@ with fprof.lmprof(), fprof.ctime("Read the new Header"):
     Hnc = rf.Header(ncfile)
 
 with fprof.lmprof(), fprof.ctime("Read all the concentrations with old Header"):
-    H.fill_backward(nspec=range(H.nspec))
-    for nspec, pointspec in zip(range(H.nspec), range(H.numpointspec)):
-        print "C[(%d, %d)]:" % (nspec, pointspec), H.C[(nspec, pointspec)]
+    H.fill_backward(nspec=list(range(H.nspec)))
+    for nspec, pointspec in zip(list(range(H.nspec)), list(range(H.numpointspec))):
+        print("C[(%d, %d)]:" % (nspec, pointspec), H.C[(nspec, pointspec)])
 
 with fprof.lmprof(), fprof.ctime("Read all the concentrations with new Header"):
-    for nspec, pointspec in zip(range(Hnc.nspec), range(Hnc.numpointspec)):
-        print "C[(%d, %d)]:" % (nspec, pointspec), Hnc.C[(nspec, pointspec)]
+    for nspec, pointspec in zip(list(range(Hnc.nspec)), list(range(Hnc.numpointspec))):
+        print("C[(%d, %d)]:" % (nspec, pointspec), Hnc.C[(nspec, pointspec)])
