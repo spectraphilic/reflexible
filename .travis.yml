@@ -1,5 +1,5 @@
 sudo: required
-dist: trusty
+dist: xenial
 
 before_install:
   - uname -a
@@ -42,7 +42,7 @@ os:
   # - osx
 
 python:
-  - 2.7
+  - 3.5
 
 script:
   - py.test reflexible -v --cov reflexible --cov-report term-missing
