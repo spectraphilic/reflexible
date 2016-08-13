@@ -403,8 +403,8 @@ def plot_sensitivity(H, data, \
     # im2 = copy.copy(im)
     # im2.set_cmap(colmap)
     # # create new axis for colorbar.
-        h = 0.5 * h
-        l = l + w + .03
+        h = 0.7 * h
+        l = l + w #+ .01
         b = 0.5 - (h / 2)
         w = 0.025
         cax = plt.axes([l, b, w, h])
@@ -473,6 +473,193 @@ def plot_sensitivity(H, data, \
 
     return FIGURE
 
+def plot_trajectory(H, T, rel_i, FIGURE=None,
+                    map_region=None, projection=None, coords=None,
+                    overlay=True,
+                    draw_circles=True,
+                    draw_labels=True, days_back=20,
+                    cbar2=True,
+                    cbar2_title=None,
+                    MapPar=None):
+    """Plot the center trajectory of the plume on the map
+
+    Usage::
+
+        > FIG = plot_trajectory(H,RT,rel_id,*kwargs)
+
+    .. note::
+        You can substitude "None" for the :class:`Header` instance if you haven't
+        created one
+
+
+    Returns
+      A :mod:`mapping` "FIGURE" object.
+
+    Arguments
+
+      .. tabularcolumns::  |l|L|
+
+      =============         =============================================
+      keyword               Description [default]
+      =============         =============================================
+      rel_i                 **required** release index
+      FIGURE                A "FIGURE" object[None] (see mapping.py)
+      projection            A projection pre-defined in :mod:`mapping`
+      coords                A set of lon,lat coords for autosetting
+                            map map_region (not really working).
+      overlay               [True] will overlay the trajectory
+                            on top of another map instance.
+      draw_circles          [True] will mark the trajectory with
+                            circles. If [False] nothing is drawn.
+      draw_labels           [True] will draw the 'day' numbers on the
+                            trajectories.
+      days_back             For how many days back should the labels be
+                            shown? [20]
+      cbar2                 [True] draws the scale bar as a second axis.
+      cbar2_title            Optional argument to overide the cbar title.
+      MapPar                A Structure of mapping parameters to pass
+                            to the basemap instance if desired.
+      =============         =============================================
+
+    .. todo::
+        Who knows?! Could probably handle the overlaying better.
+
+    .. note::
+        Just set H to "None" if you haven't already created a "Header" instance.
+
+
+    """
+
+    if H:
+        pass
+
+    # # Set up the FIGURE
+    if FIGURE == None:
+        FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
+                               coords=coords, MapPar=MapPar)
+    # #Get fig info and make active
+    fig = FIGURE.fig
+    m = FIGURE.m
+    ax = FIGURE.fig.axes[0]
+    plt.figure(fig.number)
+    plt.axes(ax)
+
+    # # prepare the data
+    trjs = T['Trajectories']
+    rel = rel_i + 1  # # account for zero indexing
+
+    # #extract only releases of interest
+    t = trjs[np.where(trjs[:, 0] == rel), :][0]
+
+    # # Get the data for the days_back we're interested in
+    lon = t[:days_back, 2]
+    lat = t[:days_back, 3]
+    zlevel = t[:days_back, 4]
+    zsize = np.ones(len(lon)) * 50
+    marker = 'o'
+
+
+    # # clear the previous track
+    if 'circles' in FIGURE.keys():
+        del FIGURE['circles']
+    if overlay is False:
+        del ax.collections[FIGURE.indices.collections:]
+        del ax.texts[FIGURE.indices.texts:]
+
+    # # plot the track
+    cx, cy = m(lon, lat)
+    if draw_circles:
+        cmap = plt.get_cmap('gist_gray')
+        circles = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
+                          marker=marker, edgecolor=None,
+                          zorder=10, alpha=0.85)
+
+        try:
+            FIGURE.circles = circles
+        except:
+            pass
+        # # make the figure active again
+        plt.figure(fig.number)
+        # # draw the legend and title
+        # # CREATE COLORBAR
+        # # does a colorbar already exist?
+        # # Get the current axes, and properties for use later
+        ax0 = fig.axes[1]
+        pos = ax0.get_position()
+        l, b, w, h = pos.bounds
+        if cbar2:
+            try:
+                cb2 = FIGURE.cb2
+                cax2 = FIGURE.cax2
+                cb2.update_normal(circles)
+            except:
+                cax2 = plt.axes([l + w + 0.03, b, 0.02, h])
+        # # using im2, not im (hack to prevent colors from being
+        # # too compressed at the low end on the colorbar - results
+        # # from highly nonuniform colormap)
+                cb2 = fig.colorbar(circles, cax=cax2)  # , format='%3.2g') # draw colorbar
+                FIGURE.cax2 = cax2
+                FIGURE.cb2 = cb2
+        # # check if a colorbar legend exists (this will cause
+        # # problems for subplot routines!)
+        else:
+            cax2 = plt.axes([l + w + 0.03, b, 0.025, h - 0.2])
+            cb2 = fig.colorbar(jnkmap, cax=cax2)  # draw colorbar
+
+        p_leg = mpl.font_manager.FontProperties(size='6')
+        if cbar2_title:
+            cax.set_title(cbar2_title, fontproperties=p_leg)
+        else:
+            cax2.set_title('altitude\n(m)', fontproperties=p_leg)
+        # # delete the ghost instance
+        # plt.close(jnkfig.number)
+        # del jnkax, jnkfig, jnkmap
+
+    plt.axes(ax)
+    plt.setp(ax, xticks=[], yticks=[])
+
+    if draw_labels:
+        day_labels = _gen_daylabels(t[:days_back, 1], dt=3600)
+        p_cax = mpl.font_manager.FontProperties(size='10',
+                                                style='italic',
+                                                weight='bold',
+                                               )
+
+
+
+        for i, (p, x, y) in enumerate(zip(day_labels, cx, cy)):
+            if x > m.llcrnrx and x < m.urcrnrx:
+                if y > m.llcrnry and y < m.urcrnry:
+                    ax.text(x, y + y * .02, '{0}'.format(p), va='bottom', ha='left',
+                            fontproperties=p_cax, zorder=11,
+                            color='white', bbox=dict(facecolor='green', alpha=0.5)
+                            )
+
+    FIGURE.fig = fig
+    FIGURE.m = m
+    FIGURE.ax = ax
+    if draw_circles:
+        FIGURE.cax2 = cax2
+        FIGURE.cb2 = cb2
+    return FIGURE
+
+def _gen_daylabels(P, H=None, dt=None):
+    """
+    Uses H.loutstep to calculate time steps back for plotting on clusters and trajectories. If dt = 86400, then labels will show 'days back'.
+
+    """
+    if dt is None and H is None:
+        dt = 86400
+    
+    elif H:
+        dt = abs(H.loutstep)
+
+    if isinstance(P, int):  
+        return str(1 + int(abs(P)) / dt)
+    
+    else:
+        #return [str(int(abs(p))) for p in P]
+        return [str(1 + int(abs(p)) / dt) for p in P]
 
 
 def _gen_log_clevs(dat_min, dat_max):

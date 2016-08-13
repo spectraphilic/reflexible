@@ -643,18 +643,19 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
                      'resolution': 'l'
                      })
 
-    elif map_region=='Stads':
+    elif map_region=='stads-nest':
         "Stads nested output"
         MapPar.update({
+                     'area_thresh' : 1000.,      
                      'lat_0': 60.0,
-                     'llcrnrlat': 50.0,
+                     'llcrnrlat': 70.0,
                      'llcrnrlon': -25.0,
                      'lon_0': 10.0,
-                     'projection': 'tmerc',
-                     'resolution': 'h',
-                     #'rsphere': (6378137.0, 6356752.3142),
-                     'urcrnrlat': 70.0,
-                     'urcrnrlon': 55.0})
+                     'projection': 'merc',
+                     'resolution': 'i',
+                     'rsphere': (6378137.0, 6356752.3142),
+                     'urcrnrlat': 85.0,
+                     'urcrnrlon': 35.0})
 
     elif map_region=='GreenlandLaea':
         "Over Greenland"
@@ -722,6 +723,18 @@ def map_regions(map_region='default',projection=None,coords=None,m=None,MapPar=N
         MapPar.lon_0=-20.
         MapPar.rsphere=(6378137.00,6356752.3142)
 
+    elif map_region=='north-atlantic':
+        "Whole North Atlantic"
+        MapPar.llcrnrlat=35.
+        MapPar.llcrnrlon=-95.
+        MapPar.urcrnrlat=75.
+        MapPar.urcrnrlon=50.
+        MapPar.area_thresh=1000.
+        MapPar.resolution='l'
+        MapPar.projection='lcc'
+        MapPar.lat_1=5.
+        MapPar.lon_0=-20.
+        MapPar.rsphere=(6378137.00,6356752.3142)
     
     elif map_region=='finland':
         "North Norway"
