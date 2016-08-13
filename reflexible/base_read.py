@@ -145,13 +145,16 @@ def read_trajectories(H, trajfile='trajectories.txt', \
     
     RelTraj = Trajectory()
     Trajectories = []
-    #format change?? Below works with the older data, but but FP v10.
-    # for i in range(3, 3 + (numpoint * 2), 2):
-    #     i1, i2, xp1, yp1, xp2, yp2, zp1, zp2, k, npart , = \
-    #       tuple([float(j) for j in alltraj[i].strip().split()])
-    for i in range(3, 3 + (numpoint * 2), 3):
-        i1, i2, xp1, yp1, xp2 , = tuple([float(j) for j in alltraj[i].strip().split()])
-        yp2, zp1, zp2, k, npart , = tuple([float(j) for j in alltraj[i+1].strip().split()])
+    # format change?? Try block below because some trajectories.txt
+    # files have linebreaks, but seems more recent FP v10. does not.
+    try:
+        for i in range(3, 3 + (numpoint * 2), 3):
+            i1, i2, xp1, yp1, xp2 , = tuple([float(j) for j in alltraj[i].strip().split()])
+            yp2, zp1, zp2, k, npart , = tuple([float(j) for j in alltraj[i+1].strip().split()])
+    except:
+        for i in range(3, 3 + (numpoint * 2), 2):
+            i1, i2, xp1, yp1, xp2, yp2, zp1, zp2, k, npart , = \
+              tuple([float(j) for j in alltraj[i].strip().split()])
 
         itimerel1 = tdelta + dt.timedelta(seconds=i1)
         itimerel2 = tdelta + dt.timedelta(seconds=i2)
