@@ -4,4 +4,6 @@ pytest-cov
 coverage
 python-coveralls
 pandas
-xray
+xarray
+mpl_toolkits.basemap
+
