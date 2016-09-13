@@ -390,7 +390,8 @@ def read_trajectories(H, trajfile='trajectories.txt',
         ibdate, ibtime = alltraj[0].strip().split()[:2]
         model = 'Flexpart'
         version = 'V.x'
-    dt = datetime.datetime.strptime(ibdate + ibtime.zfill(6), '%Y%m%d%H%M%S')
+    dt = datetime.datetime.strptime(ibdate + ibtime.zfill(6),
+                                    '%Y%m%d%H%M%S')
     numpoint = int(alltraj[2].strip())
     # Fill a dictionary with the Release points and information keyed by name
     # RelTraj['RelTraj_ID'] = (i1,i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
@@ -702,12 +703,12 @@ def _get_header_version(bf):
 
     ret = bf.tell()
     bf.seek(12)  # start of version string
-    version = bf.read('13S')
+    version = bf.read('13S').decode()
     # Somewhere in version 9.2 beta, the version length changed to 29
     # However, one *must* check which is the final size for this
     if '9.2 b' in version:
          bf.seek(12)
-         version = bf.read('29S')
+         version = bf.read('29S').decode()
     bf.seek(ret)
 
     return version
@@ -874,7 +875,7 @@ def read_header(pathname, **kwargs):
         h['jjjjmmdd'] = bf.read('i')
         h['hhmmss'] = bf.read('i')
         junk.append(bf.read('2i'))
-        h['nspec'] = bf.read('i') / 3  # why!?
+        h['nspec'] = bf.read('i') // 3  # why!?
         h['numpointspec'] = bf.read('i')
         junk.append(bf.read('2i'))
 
@@ -896,15 +897,15 @@ def read_header(pathname, **kwargs):
             else:
                 junk.append(bf.read('i'))
                 h['wetdep'].append(
-                    ''.join([bf.read('c') for i in range(10)]).strip())
+                    ''.join([bf.read('c').decode() for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 junk.append(bf.read('i'))
                 h['drydep'].append(
-                    ''.join([bf.read('c') for i in range(10)]).strip())
+                    ''.join([bf.read('c').decode() for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 h['nz_list'].append(bf.read('i'))
                 h['species'].append(
-                    ''.join([bf.read('c') for i in range(10)]).strip())
+                    ''.join([bf.read('c').decode() for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
 
         if 'V6' in version:
@@ -922,7 +923,7 @@ def read_header(pathname, **kwargs):
         I = {2: 'kindz', 3: 'xp1', 4: 'yp1', 5: 'xp2',
              6: 'yp2', 7: 'zpoint1', 8: 'zpoint2', 9: 'npart', 10: 'mpart'}
 
-        for k, v in I.iteritems():
+        for k, v in I.items():
             # create zero-filled lists in H dict
             h[v] = np.zeros(h['numpoint'])
 
@@ -960,9 +961,9 @@ def read_header(pathname, **kwargs):
                 gt = bf.tell() + l  # create 'goto' point
                 sp = ''
                 # collect the characters for the compoint
-                while re.search("\w", bf.read('c')):
+                while re.search(b"\w", bf.read('c')):
                     bf.seek(-1, 1)
-                    sp = sp + bf.read('c')
+                    sp = sp + bf.read('c').decode()
 
                 bf.seek(gt)  # skip ahead to gt point
 

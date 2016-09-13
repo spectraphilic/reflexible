@@ -1,4 +1,3 @@
-
 """
 functions for reading fp data in reflexible.
 
@@ -36,20 +35,15 @@ VERSION
 import os
 import datetime as dt
 
-
 # Dependencies:
 # Numpy
 import numpy as np
 
-
 from .data_structures import Trajectory
 
 
-
-
-def read_trajectories(H, trajfile='trajectories.txt', \
-                     ncluster=5, \
-                     ageclasses=20):
+def read_trajectories(H, trajfile='trajectories.txt', ncluster=5,
+                      ageclasses=20):
     """
     Reads the trajectories.txt file in a FLEXPART run output directory.
 
@@ -126,13 +120,12 @@ def read_trajectories(H, trajfile='trajectories.txt', \
 
     if isinstance(H, str):
         try:
-            alltraj = file(H, 'r').readlines()
+            alltraj = open(H, 'r').readlines()
         except:
             raise IOError('Could not open file: %s' % H)
     else:
         path = H.fp_path
-        alltraj = file(os.path.join(path, trajfile), 'r').readlines()
-
+        alltraj = open(os.path.join(path, trajfile), 'r').readlines()
 
     try:
         ibdate, ibtime, model, version = alltraj[0].strip().split()[:4]
@@ -142,33 +135,37 @@ def read_trajectories(H, trajfile='trajectories.txt', \
         version = 'V.x'
     tdelta = dt.datetime.strptime(ibdate + ibtime.zfill(6), '%Y%m%d%H%M%S')
     numpoint = int(alltraj[2].strip())
-    
+
     RelTraj = Trajectory()
     Trajectories = []
     # format change?? Try block below because some trajectories.txt
     # files have linebreaks, but seems more recent FP v10. does not.
     try:
         for i in range(3, 3 + (numpoint * 2), 3):
-            i1, i2, xp1, yp1, xp2 , = tuple([float(j) for j in alltraj[i].strip().split()])
-            yp2, zp1, zp2, k, npart , = tuple([float(j) for j in alltraj[i+1].strip().split()])
+            i1, i2, xp1, yp1, xp2, = tuple((float(j) for j in
+                                            alltraj[i].strip().split()))
+            yp2, zp1, zp2, k, npart, = tuple((float(j) for j in
+                                              alltraj[i + 1].strip().split()))
     except:
         for i in range(3, 3 + (numpoint * 2), 2):
-            i1, i2, xp1, yp1, xp2, yp2, zp1, zp2, k, npart , = \
-              tuple([float(j) for j in alltraj[i].strip().split()])
+            i1, i2, xp1, yp1, xp2, yp2, zp1, zp2, k, npart, = \
+                tuple([float(j) for j in alltraj[i].strip().split()])
 
         itimerel1 = tdelta + dt.timedelta(seconds=i1)
         itimerel2 = tdelta + dt.timedelta(seconds=i2)
         Xp = (xp1 + xp2) / 2
         Yp = (yp1 + yp2) / 2
         Zp = (zp1 + zp2) / 2
-        RelTraj[alltraj[i + 1].strip()] = np.array((itimerel1, itimerel2, Xp, Yp, Zp, k, npart))
+        RelTraj[alltraj[i + 1].strip()] = np.array(
+            (itimerel1, itimerel2, Xp, Yp, Zp, k, npart))
 
     for i in range(3 + (numpoint * 3), len(alltraj)):
         raw = alltraj[i]
-        FMT = [0, 5, 8, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6] + ncluster * [8, 8, 7, 6, 8]
+        FMT = [0, 5, 8, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 6, 6, 6] + \
+              ncluster * [8, 8, 7, 6, 8]
 
-        data = [raw[sum(FMT[:ii]):sum(FMT[:ii + 1])] for ii in range(1, len(FMT) - 1)] + \
-                     [raw[sum(FMT[:-1]):]]
+        data = [raw[sum(FMT[:ii]):sum(FMT[:ii + 1])]
+                for ii in range(1, len(FMT) - 1)] + [raw[sum(FMT[:-1]):]]
         ### FIX ###
         # ## To get rid of '******' that is now in trajectories.txt
         data = [float(r.replace('********', 'NaN')) for r in data]
@@ -180,28 +177,31 @@ def read_trajectories(H, trajfile='trajectories.txt', \
     RelTraj['date'] = tdelta
     RelTraj['Trajectories'] = data
     RelTraj['labels'] = \
-            ['release number', 'seconds prior to release', 'lon', 'lat', 'height', 'mean topography', \
-             'mean mixing height', 'mean tropopause height', 'mean PV index', \
-             'rms distance', 'rms', 'zrms distance', 'zrms', \
-             'fraction mixing layer', 'fraction PV<2pvu', 'fraction in troposphere'] + \
-            ncluster * ['xcluster', 'ycluster', 'zcluster', 'fcluster', 'rmscluster']
+        ['release number', 'seconds prior to release', 'lon', 'lat',
+         'height', 'mean topography',
+         'mean mixing height', 'mean tropopause height', 'mean PV index',
+         'rms distance', 'rms', 'zrms distance', 'zrms',
+         'fraction mixing layer', 'fraction PV<2pvu',
+         'fraction in troposphere'] + \
+        ncluster * ['xcluster', 'ycluster', 'zcluster', 'fcluster',
+                    'rmscluster']
     RelTraj['info'] = \
-    """
-    Returns a dictionary:
-        R['Trajectories'] = array_of_floats(
-            releasenum,it1,xi,yi,zi,topoi,hmixi,tropoi,pvi,
-            rmsdisti,rmsi,zrmsdisti,zrmsi,hfri,pvfri,trfri,
-            (xclusti(k),yclusti(k),zclusti(k),fclusti(k),rmsclusti(k),k=1,5))
+        """
+        Returns a dictionary:
+            R['Trajectories'] = array_of_floats(
+                releasenum,it1,xi,yi,zi,topoi,hmixi,tropoi,pvi,
+                rmsdisti,rmsi,zrmsdisti,zrmsi,hfri,pvfri,trfri,
+                (xclusti(k),yclusti(k),zclusti(k),fclusti(k),rmsclusti(k),k=1,5))
 
-        R['RELEASE_ID'] = (dt_i1,dt_i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
-        R['info'] = this message
+            R['RELEASE_ID'] = (dt_i1,dt_i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
+            R['info'] = this message
 
-    To plot a trajectory timeseries:
-        RT = read_trajectories(H)
-        T = RT['Trajectories']
-        rel = 1
-        t = T[np.where(T[:,0]==rel),:][0]
-        plt.plot(t[:,1],t[:,14])
-        plt.savefig('trajectories.png')
-    """
+        To plot a trajectory timeseries:
+            RT = read_trajectories(H)
+            T = RT['Trajectories']
+            rel = 1
+            t = T[np.where(T[:,0]==rel),:][0]
+            plt.plot(t[:,1],t[:,14])
+            plt.savefig('trajectories.png')
+        """
     return RelTraj

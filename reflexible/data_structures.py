@@ -735,11 +735,11 @@ class Command(object):
         self._overrides = options
 
         # set the default options as attributes
-        for key, value in self._OPTIONS.iteritems():
+        for key, value in self._OPTIONS.items():
             setattr(self, key.lower(), value[0])
 
         # override the attributes with options
-        for key, value in options.iteritems():
+        for key, value in options.items():
             setattr(self, key.lower(), value)
 
         if self.ibdate is None:
