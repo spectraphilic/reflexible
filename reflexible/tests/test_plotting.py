@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
-
-import os.path
+from __future__ import print_function
 
 import pytest
-import numpy as np
 
 import reflexible.plotting as pf
 import reflexible as rf
@@ -12,8 +10,10 @@ import reflexible as rf
 # tuples locating test data, nested(True) and global(False)
 test_datasets = [('Fwd1_V10.0', False), ('Fwd1_V10.0', True)]
 
+
 def monotonically_increasing(l):
     return all(x < y for x, y in zip(l, l[1:]))
+
 
 class Dataset:
     def __init__(self, fp_dataset):
@@ -35,12 +35,10 @@ class TestPlotting:
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         pass
-        #dataset = Dataset(request.param)
-        #self.H, self.fp_path, self.nc_path = dataset.setup()
-        #request.addfinalizer(dataset.cleanup)
+        # dataset = Dataset(request.param)
+        # self.H, self.fp_path, self.nc_path = dataset.setup()
+        # request.addfinalizer(dataset.cleanup)
 
     def test_flexpart_colormap(self):
         from matplotlib.colors import ListedColormap
         assert isinstance(pf._gen_flexpart_colormap(), ListedColormap)
-
-    

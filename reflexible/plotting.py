@@ -263,12 +263,12 @@ def plot_sensitivity(H, data, \
         del FIGURE.ax.collections[FIGURE.indices.collections:]
         del FIGURE.ax.lines[FIGURE.indices.lines:]
 
-    if dropm != None:
+    if dropm is not None:
         try:
             del m
             plt.close('all')
         except:
-            print 'could not drop m'
+            print('could not drop m')
 
     # # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
@@ -358,7 +358,7 @@ def plot_sensitivity(H, data, \
     colmap = _gen_flexpart_colormap()
     colmap.set_over(color='k', alpha=0.8)
     # # Plotting METHODS (pcolormesh now default, imshow is smoother)
-    # print topodat.max(), topodat.min(), topodat.shape
+    # print(topodat.max(), topodat.min(), topodat.shape)
     if method == 'imshow':
         im = m.imshow(topodat, cmap=colmap, zorder=-1,
                       norm=mpl.colors.LogNorm(vmin=clevs[0],
@@ -690,7 +690,7 @@ def _gen_flexpart_colormap(ctbfile=None, colors=None):
         try:
             colors = np.loadtxt(ctbfile)
         except:
-            print "WARNING: cannot load ctbfile. using colors"
+            print("WARNING: cannot load ctbfile. using colors")
     if colors:
         name = 'user_colormap'
     if not colors:
