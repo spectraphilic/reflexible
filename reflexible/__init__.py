@@ -38,13 +38,9 @@ LICENSE
     This package follows creative commons usage.
 
 """
-#print WELCOME
 
 import os
-import datetime as dt
-
 from .version import __version__
-
 
 this_dir = __path__[0]
 
@@ -70,6 +66,7 @@ def _get_hg_description(path_):
     except subprocess.CalledProcessError:  # not in hg repo
         pass
 
+
 _hg_description = _get_hg_description(this_dir)
 
 
@@ -94,18 +91,19 @@ def print_versions():
 datasets = {
     'Fwd1_V10.0': os.path.join(this_dir, "uio_examples/Fwd1_V10.0"),
     'Bwd1_V9.02': os.path.join(this_dir, "uio_examples/Bwd1_V9.02/outputs"),
-    'Bwd2_V9.2beta': os.path.join(this_dir, "uio_examples/Bwd2_V9.2beta/outputs"),
+    'Bwd2_V9.2beta': os.path.join(this_dir,
+                                  "uio_examples/Bwd2_V9.2beta/outputs"),
     'Fwd1_V9.02': os.path.join(this_dir, "uio_examples/Fwd1_V9.02/outputs"),
     'Fwd2_V9.02': os.path.join(this_dir, "uio_examples/Fwd2_V9.02/outputs"),
-    'HelloWorld_V9.02': os.path.join(this_dir, "uio_examples/HelloWorld_V9.02/outputs"),
-    }
-
+    'HelloWorld_V9.02': os.path.join(this_dir,
+                                     "uio_examples/HelloWorld_V9.02/outputs"),
+}
 
 # Import the public functions here
 from .tests.all import test
 from . import conv2netcdf4
 from .scripts.create_ncfile import create_ncfile
 from .data_structures import (Header, Command, Release,
-                            ReleasePoint, Ageclass)
+                              ReleasePoint, Ageclass)
 
 from .base_read import read_trajectories
