@@ -12,7 +12,7 @@ __version__ = "0.02"
 
 import numpy as np
 import math
-import copy
+
 import datetime as dt
 import pdb
 # from matplotlib import interactive, use
@@ -24,12 +24,7 @@ from matplotlib.collections import LineCollection
 # mpl.use('Agg')
 
 import matplotlib.pyplot as plt
-
-try:
-    from mpl_toolkits.basemap import Basemap, shiftgrid
-except:
-    from matplotlib.toolkits import Basemap
-
+from mpl_toolkits.basemap import Basemap, shiftgrid
 from netCDF4 import Dataset as NetCDFFile
 
 TEX = False
@@ -64,26 +59,26 @@ class KML_File:
         "adds the kml header to a file (includes a default style)"
         file = open(filepath, "w")
         file.write(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" \
-            "<kml xmlns=\"http://earth.google.com/kml/2.0\">\n" \
-            "<Document>\n" \
-            "<Style id='normalPlaceMarker'>\n" \
-            "  <IconStyle>\n" \
-            "    <Icon>\n" \
-            "      <href>root://icons/palette-3.png</href>\n" \
-            "      <x>96</x>\n" \
-            "      <y>160</y>\n" \
-            "      <w>32</w>\n" \
-            "      <h>32</h>\n" \
-            "    </Icon>\n" \
-            "  </IconStyle>\n" \
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<kml xmlns=\"http://earth.google.com/kml/2.0\">\n"
+            "<Document>\n"
+            "<Style id='normalPlaceMarker'>\n"
+            "  <IconStyle>\n"
+            "    <Icon>\n"
+            "      <href>root://icons/palette-3.png</href>\n"
+            "      <x>96</x>\n"
+            "      <y>160</y>\n"
+            "      <w>32</w>\n"
+            "      <h>32</h>\n"
+            "    </Icon>\n"
+            "  </IconStyle>\n"
             "</Style>\n")
         file.close()
 
     def close(self):
         file = open(self.filepath, "a")
         file.write(
-            "</Document>\n" \
+            "</Document>\n"
             "</kml>")
         file.close()
 
@@ -100,8 +95,8 @@ class KML_File:
             "</Folder>\n")
         file.close()
 
-    def add_placemarker(self, latitude, longitude, altitude=0.0, \
-                        description=" ", name=" ", \
+    def add_placemarker(self, latitude, longitude, altitude=0.0,
+                        description=" ", name=" ",
                         range=6000, tilt=45, heading=0):
         "adds the point to a kml file"
 
@@ -115,26 +110,29 @@ class KML_File:
 
         if point:
             file.write(
-                "<Placemark>\n" \
-                "  <description>" + description + "</description>\n" \
-                                                  "  <name>" + name + "</name>\n" \
-                                                                      "  <styleUrl>#normalPlaceMarker</styleUrl>" +
-                "  <LookAt>\n" \
-                "    <longitude>" + str(longitude) + "</longitude>\n" \
-                                                     "    <latitude>" + str(latitude) + "</latitude>\n" \
-                                                                                        "    <range>" + str(
-                    range) + "</range>\n" \
-                             "    <tilt>" + str(tilt) + "</tilt>\n" \
-                                                        "    <heading>" + str(heading) + "</heading>\n" \
-                                                                                         "  </LookAt>\n" \
-                                                                                         "  <visibility>0</visibility>\n" \
-                                                                                         "   <Point>\n" \
-                                                                                         "    <extrude>1</extrude>\n" \
-                                                                                         "    <altitudeMode>relativeToGround</altitudeMode>\n" \
-                                                                                         "    <coordinates>" + str(
-                    longitude) + "," + str(latitude) + ", " + str(altitude) + "</coordinates>\n" \
-                                                                              "   </Point>\n" \
-                                                                              " </Placemark>\n")
+                "<Placemark>\n"
+                "  <description>" + description + "</description>\n"
+                                                  "  <name>" + name + "</name>\n"
+                                                                      "  <styleUrl>#normalPlaceMarker</styleUrl>"
+                                                                      "  <LookAt>\n"
+                                                                      "    <longitude>" + str(
+                    longitude) + "</longitude>\n"
+                                 "    <latitude>" + str(
+                    latitude) + "</latitude>\n"
+                                "    <range>" + str(range) + "</range>\n"
+                                                             "    <tilt>" + str(
+                    tilt) + "</tilt>\n"
+                            "    <heading>" + str(heading) + "</heading>\n"
+                                                             "  </LookAt>\n"
+                                                             "  <visibility>0</visibility>\n"
+                                                             "   <Point>\n"
+                                                             "    <extrude>1</extrude>\n"
+                                                             "    <altitudeMode>relativeToGround</altitudeMode>\n"
+                                                             "    <coordinates>" + str(
+                    longitude) + "," + str(latitude) +
+                ", " + str(altitude) + "</coordinates>\n"
+                                       "   </Point>\n"
+                                       " </Placemark>\n")
             file.close()
 
         else:
@@ -143,14 +141,14 @@ class KML_File:
             file.write(
 
                 "<Placemark>\n" \
-                "  <description>" + description + "</description>\n" \
-                                                  "  <name>" + name + "</name>\n" \
-                                                                      "  <styleUrl>#normalPlaceMarker</styleUrl>" +
-                "  <visibility>1</visibility>\n"
-                "       <LineString>\n"
-                "         <extrude>0</extrude>\n"
-                "           <tessellate>0</tessellate>\n"
-                "              <coordinates>\n")
+                "  <description>" + description + "</description>\n"
+                                                  "  <name>" + name + "</name>\n"
+                                                                      "  <styleUrl>#normalPlaceMarker</styleUrl>"
+                                                                      "  <visibility>1</visibility>\n"
+                                                                      "       <LineString>\n"
+                                                                      "         <extrude>0</extrude>\n"
+                                                                      "           <tessellate>0</tessellate>\n"
+                                                                      "              <coordinates>\n")
             for i, lat in enumerate(latitude):
                 file.write("%s,%s,0 " % (longitude[i], lat))
             file.write("\n")
@@ -159,18 +157,6 @@ class KML_File:
                 "       </LineString>\n"
                 " </Placemark>\n")
             file.close()
-
-
-def _val2var(val, var):
-    """ a helper function to convert a value to a variable. Hopefully it
-    is not still used."""
-
-    if isinstance(val, str):
-        cmd = "global %s; %s = '%s';" % (var, var, val)
-    if not isinstance(val, str):
-        cmd = "global %s; %s = %s;" % (var, var, val)
-
-    exec(cmd)
 
 
 def map_regions(map_region='default', projection=None, m=None, MapPar=None):
@@ -973,7 +959,7 @@ def map_regions(map_region='default', projection=None, m=None, MapPar=None):
     return MapPar, FigPar
 
 
-def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1], \
+def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
               linewidth=0.5, color='k'):
     """
     draw parallels and meridians on a map.
@@ -1398,7 +1384,8 @@ def get_base2(**kwargs):
     mp, figpar = map_regions(map_region=reg)
 
     m = Basemap(**mp)
-    ax = fig.add_axes([0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
+    ax = fig.add_axes(
+        [0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
     P.axes(ax)  # make the original axes current again
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original image.
@@ -1408,7 +1395,8 @@ def get_base2(**kwargs):
     rgba_warped = P.zeros((ny, nx, 4), P.Float64)
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     for k in range(4):
-        rgba_warped[:, :, k] = m.transform_scalar(rgba[:, :, k], lons, lats, nx, ny)
+        rgba_warped[:, :, k] = m.transform_scalar(rgba[:, :, k], lons, lats, nx,
+                                                  ny)
     # plot warped rgba image.
     im = m.imshow(rgba_warped)
     # draw coastlines.
@@ -1471,7 +1459,8 @@ def get_base3(**kwargs):
     # Use map_regions function to define input paramters for Basemap
     mp, figpar = map_regions(map_region)
     m = Basemap(**mp)
-    ax = fig.add_axes([0, 0, 1, 1], frameon=False)  # need to change back to [0.1,0.1,0.7,0.7]
+    ax = fig.add_axes([0, 0, 1, 1],
+                      frameon=False)  # need to change back to [0.1,0.1,0.7,0.7]
     axes(ax)  # make the original axes current again
     ## draw coastlines and political boundaries.
     m.drawcoastlines(linewidth=.5)
@@ -1541,7 +1530,8 @@ def get_base_image(imagefile, **kwargs):
     mp, figpar = map_regions(map_region=reg)
 
     m = Basemap(**mp)
-    ax = fig.add_axes([0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
+    ax = fig.add_axes(
+        [0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
     plt.axes(ax)  # make the original axes current again
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original image.
@@ -1552,7 +1542,8 @@ def get_base_image(imagefile, **kwargs):
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     try:
         for k in range(4):
-            rgba_warped[:, :, k] = m.transform_scalar(rgba[:, :, k], lons, lats, nx, ny)
+            rgba_warped[:, :, k] = m.transform_scalar(rgba[:, :, k], lons, lats,
+                                                      nx, ny)
     except:
         rgba_warped = rgba
         print('problem with transform_scalar')
@@ -1725,7 +1716,9 @@ def plot_track(lon, lat,
                 points = np.array([cx, cy]).T.reshape(-1, 1, 2)
                 segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-                lc = LineCollection(segments, cmap=plt.get_cmap('jet'), norm=plt.Normalize(zlevel.min(), zlevel.max()))
+                lc = LineCollection(segments, cmap=plt.get_cmap('jet'),
+                                    norm=plt.Normalize(zlevel.min(),
+                                                       zlevel.max()))
                 lc.set_array(zlevel.flatten())
                 lc.set_linewidth(3)
                 plt.gca().add_collection(lc)
@@ -1735,12 +1728,14 @@ def plot_track(lon, lat,
                     segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
                     lc = LineCollection(segments, cmap=plt.get_cmap('jet'),
-                                        norm=plt.Normalize(zlevel.min(), zlevel.max()))
+                                        norm=plt.Normalize(zlevel.min(),
+                                                           zlevel.max()))
                     lc.set_array(zlevel.flatten())
                     lc.set_linewidth(3)
                     plt.gca().add_collection(lc)
             else:
-                raise IOError("input array shape zlevel cannot be greater than rank-2")
+                raise IOError(
+                    "input array shape zlevel cannot be greater than rank-2")
 
 
     else:
@@ -1823,7 +1818,7 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
             lats = y
 
             ## CHANGED THIS HERE FOR THE CODEX ##
-        ## Be sure to set map_region=None                          ##
+            ## Be sure to set map_region=None                          ##
     if isinstance(map_region, str):
         print("getting basemap with map_region: %s" % map_region)
         fig, m = get_base1(map_region=map_region)
@@ -1848,12 +1843,12 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
         xpt, ypt = m(x, y)
         cmap = [cm.jet(norm(i)) for i in z]
         m.scatter(xpt, ypt, s=z / 100., edgecolors='none', color=cmap)
-    #        for i in range(len(y)):
-    #            xpt,ypt = m(x[i],y[i])
-    #            cmap = cm.jet(norm(z[i]))
-    #            #cmap = 'k'
-    #            m.plot([xpt],[ypt],'.',color=cmap,markersize=2)
-    #            #plt.plot(x[i],y[i],'.',color=cmap,markersize=2)
+        # for i in range(len(y)):
+        #     xpt,ypt = m(x[i],y[i])
+        #     cmap = cm.jet(norm(z[i]))
+        #     #cmap = 'k'
+        #     m.plot([xpt],[ypt],'.',color=cmap,markersize=2)
+        #     #plt.plot(x[i],y[i],'.',color=cmap,markersize=2)
 
     if points == False:
         # transform Z data into projection
@@ -1863,7 +1858,8 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
         ny = int((m.ymax - m.ymin) / dx) + 1
         if transform:
             # Need this if we choose lon,lat approach
-            Zt, xx, yy = m.transform_scalar(z, lons, lats, nx, ny, returnxy=True)
+            Zt, xx, yy = m.transform_scalar(z, lons, lats, nx, ny,
+                                            returnxy=True)
         else:
             Zt = z
         print(m.projection)
@@ -1928,7 +1924,8 @@ def read_satdata(c, dat, D, start_time, stop_time=None, satellite='Calipso'):
                         y, m, d = l[0].split('/')
                     if len(l) > 3:
                         hr, mn, sc = l[0].split(':')
-                        t = datetime.datetime(int(y), int(m), int(d), int(hr), int(mn), int(sc))
+                        t = datetime.datetime(int(y), int(m), int(d), int(hr),
+                                              int(mn), int(sc))
                         # print(start_time, t, stop_time)
                         if t > start_time and t < stop_time:
                             # print('yes!')
@@ -1936,7 +1933,8 @@ def read_satdata(c, dat, D, start_time, stop_time=None, satellite='Calipso'):
                                 lat, lon, rng = l[1:]
                                 D.append((t, lon, lat, rng))
                             except:
-                                lat, lon, hdg, ltlat, ltlon, rtlat, rtlon = l[1:]
+                                lat, lon, hdg, ltlat, ltlon,\
+                                rtlat, rtlon = l[1:]
                                 D.append((t, lon, lat, hdg))
 
     t0 = datetime.datetime(2009, 4, 15)
@@ -2009,8 +2007,8 @@ def Sat_tracks(map, start_time=None, stop_time=None,
     stop_time
     input_data_file
     """
-    import datetime, os, sys
-    from pylab import text, title, floor, savefig
+    import datetime, sys
+    from pylab import text
     from matplotlib import colors, cm
     if ifile is None:
         if satellite == 'Calipso':
@@ -2079,7 +2077,10 @@ def Sat_tracks(map, start_time=None, stop_time=None,
             t_txt = [i[0].strftime('%H:%M') for i in D[::frq]]
 
             for i in range(len(tx)):
-                if tx[i] < map.urcrnrx and ty[i] < map.urcrnry and tx[i] > map.llcrnrx and ty[i] > map.llcrnry:
+                if (tx[i] < map.urcrnrx and
+                    ty[i] < map.urcrnry and
+                    tx[i] > map.llcrnrx and
+                    ty[i] > map.llcrnry):
                     text(tx[i], ty[i], t_txt[i], size=8)
                     # title('%s Track: %s' % (satellite,doy))
 
@@ -2207,8 +2208,10 @@ class GreatCircle(object):
         self.azimuth12 = a12
         self.azimuth21 = a21
         # great circle arc-length distance (in radians).
-        self.gcarclen = 2. * math.asin(math.sqrt((math.sin((lat1 - lat2) / 2)) ** 2 + \
-                                                 math.cos(lat1) * math.cos(lat2) * (math.sin((lon1 - lon2) / 2)) ** 2))
+        self.gcarclen = 2. * math.asin(
+            math.sqrt((math.sin((lat1 - lat2) / 2)) ** 2 + \
+                      math.cos(lat1) * math.cos(lat2) * (
+                      math.sin((lon1 - lon2) / 2)) ** 2))
         # check to see if points are antipodal (if so, route is undefined).
         if self.gcarclen == math.pi:
             self.antipodal = True
@@ -2233,12 +2236,14 @@ class GreatCircle(object):
         if npoints <= 1:
             raise ValueError('npoints must be greater than 1')
         elif npoints == 2:
-            return [math.degrees(self.lon1), math.degrees(self.lon2)], [math.degrees(self.lat1),
-                                                                        math.degrees(self.lat2)]
+            return [math.degrees(self.lon1), math.degrees(self.lon2)],\
+                   [math.degrees(self.lat1), math.degrees(self.lat2)]
         # can't do it if endpoints are antipodal, since
         # route is undefined.
         if self.antipodal:
-            raise ValueError('cannot compute intermediate points on a great circle whose endpoints are antipodal')
+            raise ValueError(
+                'cannot compute intermediate points on a great circle '
+                'whose endpoints are antipodal')
         d = self.gcarclen
         delta = 1.0 / (npoints - 1)
         f = delta * np.arange(npoints)  # f=0 is point 1, f=1 is point 2.
@@ -2266,8 +2271,10 @@ class GreatCircle(object):
             lons = [math.degrees(lonpt)]
             lats = [math.degrees(latpt)]
             for n in range(npoints - 2):
-                latptnew, lonptnew, alpha21 = vinc_pt(self.f, self.a, latpt, lonpt, azimuth, incdist)
-                d, azimuth, a21 = vinc_dist(self.f, self.a, latptnew, lonptnew, lat2, lon2)
+                latptnew, lonptnew, alpha21 = vinc_pt(self.f, self.a, latpt,
+                                                      lonpt, azimuth, incdist)
+                d, azimuth, a21 = vinc_dist(self.f, self.a, latptnew, lonptnew,
+                                            lat2, lon2)
                 lats.append(math.degrees(latptnew))
                 lons.append(math.degrees(lonptnew))
                 latpt = latptnew
@@ -2351,10 +2358,12 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
     # Iterate the following equations, 
     #  until there is no significant change in lembda 
 
-    while (last_lembda < -3000000.0 or lembda != 0 and abs((last_lembda - lembda) / lembda) > 1.0e-9):
-        sqr_sin_sigma = pow(math.cos(U2) * math.sin(lembda), 2) + \
-                        pow((math.cos(U1) * math.sin(U2) - \
-                             math.sin(U1) * math.cos(U2) * math.cos(lembda)), 2)
+    while (last_lembda < -3000000.0 or
+        lembda != 0 and
+        abs((last_lembda - lembda) / lembda) > 1.0e-9):
+        sqr_sin_sigma = pow(math.cos(U2) * math.sin(lembda), 2) +\
+                        pow((math.cos(U1) * math.sin(U2) -
+                        math.sin(U1) * math.cos(U2) * math.cos(lembda)), 2)
 
         Sin_sigma = math.sqrt(sqr_sin_sigma)
 
@@ -2365,15 +2374,18 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
         Sin_alpha = math.cos(U1) * math.cos(U2) * math.sin(lembda) / math.sin(sigma)
         alpha = math.asin(Sin_alpha)
 
-        Cos2sigma_m = math.cos(sigma) - (2 * math.sin(U1) * math.sin(U2) / pow(math.cos(alpha), 2))
+        Cos2sigma_m = math.cos(sigma) - (
+        2 * math.sin(U1) * math.sin(U2) / pow(math.cos(alpha), 2))
 
-        C = (f / 16) * pow(math.cos(alpha), 2) * (4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
+        C = (f / 16) * pow(math.cos(alpha), 2) * (
+        4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
 
         last_lembda = lembda
 
-        lembda = omega + (1 - C) * f * math.sin(alpha) * (sigma + C * math.sin(sigma) *
-                                                          (Cos2sigma_m + C * math.cos(sigma) * (
-                                                          -1 + 2 * pow(Cos2sigma_m, 2))))
+        lembda = omega + (1 - C) * f * math.sin(alpha) * (
+        sigma + C * math.sin(sigma) *
+        (Cos2sigma_m + C * math.cos(sigma) * (
+            -1 + 2 * pow(Cos2sigma_m, 2))))
 
     u2 = pow(math.cos(alpha), 2) * (a * a - b * b) / (b * b)
 
@@ -2383,16 +2395,20 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 
     delta_sigma = B * Sin_sigma * (Cos2sigma_m + (B / 4) *
                                    (Cos_sigma * (-1 + 2 * pow(Cos2sigma_m, 2)) -
-                                   (B / 6) * Cos2sigma_m * (-3 + 4 * sqr_sin_sigma) *
-                                   (-3 + 4 * pow(Cos2sigma_m, 2))))
+                                    (B / 6) * Cos2sigma_m * (
+                                    -3 + 4 * sqr_sin_sigma) *
+                                    (-3 + 4 * pow(Cos2sigma_m, 2))))
 
     s = b * A * (sigma - delta_sigma)
 
     alpha12 = math.atan2((math.cos(U2) * math.sin(lembda)),
-                         (math.cos(U1) * math.sin(U2) - math.sin(U1) * math.cos(U2) * math.cos(lembda)))
+                         (math.cos(U1) * math.sin(U2) - math.sin(U1) * math.cos(
+                             U2) * math.cos(lembda)))
 
     alpha21 = math.atan2((math.cos(U1) * math.sin(lembda)),
-                         (-math.sin(U1) * math.cos(U2) + math.cos(U1) * math.sin(U2) * math.cos(lembda)))
+                         (
+                         -math.sin(U1) * math.cos(U2) + math.cos(U1) * math.sin(
+                             U2) * math.cos(lembda)))
 
     if alpha12 < 0.0:
         alpha12 += two_pi
@@ -2462,38 +2478,46 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
 
     # two_sigma_m , delta_sigma
 
-    while (abs((last_sigma - sigma) / sigma) > 1.0e-9):
+    while abs((last_sigma - sigma) / sigma) > 1.0e-9:
         two_sigma_m = 2 * sigma1 + sigma
 
-        delta_sigma = B * math.sin(sigma) * (math.cos(two_sigma_m) +
-                                             (B / 4) * (math.cos(sigma) *
-                                             (-1 + 2 * math.pow(math.cos(two_sigma_m), 2) -
-                                             (B / 6) * math.cos(two_sigma_m) *
-                                             (-3 + 4 * math.pow(math.sin(sigma), 2)) *
-                                             (-3 + 4 * math.pow(math.cos(two_sigma_m), 2)))))
+        delta_sigma = B * math.sin(sigma) * (
+            math.cos(two_sigma_m) +
+            (B / 4) * (math.cos(sigma) *
+            (-1 + 2 * math.pow(math.cos(two_sigma_m), 2) -
+            (B / 6) * math.cos(two_sigma_m) *
+            (-3 + 4 * math.pow(math.sin(sigma), 2)) *
+            (-3 + 4 * math.pow(math.cos(two_sigma_m), 2)))))
         last_sigma = sigma
         sigma = (s / (b * A)) + delta_sigma
 
-    phi2 = math.atan2((math.sin(U1) * math.cos(sigma) + math.cos(U1) * math.sin(sigma) * math.cos(alpha12)),
-                      ((1 - f) * math.sqrt(math.pow(Sinalpha, 2) +
-                      pow(math.sin(U1) * math.sin(sigma) - math.cos(U1) * math.cos(
-                      sigma) * math.cos(alpha12), 2))))
+    phi2 = math.atan2((math.sin(U1) * math.cos(sigma) +
+                       math.cos(U1) * math.sin(
+                       sigma) * math.cos(alpha12)),
+                       ((1 - f) * math.sqrt(math.pow(Sinalpha, 2) +
+                       pow(math.sin(U1) * math.sin(sigma) -
+                           math.cos(U1) * math.cos(sigma) *
+                           math.cos(alpha12), 2))))
 
     lembda = math.atan2((math.sin(sigma) * math.sin(alpha12)),
                         (math.cos(U1) * math.cos(sigma) -
-                        math.sin(U1) * math.sin(sigma) * math.cos(alpha12)))
+                         math.sin(U1) * math.sin(sigma) * math.cos(alpha12)))
 
     C = (f / 16) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq))
 
     omega = lembda - (1 - C) * f * Sinalpha * \
                      (sigma + C * math.sin(sigma) * (math.cos(two_sigma_m) +
                                                      C * math.cos(sigma) * (
-                                                     -1 + 2 * math.pow(math.cos(two_sigma_m), 2))))
+                                                         -1 + 2 * math.pow(
+                                                             math.cos(
+                                                                 two_sigma_m),
+                                                             2))))
 
     lembda2 = lembda1 + omega
 
     alpha21 = math.atan2(Sinalpha, (-math.sin(U1) * math.sin(sigma) +
-                                    math.cos(U1) * math.cos(sigma) * math.cos(alpha12)))
+                                    math.cos(U1) * math.cos(sigma) * math.cos(
+                                        alpha12)))
 
     alpha21 += two_pi / 2.0
     if alpha21 < 0.0:
@@ -2617,7 +2641,11 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     # phi2 = lembda2 = 0.0
     # alpha21 = 0.0
 
-    ephi2, lembda2, alpha21 = vinc_pt(f, a, math.radians(phi1), math.radians(lembda1), math.radians(alpha12), dist)
+    ephi2, lembda2, alpha21 = vinc_pt(f, a,
+                                      math.radians(phi1),
+                                      math.radians(lembda1),
+                                      math.radians(alpha12),
+                                      dist)
 
     # phi2 = math.degrees(phi2)
     # lembda2 = math.degrees(lembda2)
