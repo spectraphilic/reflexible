@@ -4,4 +4,4 @@ netCDF4 >= 1.1.1
 xarray
 numpy
 pandas
-mpl_toolkits.basemap
+basemap
