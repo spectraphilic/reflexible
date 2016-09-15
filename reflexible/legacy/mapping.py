@@ -108,12 +108,10 @@ class KML_File:
         file = open(self.filepath, "a")
         if not np.iterable(longitude) and not np.iterable(latitude):
             point = True
-            print
-            'no lines'
+            print('no lines')
         else:
             point = False
-            print
-            'lines!'
+            print('lines!')
 
         if point:
             file.write(
@@ -148,17 +146,17 @@ class KML_File:
                 "  <description>" + description + "</description>\n" \
                                                   "  <name>" + name + "</name>\n" \
                                                                       "  <styleUrl>#normalPlaceMarker</styleUrl>" +
-                "  <visibility>1</visibility>\n" \
-                "       <LineString>\n" \
-                "         <extrude>0</extrude>\n" \
-                "           <tessellate>0</tessellate>\n" \
+                "  <visibility>1</visibility>\n"
+                "       <LineString>\n"
+                "         <extrude>0</extrude>\n"
+                "           <tessellate>0</tessellate>\n"
                 "              <coordinates>\n")
             for i, lat in enumerate(latitude):
                 file.write("%s,%s,0 " % (longitude[i], lat))
             file.write("\n")
             file.write(
-                "              </coordinates>\n" \
-                "       </LineString>\n" \
+                "              </coordinates>\n"
+                "       </LineString>\n"
                 " </Placemark>\n")
             file.close()
 
@@ -298,8 +296,7 @@ def map_regions(map_region='default', projection=None, coords=None, m=None, MapP
 
     if map_region == 0:
         if coords == None:
-            print
-            "ERROR: for region 0 must provide coordinate tuple (x,y)"
+            print("ERROR: for region 0 must provide coordinate tuple (x,y)")
             raise IOError()
         MapPar.urcrnrlon, MapPar.urcrnrlat, MapPar.llcrnrlat, MapPar.llcrnrlon, \
         pd, md, MapPar.lat_0, MapPar.lat_1, MapPar.lon_0, \
@@ -1150,7 +1147,8 @@ def get_OpenDAP(analysistime, date_range=None, level_range=None,
     """ Open an OpenDAP connection and return requested data from list
         Written for use with GFS/NCEP data, but could be modified
     """
-
+    # TODO: this looks outdated.  should this be removed?
+    import datetime
     from mpl_toolkits.basemap import NetCDFFile as mpl_NetCDFFile
     from mpl_toolkits.basemap import num2date, addcyclic
     # Create a dictionary to be populated with the data
@@ -1161,7 +1159,7 @@ def get_OpenDAP(analysistime, date_range=None, level_range=None,
         atime = str(analysistime)
         YYYYMMDD = atime[:8]
         HH = atime[8:10]
-    elif isinstance(analysistime, datetime.datime):
+    elif isinstance(analysistime, datetime.datetime):
         YYYYMMDD = dt.datetime.strftime(analysistime - dt.timedelta(2), '%Y%m%d')
         HH = str(analysistime.hour).zfill(2)
 
@@ -1354,8 +1352,7 @@ def grid_to_netcdf(H, D, nco_filename, spc, time):
         nco.sync()
         nco.close()
     """
-    print
-    "Not working"
+    print("Not working")
 
     return
 
@@ -1492,8 +1489,7 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
     FIGURE.indices.collections = len(FIGURE.ax.collections)
     FIGURE.indices.lines = len(FIGURE.ax.lines)
 
-    print
-    "Using figure: %s" % FIGURE.fig.number
+    print("Using figure: %s" % FIGURE.fig.number)
     return FIGURE
 
 
@@ -1526,7 +1522,7 @@ def get_base1(map_region=1,
     if FigPar:
         FigPar_sd.set_with_dict(FigPar)
 
-    ## create the figure.
+    # create the figure
     if fig == None:
         axlocs = FigPar_sd.pop('axlocs')
         fig = plt.figure(**FigPar_sd)
@@ -1534,13 +1530,10 @@ def get_base1(map_region=1,
     else:
         ax = fig.gca()
 
-    print
-    Basemap
+    print(Basemap)
     m = Basemap(**MapPar_sd)
-    print
-    'getting base1'
-    print
-    m
+    print('getting base1')
+    print(m)
     plt.axes(ax)  ## make sure axes ax are current
     ## draw coastlines and political boundaries.
     m.drawcoastlines(linewidth=0.8)
@@ -1586,7 +1579,6 @@ def get_base2(**kwargs):
         from mpl_toolkits.basemap import Basemap
     except:
         from matplotlib.toolkits.basemap import Basemap
-    from matplotlib.numerix import ma
     from matplotlib.image import pil_to_array
     from PIL import Image
 
@@ -1596,10 +1588,10 @@ def get_base2(**kwargs):
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open('land_shallow_topo_2048.jpg')
     rgba = pil_to_array(pilImage)
-    rgba = rgba.astype(P.Float32) / 255.  # convert to normalized floats.
+    rgba = rgba.astype(P.float32) / 255.  # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
-    nlons = rgba.shape[1];
+    nlons = rgba.shape[1]
     nlats = rgba.shape[0]
     delta = 360. / float(nlons)
     lons = P.arange(-180. + 0.5 * delta, 180., delta)
@@ -1734,7 +1726,6 @@ def get_base_image(imagefile, **kwargs):
         from mpl_toolkits.basemap import Basemap
     except:
         from matplotlib.toolkits.basemap import Basemap
-    from matplotlib.numerix import ma
     from matplotlib.image import pil_to_array
     from PIL import Image
 
@@ -1747,7 +1738,7 @@ def get_base_image(imagefile, **kwargs):
     rgba = rgba.astype(np.float32) / 255.  # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
-    nlons = rgba.shape[1];
+    nlons = rgba.shape[1]
     nlats = rgba.shape[0]
     delta = 360. / float(nlons)
     lons = np.arange(-180. + 0.5 * delta, 180., delta)
@@ -1775,8 +1766,7 @@ def get_base_image(imagefile, **kwargs):
             rgba_warped[:, :, k] = m.transform_scalar(rgba[:, :, k], lons, lats, nx, ny)
     except:
         rgba_warped = rgba
-        print
-        'problem with transform_scalar'
+        print('problem with transform_scalar')
     # plot warped rgba image.
     im = m.imshow(rgba_warped)
     # draw coastlines.
@@ -1962,7 +1952,7 @@ def plot_track(lon, lat,
                     lc.set_linewidth(3)
                     plt.gca().add_collection(lc)
             else:
-                raise InputError("input array shape zlevel cannot be greater than rank-2")
+                raise IOError("input array shape zlevel cannot be greater than rank-2")
 
 
     else:
@@ -2012,16 +2002,14 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
 
 
     """
-    print
-    "length of D: %s" % len(D)
+    print("length of D: %s" % len(D))
 
     if isinstance(D, np.ndarray):
         # pdb.set_trace()
         assert len(D.shape) == 2, "D grid must be 2d"
         # if len(D)==1:
         # assume full earth grid with dres
-        print
-        'received grid of shape:', D.shape
+        print('received grid of shape:', D.shape)
         if D.shape[0] == 720:
             lons = np.arange(-180, 180, dres)
         elif D.shape[0] == 721:
@@ -2049,8 +2037,7 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
             ## CHANGED THIS HERE FOR THE CODEX ##
         ## Be sure to set map_region=None                          ##
     if isinstance(map_region, str):
-        print
-        "getting basemap with map_region: %s" % map_region
+        print("getting basemap with map_region: %s" % map_region)
         fig, m = get_base1(map_region=map_region)
     else:
         fig = plt.figure()
@@ -2091,8 +2078,7 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
             Zt, xx, yy = m.transform_scalar(z, lons, lats, nx, ny, returnxy=True)
         else:
             Zt = z
-        print
-        m.projection
+        print(m.projection)
 
         if 'moll' in m.projection:
             x, y = m(xx, yy)
@@ -2113,12 +2099,12 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
     return fig, m
 
 
-def plot_imshow(x, y, z, \
-                data_range=None, \
-                units='ns m^2 / kg', \
-                datainfo_str=' ', \
-                rel_i=0, plottitle=None, \
-                globe=False, lon_0=-110, lat_0=45, \
+def plot_imshow(x, y, z,
+                data_range=None,
+                units='ns m^2 / kg',
+                datainfo_str=' ',
+                rel_i=0, plottitle=None,
+                globe=False, lon_0=-110, lat_0=45,
                 map_region=None, projection=None,
                 dropm=None, coords=None,
                 overlay=False,
@@ -2372,7 +2358,7 @@ def plot_sattracks(**kwargs):
         Sets = None
 
     ##IMPORTS
-    import mapping as mp
+    import mapping as mp  # TODO: mapping is the current module. John?
     import datetime
     from matplotlib.ticker import NullFormatter
     from pylab import figure, axes, setp, title, text, savefig, show, close, gca
@@ -2552,7 +2538,7 @@ def Sat_tracks(map, start_time=None, stop_time=None,
     import datetime, os, sys
     from pylab import text, title, floor, savefig
     from matplotlib import colors, cm
-    if ifile == None:
+    if ifile is None:
         if satellite == 'Calipso':
             if 'lin' in sys.platform:
                 # SATELLITEDAT='/mnt/win/07_jfb/jfbin/pybin/data/CALIPSO_SpecialProduct_NorthAtlantic_20080408.txt'
@@ -2584,7 +2570,7 @@ def Sat_tracks(map, start_time=None, stop_time=None,
     if stop_time == None:
         stop_time = start_time + datetime.timedelta(30)
     if Sets == None:
-        c = file(SATELLITEDAT, 'r')
+        c = open(SATELLITEDAT, 'r')
         dat, D = [], []
         # doy=start_time.strftime('%Y%m%d')
         Sets = read_satdata(c, dat, D, start_time, stop_time, satellite)
@@ -2911,7 +2897,7 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 
         last_lembda = lembda
 
-        lembda = omega + (1 - C) * f * math.sin(alpha) * (sigma + C * math.sin(sigma) * \
+        lembda = omega + (1 - C) * f * math.sin(alpha) * (sigma + C * math.sin(sigma) *
                                                           (Cos2sigma_m + C * math.cos(sigma) * (
                                                           -1 + 2 * pow(Cos2sigma_m, 2))))
 
@@ -2921,29 +2907,29 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 
     B = (u2 / 1024) * (256 + u2 * (-128 + u2 * (74 - 47 * u2)))
 
-    delta_sigma = B * Sin_sigma * (Cos2sigma_m + (B / 4) * \
-                                   (Cos_sigma * (-1 + 2 * pow(Cos2sigma_m, 2)) - \
-                                    (B / 6) * Cos2sigma_m * (-3 + 4 * sqr_sin_sigma) * \
-                                    (-3 + 4 * pow(Cos2sigma_m, 2))))
+    delta_sigma = B * Sin_sigma * (Cos2sigma_m + (B / 4) *
+                                   (Cos_sigma * (-1 + 2 * pow(Cos2sigma_m, 2)) -
+                                   (B / 6) * Cos2sigma_m * (-3 + 4 * sqr_sin_sigma) *
+                                   (-3 + 4 * pow(Cos2sigma_m, 2))))
 
     s = b * A * (sigma - delta_sigma)
 
-    alpha12 = math.atan2((math.cos(U2) * math.sin(lembda)), \
+    alpha12 = math.atan2((math.cos(U2) * math.sin(lembda)),
                          (math.cos(U1) * math.sin(U2) - math.sin(U1) * math.cos(U2) * math.cos(lembda)))
 
-    alpha21 = math.atan2((math.cos(U1) * math.sin(lembda)), \
+    alpha21 = math.atan2((math.cos(U1) * math.sin(lembda)),
                          (-math.sin(U1) * math.cos(U2) + math.cos(U1) * math.sin(U2) * math.cos(lembda)))
 
-    if (alpha12 < 0.0):
-        alpha12 = alpha12 + two_pi
-    if (alpha12 > two_pi):
-        alpha12 = alpha12 - two_pi
+    if alpha12 < 0.0:
+        alpha12 += two_pi
+    if alpha12 > two_pi:
+        alpha12 -= two_pi
 
     alpha21 = alpha21 + two_pi / 2.0
-    if (alpha21 < 0.0):
-        alpha21 = alpha21 + two_pi
-    if (alpha21 > two_pi):
-        alpha21 = alpha21 - two_pi
+    if alpha21 < 0.0:
+        alpha21 += two_pi
+    if alpha21 > two_pi:
+        alpha21 -= two_pi
 
     return s, alpha12, alpha21
 
@@ -2974,10 +2960,10 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
 
     two_pi = 2.0 * math.pi
 
-    if (alpha12 < 0.0):
-        alpha12 = alpha12 + two_pi
-    if (alpha12 > two_pi):
-        alpha12 = alpha12 - two_pi
+    if alpha12 < 0.0:
+        alpha12 += two_pi
+    if alpha12 > two_pi:
+        alpha12 -= two_pi
 
     b = a * (1.0 - f)
 
@@ -2988,7 +2974,7 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     cosalpha_sq = 1.0 - Sinalpha * Sinalpha
 
     u2 = cosalpha_sq * (a * a - b * b) / (b * b)
-    A = 1.0 + (u2 / 16384) * (4096 + u2 * (-768 + u2 * \
+    A = 1.0 + (u2 / 16384) * (4096 + u2 * (-768 + u2 *
                                            (320 - 175 * u2)))
     B = (u2 / 1024) * (256 + u2 * (-128 + u2 * (74 - 47 * u2)))
 
@@ -3005,40 +2991,41 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     while (abs((last_sigma - sigma) / sigma) > 1.0e-9):
         two_sigma_m = 2 * sigma1 + sigma
 
-        delta_sigma = B * math.sin(sigma) * (math.cos(two_sigma_m) \
-                                             + (B / 4) * (math.cos(sigma) * \
-                                                          (-1 + 2 * math.pow(math.cos(two_sigma_m), 2) - \
-                                                           (B / 6) * math.cos(two_sigma_m) * \
-                                                           (-3 + 4 * math.pow(math.sin(sigma), 2)) * \
-                                                           (-3 + 4 * math.pow(math.cos(two_sigma_m), 2)))))
+        delta_sigma = B * math.sin(sigma) * (math.cos(two_sigma_m) +
+                                             (B / 4) * (math.cos(sigma) *
+                                             (-1 + 2 * math.pow(math.cos(two_sigma_m), 2) -
+                                             (B / 6) * math.cos(two_sigma_m) *
+                                             (-3 + 4 * math.pow(math.sin(sigma), 2)) *
+                                             (-3 + 4 * math.pow(math.cos(two_sigma_m), 2)))))
         last_sigma = sigma
         sigma = (s / (b * A)) + delta_sigma
 
-    phi2 = math.atan2((math.sin(U1) * math.cos(sigma) + math.cos(U1) * math.sin(sigma) * math.cos(alpha12)), \
-                      ((1 - f) * math.sqrt(math.pow(Sinalpha, 2) + \
-                                           pow(math.sin(U1) * math.sin(sigma) - math.cos(U1) * math.cos(
-                                               sigma) * math.cos(alpha12), 2))))
+    phi2 = math.atan2((math.sin(U1) * math.cos(sigma) + math.cos(U1) * math.sin(sigma) * math.cos(alpha12)),
+                      ((1 - f) * math.sqrt(math.pow(Sinalpha, 2) +
+                      pow(math.sin(U1) * math.sin(sigma) - math.cos(U1) * math.cos(
+                      sigma) * math.cos(alpha12), 2))))
 
-    lembda = math.atan2((math.sin(sigma) * math.sin(alpha12)), (math.cos(U1) * math.cos(sigma) - \
-                                                                math.sin(U1) * math.sin(sigma) * math.cos(alpha12)))
+    lembda = math.atan2((math.sin(sigma) * math.sin(alpha12)),
+                        (math.cos(U1) * math.cos(sigma) -
+                        math.sin(U1) * math.sin(sigma) * math.cos(alpha12)))
 
     C = (f / 16) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq))
 
     omega = lembda - (1 - C) * f * Sinalpha * \
-                     (sigma + C * math.sin(sigma) * (math.cos(two_sigma_m) + \
+                     (sigma + C * math.sin(sigma) * (math.cos(two_sigma_m) +
                                                      C * math.cos(sigma) * (
                                                      -1 + 2 * math.pow(math.cos(two_sigma_m), 2))))
 
     lembda2 = lembda1 + omega
 
-    alpha21 = math.atan2(Sinalpha, (-math.sin(U1) * math.sin(sigma) + \
+    alpha21 = math.atan2(Sinalpha, (-math.sin(U1) * math.sin(sigma) +
                                     math.cos(U1) * math.cos(sigma) * math.cos(alpha12)))
 
-    alpha21 = alpha21 + two_pi / 2.0
-    if (alpha21 < 0.0):
-        alpha21 = alpha21 + two_pi
-    if (alpha21 > two_pi):
-        alpha21 = alpha21 - two_pi
+    alpha21 += two_pi / 2.0
+    if alpha21 < 0.0:
+        alpha21 += two_pi
+    if alpha21 > two_pi:
+        alpha21 -= two_pi
 
     return phi2, lembda2, alpha21
 

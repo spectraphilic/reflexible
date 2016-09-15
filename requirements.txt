@@ -1,4 +1,5 @@
 matplotlib
+pillow
 netCDF4 >= 1.1.1
 xarray
 numpy
