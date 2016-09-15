@@ -16,7 +16,7 @@ class Dataset:
         self.fp_path = rf.datasets[fp_name]
 
     def setup(self, tmpdir):
-        self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
+        self.tmpdir = tmpdir  # bring the fixture to the Dataset instance
         self.H = conv.Header(self.fp_path)
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
         return self.H, self.fp_path, self.nc_path
@@ -38,15 +38,15 @@ class TestFwdAPI:
 
     def test_read_grid(self):
         FD = conv.read_grid(self.H, time_ret=0, nspec_ret=0)
-        fdkeys = sorted(FD.keys())
-        assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
+        fdkeys = sorted([k for k in FD.keys() if type(k) is str])
+        assert fdkeys == ['grid_dates', 'options']
         fdkeys_ = sorted(FD[(0, '20070121100000')].keys())
         assert fdkeys_ == fd_keys
 
     def test_H_read_grid(self):
         self.H.read_grid(time_ret=0, nspec_ret=0)
-        fdkeys = sorted(self.H.FD.keys())
-        assert fdkeys == ['grid_dates', 'options', (0, '20070121100000')]
+        fdkeys = sorted([k for k in self.H.FD.keys() if type(k) is str])
+        assert fdkeys == ['grid_dates', 'options']
         fdkeys_ = sorted(self.H.FD[(0, '20070121100000')].keys())
         assert fdkeys_ == fd_keys
 
@@ -74,14 +74,14 @@ class TestBwdAPI:
 
     def test_read_grid(self):
         FD = conv.read_grid(self.H, time_ret=0, nspec_ret=0)
-        fdkeys = sorted(FD.keys())
-        assert fdkeys == ['grid_dates', 'options', (0, self.H.available_dates[0])]
+        fdkeys = sorted([k for k in FD.keys() if type(k) is str])
+        assert fdkeys == ['grid_dates', 'options']
         fdkeys_ = sorted(FD[(0, self.H.available_dates[0])].keys())
         assert fdkeys_ == fd_keys
 
     def test_H_read_grid(self):
         self.H.read_grid(time_ret=0, nspec_ret=0)
-        fdkeys = sorted(self.H.FD.keys())
-        assert fdkeys == ['grid_dates', 'options', (0, self.H.available_dates[0])]
+        fdkeys = sorted([k for k in self.H.FD.keys() if type(k) is str])
+        assert fdkeys == ['grid_dates', 'options']
         fdkeys_ = sorted(self.H.FD[(0, self.H.available_dates[0])].keys())
         assert fdkeys_ == fd_keys

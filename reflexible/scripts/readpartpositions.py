@@ -15,7 +15,8 @@ Author: Francesc Alted
 Date: 2015-01-30
 """
 
-import sys
+from __future__ import print_function
+
 from time import time
 import numpy as np
 
@@ -124,10 +125,10 @@ def main():
     t0 = time()
     readout = readpartpositions(args.datafile, H.nspec, H.outlon0, H.outlat0, H.dxout, H.dyout, args.dataframe)
     if args.timming:
-        print "Time for reading the data: %.3fs" % (time()-t0,)
-    print "records read:", len(readout)
-    print "3 first records:\n", repr(readout[:3])
-    print "3 last records:\n", repr(readout[-3:])
+        print("Time for reading the data: %.3fs" % (time()-t0,))
+    print("records read:", len(readout))
+    print("3 first records:\n", repr(readout[:3]))
+    print("3 last records:\n", repr(readout[-3:]))
 
 
 if __name__ == "__main__":

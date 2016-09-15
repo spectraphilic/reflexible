@@ -43,6 +43,7 @@ os:
 
 python:
   - 2.7
+  - 3.5
 
 script:
   - py.test reflexible -v --cov reflexible --cov-report term-missing

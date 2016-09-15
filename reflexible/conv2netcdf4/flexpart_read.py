@@ -1,5 +1,7 @@
 #### Functions for reading FLEXPART output #####
 
+from __future__ import print_function
+
 import os
 import re
 import datetime
@@ -162,7 +164,7 @@ def read_command_old(path, headerrows):
     ================    =================================================================
 
     """
-    lines = file(path, 'r').readlines()
+    lines = open(path, 'r').readlines()
     command_vals = [i.strip() for i in lines[headerrows:]]  # clean line ends
     COMMAND_KEYS = (
         'SIM_DIR',
@@ -251,7 +253,7 @@ def read_releases(path, headerrows=11):
         reverts to beginning of file."""
 
         if isinstance(infile, str):
-            return file(infile, 'r').readlines()
+            return open(infile, 'r').readlines()
         else:
             infile.seek(0)
             return infile.readlines()
@@ -375,12 +377,12 @@ def read_trajectories(H, trajfile='trajectories.txt',
 
     if isinstance(H, str):
         try:
-            alltraj = file(H, 'r').readlines()
+            alltraj = open(H, 'r').readlines()
         except:
             raise IOError('Could not open file: %s' % H)
     else:
         path = H.path
-        alltraj = file(os.path.join(path, trajfile), 'r').readlines()
+        alltraj = open(os.path.join(path, trajfile), 'r').readlines()
 
     try:
         ibdate, ibtime, model, version = alltraj[0].strip().split()[:4]
@@ -388,7 +390,8 @@ def read_trajectories(H, trajfile='trajectories.txt',
         ibdate, ibtime = alltraj[0].strip().split()[:2]
         model = 'Flexpart'
         version = 'V.x'
-    dt = datetime.datetime.strptime(ibdate + ibtime.zfill(6), '%Y%m%d%H%M%S')
+    dt = datetime.datetime.strptime(ibdate + ibtime.zfill(6),
+                                    '%Y%m%d%H%M%S')
     numpoint = int(alltraj[2].strip())
     # Fill a dictionary with the Release points and information keyed by name
     # RelTraj['RelTraj_ID'] = (i1,i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
@@ -505,7 +508,7 @@ def curtain_agltoasl(H, curtain_agl, coords, below_gl=0.0):
     xp = H.outheight - H.outheight[0]
     casl = np.zeros((len(H.asl_axis), len(coords)))
 
-    for i in xrange(len(coords)):
+    for i in range(len(coords)):
         casl[:, i] = np.interp(H.asl_axis, xp + gl[i],
                                curtain_agl[:, i], left=below_gl)
     return casl
@@ -543,7 +546,7 @@ def read_agespectrum(filename, part=False, ndays=20):
 
     """
 
-    f = file(filename, 'r').readlines()
+    f = open(filename, 'r').readlines()
 
     line1 = f[0].strip().split()
     if part:
@@ -666,7 +669,7 @@ def gridarea(H):
         ylata = outlat0 + (float(iy) + 0.5) * dyout
         ylatp = ylata + 0.5 * dyout
         ylatm = ylata - 0.5 * dyout
-        if (ylatm < 0 and ylatp > 0):
+        if ylatm < 0 and ylatp > 0:
             hzone = dyout * r_earth * pih
         else:
             # cosfact = cosfunc(ylata)
@@ -700,12 +703,12 @@ def _get_header_version(bf):
 
     ret = bf.tell()
     bf.seek(12)  # start of version string
-    version = bf.read('13S')
+    version = bf.read('13S').decode()
     # Somewhere in version 9.2 beta, the version length changed to 29
     # However, one *must* check which is the final size for this
     if '9.2 b' in version:
          bf.seek(12)
-         version = bf.read('29S')
+         version = bf.read('29S').decode()
     bf.seek(ret)
 
     return version
@@ -792,10 +795,10 @@ def read_header(pathname, **kwargs):
     OPS.update(kwargs)
 
     if OPS.verbose:
-        print "Reading Header with:\n"
+        print("Reading Header with:\n")
 
         for o in OPS:
-            print "%s ==> %s" % (o, OPS[o])
+            print("%s ==> %s" % (o, OPS[o]))
 
     # Define utility functions for reading binary file
     skip = lambda n = 8: bf.seek(n, 1)
@@ -831,7 +834,7 @@ def read_header(pathname, **kwargs):
         raise IOError("No DATEFILE: {0}".format(datefile))
     else:
         try:
-            fd = file(datefile, 'r').readlines()
+            fd = open(datefile, 'r').readlines()
         except:
             raise IOError("Could not read datefile: {0}".format(datefile))
 
@@ -872,7 +875,7 @@ def read_header(pathname, **kwargs):
         h['jjjjmmdd'] = bf.read('i')
         h['hhmmss'] = bf.read('i')
         junk.append(bf.read('2i'))
-        h['nspec'] = bf.read('i') / 3  # why!?
+        h['nspec'] = bf.read('i') // 3  # why!?
         h['numpointspec'] = bf.read('i')
         junk.append(bf.read('2i'))
 
@@ -894,15 +897,15 @@ def read_header(pathname, **kwargs):
             else:
                 junk.append(bf.read('i'))
                 h['wetdep'].append(
-                    ''.join([bf.read('c') for i in range(10)]).strip())
+                    ''.join([bf.read('c').decode() for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 junk.append(bf.read('i'))
                 h['drydep'].append(
-                    ''.join([bf.read('c') for i in range(10)]).strip())
+                    ''.join([bf.read('c').decode() for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
                 h['nz_list'].append(bf.read('i'))
                 h['species'].append(
-                    ''.join([bf.read('c') for i in range(10)]).strip())
+                    ''.join([bf.read('c').decode() for i in range(10)]).strip())
                 junk.append(bf.read('2i'))
 
         if 'V6' in version:
@@ -920,7 +923,7 @@ def read_header(pathname, **kwargs):
         I = {2: 'kindz', 3: 'xp1', 4: 'yp1', 5: 'xp2',
              6: 'yp2', 7: 'zpoint1', 8: 'zpoint2', 9: 'npart', 10: 'mpart'}
 
-        for k, v in I.iteritems():
+        for k, v in I.items():
             # create zero-filled lists in H dict
             h[v] = np.zeros(h['numpoint'])
 
@@ -958,9 +961,9 @@ def read_header(pathname, **kwargs):
                 gt = bf.tell() + l  # create 'goto' point
                 sp = ''
                 # collect the characters for the compoint
-                while re.search("\w", bf.read('c')):
+                while re.search(b"\w", bf.read('c')):
                     bf.seek(-1, 1)
-                    sp = sp + bf.read('c')
+                    sp = sp + bf.read('c').decode()
 
                 bf.seek(gt)  # skip ahead to gt point
 
@@ -1180,7 +1183,7 @@ def _readV6(bf, h):
 
     if bf:
         # bf.read('i')
-        print h['numpoint']
+        print(h['numpoint'])
         for i in range(h['numpoint']):
             # r2=getbin('i')
             i1 = getbin('i')

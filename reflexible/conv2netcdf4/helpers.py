@@ -1,5 +1,7 @@
 ########### HELPER FUNCTIONS ##########
 
+from __future__ import print_function
+
 import datetime
 
 import numpy as np
@@ -60,7 +62,7 @@ def _datarange(H, G, index=None):
         zpmax = np.max(G[:, :, 0, i] / Heightnn[:, :, 0])
         if zpmax > fpmax:
             fpmax = zpmax
-        # print fpmax
+        # print(fpmax)
     tcmax = np.max(G)
     return ((0, fpmax), (0, tcmax))
 

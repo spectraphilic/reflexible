@@ -14,7 +14,7 @@ import contextlib
 import time
 import cProfile
 import pstats
-import StringIO
+import io
 
 
 # Global variable for disabling all the profiles
@@ -58,7 +58,7 @@ def cprof(explain='', nlines=20):
     pr.enable()
     yield
     pr.disable()
-    s = StringIO.StringIO()
+    s = io.StringIO()
     #sortby = ('time', 'calls')
     sortby = ('cumulative',)
     ps = pstats.Stats(pr, stream=s).sort_stats(*sortby)

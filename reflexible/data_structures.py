@@ -724,9 +724,9 @@ class Command(object):
             ## below here, not actual COMMAND input
             'HEADER': """**********************************************\n\n\n  Input file for   FLEXPART\n\n*********************************************\n\n""",
             'FLEXPART_VER': [10, '''FLEXPART VERSION Used to define format of COM   MAND File'''],
-            'SIM_START': [dt.datetime(2000, 01, 01, 00, 00, 00),
+            'SIM_START': [dt.datetime(2000, 1, 1, 00, 00, 00),
                           '''Beginning date and    time of   simulation. Must be given in format YYYYMMDD HHMISS, where YYYY is YEAR, MM  is MONTH, DD is DAY, HH is HOUR, MI is MINUTE and SS is SECOND. Current  version utilizes UTC.'''],
-            'SIM_END': [dt.datetime(2000, 02, 01, 00, 00, 00),
+            'SIM_END': [dt.datetime(2000, 2, 1, 00, 00, 00),
                         '''Ending date and time of simulation. Same format as 2'''],
             'AGECLASSES': [[86400 * 30], '''list of ageclasses (seconds) in the simulation'''],
             'RELEASE_SECONDS': [86400, '''duration of the releases in seconds''']
@@ -735,11 +735,11 @@ class Command(object):
         self._overrides = options
 
         # set the default options as attributes
-        for key, value in self._OPTIONS.iteritems():
+        for key, value in self._OPTIONS.items():
             setattr(self, key.lower(), value[0])
 
         # override the attributes with options
-        for key, value in options.iteritems():
+        for key, value in options.items():
             setattr(self, key.lower(), value)
 
         if self.ibdate is None:
