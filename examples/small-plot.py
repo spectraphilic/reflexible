@@ -13,14 +13,13 @@ Test Data:
 #builtins
 import os
 
-import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import shiftgrid, addcyclic
+import numpy as np
+from mpl_toolkits.basemap import addcyclic
 
 import reflexible as rf
-import reflexible.conv2netcdf4 as conv
-import reflexible.legacy.mapping as mp
+import reflexible.mapping as mp
 
 
 def plot_backward(SOURCE_FILE, OUTPUT_DIR):

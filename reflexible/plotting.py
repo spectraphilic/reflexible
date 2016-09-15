@@ -1,30 +1,10 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
 
-# builtin imports
-# import pdb
-import sys
-import os
-import struct
-import re
-import optparse
-import time
-import datetime
-import itertools
-from math import pi, sqrt, cos
-import traceback
-import pdb
-
-
-# Dependencies:
-import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 
-
-from matplotlib.dates import date2num
-import matplotlib.image as image
-from matplotlib.patches import Ellipse
 # Basemap
 try:
     from mpl_toolkits.basemap import shiftgrid, addcyclic
@@ -33,7 +13,7 @@ except ImportError:
 
 
 # local imports
-from reflexible.legacy import mapping as mp
+from reflexible import mapping as mp
 
 
 def plot_at_level(H, data, level=1,
@@ -140,11 +120,11 @@ def plot_totalcolumn(H, data=None,
         %s Total Column Sensitivity: %s\n %s """ % (ID, species, timestamp)
 
 
-    FIGURE = plot_sensitivity(H, data, \
-                           data_range=data_range, \
-                           rel_i=rel_i, map_region=map_region, \
-                           projection=projection, units=units, \
-                           datainfo_str=datainfo_str, coords=coords, \
+    FIGURE = plot_sensitivity(H, data,
+                           data_range=data_range,
+                           rel_i=rel_i, map_region=map_region,
+                           projection=projection, units=units,
+                           datainfo_str=datainfo_str, coords=coords,
                            FIGURE=FIGURE, overlay=overlay, **kwargs)
 
     FIGURE.ax.set_title(plot_title, fontsize=10)
@@ -155,11 +135,11 @@ def plot_totalcolumn(H, data=None,
 
 
 
-def plot_sensitivity(H, data, \
-             data_range=None, \
-             units='ns m^2 / kg', \
-             datainfo_str=None, \
-             plottitle=None, \
+def plot_sensitivity(H, data,
+             data_range=None,
+             units='ns m^2 / kg',
+             datainfo_str=None,
+             plottitle=None,
              rel_i=None,
              map_region=None, projection=None,
              dropm=None, coords=None,
