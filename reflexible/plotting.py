@@ -22,7 +22,7 @@ def plot_at_level(H, data, level=1,
                    map_region=5, projection='lcc',
                    overlay=False,
                    datainfo_str=None, log=True,
-                   data_range=None, coords=None, FIGURE=None,
+                   data_range=None, FIGURE=None,
                    plot_title=None,
                    units=None,
                    **kwargs
@@ -65,13 +65,13 @@ def plot_at_level(H, data, level=1,
             plot_title = """ %s Sensitivity at %s %s: %s \n %s """ % (ID, level_desc, H['alt_unit'], species, timestamp)
 
     FIGURE = plot_sensitivity(H, data,
-                           data_range=data_range,
-                           rel_i=rel_i, log=log,
-                           map_region=map_region,
-                           projection=projection,
-                           units=units, datainfo_str=datainfo_str,
-                           overlay=overlay,
-                           coords=coords, FIGURE=FIGURE, **kwargs)
+                              data_range=data_range,
+                              rel_i=rel_i, log=log,
+                              map_region=map_region,
+                              projection=projection,
+                              units=units, datainfo_str=datainfo_str,
+                              overlay=overlay,
+                              FIGURE=FIGURE, **kwargs)
 
 
     FIGURE.ax.set_title(plot_title, fontsize=10)
@@ -84,7 +84,7 @@ def plot_totalcolumn(H, data=None,
                    ID=' ', rel_i=None, species=None,
                    timestamp=None,
                    map_region=5, projection='lcc',
-                   data_range=None, coords=None,
+                   data_range=None,
                    FIGURE=None, overlay=False,
                    datainfo_str=None, **kwargs):
 
@@ -121,11 +121,11 @@ def plot_totalcolumn(H, data=None,
 
 
     FIGURE = plot_sensitivity(H, data,
-                           data_range=data_range,
-                           rel_i=rel_i, map_region=map_region,
-                           projection=projection, units=units,
-                           datainfo_str=datainfo_str, coords=coords,
-                           FIGURE=FIGURE, overlay=overlay, **kwargs)
+                              data_range=data_range,
+                              rel_i=rel_i, map_region=map_region,
+                              projection=projection, units=units,
+                              datainfo_str=datainfo_str,
+                              FIGURE=FIGURE, overlay=overlay, **kwargs)
 
     FIGURE.ax.set_title(plot_title, fontsize=10)
 
@@ -142,7 +142,7 @@ def plot_sensitivity(H, data,
              plottitle=None,
              rel_i=None,
              map_region=None, projection=None,
-             dropm=None, coords=None,
+             dropm=None,
              overlay=False,
              transform=True,
              log=True,
@@ -150,8 +150,7 @@ def plot_sensitivity(H, data,
              MapPar=None,
              FigPar=None,
              cax_title=None,
-             autofit=False, method='contourf', lsmask=False):
-    # autofit=False,method='imshow'):
+             method='contourf', lsmask=False):
     """ plot_sensitivity: core function for plotting FLEXPART output.
 
     Usage::
@@ -187,10 +186,6 @@ def plot_sensitivity(H, data,
       map_region                A map_region specified in mapping.py
       projection            [deprecated] use pre-defined map_regions.
       dropm                 Force creation of a new basemap instance
-      coords                Used with autofit option. An array of lat,lon
-                            values for the mapping module to autofit a
-                            basemap instance to.
-      autofit               Try to generate map_region automagically (flakey)
       overlay               Force removal of previous figure elements.
       transform             For use with imshow method, if your data is not
                             in same coordinates as projection, try to transform
@@ -224,19 +219,15 @@ def plot_sensitivity(H, data,
     assert method in methods, "method keyword must be one of: %s" % methods
 
     if FIGURE is None:
-        if map_region is None:
-            if MapPar is None:
-                if autofit:
-                    MapPar = mp._gen_MapPar_fromHeader(H)
-
         FIGURE = mp.get_FIGURE(map_region=map_region,
-                               projection=projection, coords=coords,
+                               projection=projection,
                                MapPar=MapPar, FigPar=FigPar)
     else:
         if FIGURE.m is None:
-            FIGURE = mp.get_FIGURE(fig=FIGURE.fig, ax=FIGURE.ax, map_region=map_region,
-                               projection=projection, coords=coords,
-                               MapPar=MapPar, FigPar=FigPar)
+            FIGURE = mp.get_FIGURE(fig=FIGURE.fig, ax=FIGURE.ax,
+                                   map_region=map_region,
+                                   projection=projection,
+                                   MapPar=MapPar, FigPar=FigPar)
 
     if overlay is False:
         del FIGURE.ax.images[FIGURE.indices.images:]
@@ -454,7 +445,7 @@ def plot_sensitivity(H, data,
     return FIGURE
 
 def plot_trajectory(H, T, rel_i, FIGURE=None,
-                    map_region=None, projection=None, coords=None,
+                    map_region=None, projection=None,
                     overlay=True,
                     draw_circles=True,
                     draw_labels=True, days_back=20,
@@ -485,8 +476,6 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
       rel_i                 **required** release index
       FIGURE                A "FIGURE" object[None] (see mapping.py)
       projection            A projection pre-defined in :mod:`mapping`
-      coords                A set of lon,lat coords for autosetting
-                            map map_region (not really working).
       overlay               [True] will overlay the trajectory
                             on top of another map instance.
       draw_circles          [True] will mark the trajectory with
@@ -516,7 +505,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     # # Set up the FIGURE
     if FIGURE == None:
         FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
-                               coords=coords, MapPar=MapPar)
+                               MapPar=MapPar)
     # #Get fig info and make active
     fig = FIGURE.fig
     m = FIGURE.m

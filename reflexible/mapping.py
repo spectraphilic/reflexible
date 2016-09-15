@@ -173,50 +173,7 @@ def _val2var(val, var):
     exec(cmd)
 
 
-def map_dynaMap(x, y):
-    """Attempts to define the basemap instance settings based
-    on lon/lat input.
-
-    Pass a tuple of x,y values and the function attempts to define an
-    appropriate region. It returns::
-
-        > urcrnrlon,urcrnrlat,llcrnrlat,llcrnrlon,pd,md,lat_0,lat_1,lon_0,area_thresh,projection,resolution,rsphere = map_dynamap((x,y))
-
-     The values can be used to define a basemap instance.
-
-     .. note::
-         This function is not reliable yet.
-
-     """
-    ymin = min(y)
-    ymax = max(y)
-    y_edge = abs(ymax - ymin) * 0.75
-    xmin = min(x)
-    xmax = max(x)
-    x_edge = abs(xmax - xmin) * 0.75
-
-    llcrnrlat = ymin - y_edge
-    if llcrnrlat < -90.: llcrnrlat = -90.
-    llcrnrlon = xmin - x_edge
-    if llcrnrlon < -180.: llcrnrlon = -180.
-    urcrnrlat = ymax + y_edge
-    if urcrnrlat > 90.: urcrnrlat = 90.
-    urcrnrlon = xmax + x_edge
-    if urcrnrlon > 180.: urcrnrlon = 180.
-    area_thresh = 1000
-    resolution = 'l'
-    projection = 'merc'
-    lat_0 = y[int(len(y) / 2)]
-    lat_1 = lat_0 - y_edge
-    lon_0 = x[int(len(x) / 2)]
-    # lon_1=110.
-    rsphere = (6378137.00, 6356752.3142)
-    pd = y_edge
-    md = x_edge
-    return urcrnrlon, urcrnrlat, llcrnrlat, llcrnrlon, pd, md, lat_0, lat_1, lon_0, area_thresh, projection, resolution, rsphere
-
-
-def map_regions(map_region='default', projection=None, coords=None, m=None, MapPar=None):
+def map_regions(map_region='default', projection=None, m=None, MapPar=None):
     """
     This is a core function, used throughout this module. It is called
     by the :func:`get_FIGURE` function. If you want to create a new
@@ -233,13 +190,6 @@ def map_regions(map_region='default', projection=None, coords=None, m=None, MapP
     USAGE::
 
         > MapPar,FigPar = map_regions(map_region="POLARCAT")
-        or
-        > MapPar,FigPar = map_regions(coords=(Lon,Lat))
-
-
-    where coords is a tuple of lon/lat pairs. This will call the 'automap' feature,
-    which ... probably won't work! ;)
-
 
     Returns
       Two dictionaries, first  a MapPar dictionary with keywords that are the
@@ -293,15 +243,6 @@ def map_regions(map_region='default', projection=None, coords=None, m=None, MapP
     FigPar.figsize = (8, 7)  # w,h tuple
     # rect = l,b,w,h
     FigPar.axlocs = [0.05, 0.01, .8, .9]
-
-    if map_region == 0:
-        if coords == None:
-            print("ERROR: for region 0 must provide coordinate tuple (x,y)")
-            raise IOError()
-        MapPar.urcrnrlon, MapPar.urcrnrlat, MapPar.llcrnrlat, MapPar.llcrnrlon, \
-        pd, md, MapPar.lat_0, MapPar.lat_1, MapPar.lon_0, \
-        MapPar.area_thresh, MapPar.projection, MapPar.resolution, \
-        MapPar.rsphere = map_dynaMap(*coords)
 
     if map_region == None or map_region in ['NorthernHemisphere', 'default']:
         "NorthernHemisphere is default"
@@ -1024,17 +965,6 @@ def map_regions(map_region='default', projection=None, coords=None, m=None, MapP
         MapPar.lon_0 = 7.5
         MapPar.rsphere = (6378137.00, 6356752.3142)
 
-    elif map_region == 'auto' and coords != None:
-        """Based around falcon flights"""
-        MapPar.urcrnrlon, MapPar.urcrnrlat, MapPar.llcrnrlat, MapPar.llcrnrlon, \
-        pd, md, MapPar.lat_0, MapPar.lat_1, MapPar.lon_0, \
-        MapPar.area_thresh, MapPar.projection, \
-        MapPar.resolution, MapPar.rsphere = map_dynaMap(*coords)
-
-        # MapPar.urcrnrlon,MapPar.urcrnrlat,MapPar.llcrnrlat,MapPar.llcrnrlon,\
-        #        pd,md,MapPar.lat_0,MapPar.lat_1,MapPar.lon_0,\
-        # MapPar.area_thresh,MapPar.projection,MapPar.resolution,\
-        # MapPar.rsphere=map_dynaMap(([-180,180],[-90,90]))
     # MapPar.boundinglat=50.
     try:
         del MapPar['m']  # in case
@@ -1396,7 +1326,7 @@ def grid_to_netcdf(H, D, nco_filename, spc, time):
 
 
 def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
-               projection=None, coords=None, getm=True,
+               projection=None, getm=True,
                MapPar=None, FigPar=None,
                image=None):
     """
@@ -1449,7 +1379,6 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
             if image:
                 fig, m = get_base_image(image, map_region=map_region,
                                         projection=projection,
-                                        coords=coords,
                                         MapPar=MapPar,
                                         FigPar=FigPar,
                                         )
@@ -1457,7 +1386,6 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
 
                 fig, m = get_base1(map_region=map_region,
                                    projection=projection,
-                                   coords=coords,
                                    MapPar=MapPar,
                                    FigPar=FigPar,
                                    fig=fig,
@@ -1497,7 +1425,6 @@ def get_base1(map_region=1,
               projection=None,
               figname=None,
               fig=None,
-              coords=None,
               drawlsmask=False,
               MapPar=None,
               FigPar=None):
@@ -1515,7 +1442,6 @@ def get_base1(map_region=1,
     ## input paramters for Basemap
     MapPar_sd, FigPar_sd = map_regions(map_region=map_region,
                                        projection=projection,
-                                       coords=coords,
                                        MapPar=MapPar)
     if MapPar:
         MapPar_sd.set_with_dict(MapPar)
@@ -1569,10 +1495,6 @@ def get_base2(**kwargs):
         fig = kwargs['figure']
     else:
         fig = None
-    if 'coords' in kwargs.keys():
-        coord = kwargs['coords']
-    else:
-        coord = None
     ##IMPORTS
     import pylab as P
     try:
@@ -1601,8 +1523,8 @@ def get_base2(**kwargs):
     fig = P.figure(1, figsize=(8, 6))
 
     # define Lambert Conformal basemap for North America.
-    mr = {'map_region': reg, 'coords': coord}
-    mp, figpar = map_regions(map_region=reg, coords=coord)
+    mr = {'map_region': reg}
+    mp, figpar = map_regions(map_region=reg)
 
     m = Basemap(**mp)
     ax = fig.add_axes([0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
@@ -1716,10 +1638,6 @@ def get_base_image(imagefile, **kwargs):
         fig = kwargs['figure']
     else:
         fig = None
-    if 'coords' in kwargs.keys():
-        coord = kwargs['coords']
-    else:
-        coord = None
     ##IMPORTS
     import matplotlib.pyplot as plt
     try:
@@ -1748,8 +1666,8 @@ def get_base_image(imagefile, **kwargs):
     fig = plt.figure(1, figsize=(8, 6))
 
     # define Lambert Conformal basemap for North America.
-    mr = {'map_region': reg, 'coords': coord}
-    mp, figpar = map_regions(map_region=reg, coords=coord)
+    mr = {'map_region': reg}
+    mp, figpar = map_regions(map_region=reg)
 
     m = Basemap(**mp)
     ax = fig.add_axes([0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
@@ -1757,7 +1675,7 @@ def get_base_image(imagefile, **kwargs):
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original image.
     dx = 2. * np.pi * m.rmajor / float(nlons)
-    nx = int((m.xmax - m.xmin) / dx) + 1;
+    nx = int((m.xmax - m.xmin) / dx) + 1
     ny = int((m.ymax - m.ymin) / dx) + 1
     rgba_warped = np.zeros((ny, nx, 4), np.float64)
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
@@ -1781,13 +1699,14 @@ def set_plotkwargs(kwargs, plot_kwargs=None):
     """ Internal function to check for valid plotting keywords
     and extracts them into a new kwarg dict for the plotting routine """
 
-    valid_kwargs = ['alpha', 'animated', 'antialiased', 'axes', 'clip_box', \
-                    'clip_on ', 'clip_path ', 'color', 'contains', 'dash_capstyle', \
-                    'dash_joinstyle', 'dashes', 'data', 'drawstyle', 'figure ', \
-                    'label', 'linestyle', 'linewidth ', 'lod', 'marker', \
-                    'markeredgecolor', 'markeredgewidth ', 'markerfacecolor ', \
-                    'markersize', 'picker ', 'snap ', 'solid_capstyle', \
-                    'solid_joinstyle ', 'transform', 'url ', \
+    valid_kwargs = ['alpha', 'animated', 'antialiased', 'axes', 'clip_box',
+                    'clip_on ', 'clip_path ', 'color', 'contains',
+                    'dash_capstyle',
+                    'dash_joinstyle', 'dashes', 'data', 'drawstyle', 'figure ',
+                    'label', 'linestyle', 'linewidth ', 'lod', 'marker',
+                    'markeredgecolor', 'markeredgewidth ', 'markerfacecolor ',
+                    'markersize', 'picker ', 'snap ', 'solid_capstyle',
+                    'solid_joinstyle ', 'transform', 'url ',
                     'visible', 'xdata', 'ydata', 'zorder']
     if plot_kwargs is None:
         plot_kwargs = {}
@@ -1804,7 +1723,6 @@ def plot_track(lon, lat,
                map_region=None,
                projection=None,
                scatter=False,
-               coords=None,
                units=''):
     """ Plot a longitude,latitude course over a basemap. Accepts several
     keyword arguments and makes use of the FIG.
@@ -1831,7 +1749,6 @@ def plot_track(lon, lat,
     plotargs            dictionary of plot arguments
     map_region              a region name
     projection          a projection
-    coords              coordinates if using :func:`map_dynamap`
     units               a string than can be passed.
     ===============     ========================================
 
@@ -1867,7 +1784,7 @@ def plot_track(lon, lat,
         plot_kwargs = set_plotkwargs(plotargs, plot_kwargs)
 
     if FIGURE == None:
-        FIGURE = get_FIGURE(map_region=map_region, projection=projection, coords=coords)
+        FIGURE = get_FIGURE(map_region=map_region, projection=projection)
 
     ##Get fig if exists
     fig = FIGURE.fig
@@ -2106,7 +2023,7 @@ def plot_imshow(x, y, z,
                 rel_i=0, plottitle=None,
                 globe=False, lon_0=-110, lat_0=45,
                 map_region=None, projection=None,
-                dropm=None, coords=None,
+                dropm=None,
                 overlay=False,
                 transform=False,
                 FIGURE=None):
@@ -2116,7 +2033,7 @@ def plot_imshow(x, y, z,
     """
 
     if FIGURE == None:
-        FIGURE = get_FIGURE(map_region=map_region, projection=projection, coords=coords)
+        FIGURE = get_FIGURE(map_region=map_region, projection=projection)
 
     if dropm != None:
         try:
@@ -2323,10 +2240,6 @@ def plot_sattracks(**kwargs):
         projection = kwargs['projection']
     else:
         projection = None
-    if 'coords' in kwargs.keys():
-        coords = kwargs['coords']
-    else:
-        coords = None
     if 'figname' in kwargs.keys():
         figname = kwargs['figname']
     else:
@@ -2369,7 +2282,7 @@ def plot_sattracks(**kwargs):
 
     # A few plot definitions
     if FIGURE == None:
-        FIGURE = get_FIGURE(map_region=map_region, projection=projection, coords=coords)
+        FIGURE = get_FIGURE(map_region=map_region, projection=projection)
 
     fig = FIGURE.fig
     m = FIGURE.m
