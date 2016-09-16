@@ -1,6 +1,6 @@
 matplotlib
 pillow
-netCDF4 >= 1.1.1
+netCDF4>=1.1.1
 xarray
 numpy
 pandas

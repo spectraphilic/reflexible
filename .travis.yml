@@ -25,8 +25,10 @@ install:
   - sudo apt-get --assume-yes install gfortran
 
   # Install dependencies in conda
-  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION numpy libgfortran netcdf4 matplotlib pandas pytest coverage pip xarray basemap
+  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION libgfortran
   - source activate reflex_env
+  # Install the remaining requeriments
+  - cat requirements.txt | xargs conda install
 
   # Install dependencies in PyPI
   - pip install pytest-cov coveralls
