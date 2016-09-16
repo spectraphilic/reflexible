@@ -31,7 +31,7 @@ install:
   - cat requirements.txt | xargs conda install
 
   # Install dependencies in PyPI
-  - pip install pytest-cov coveralls yaml
+  - pip install pytest-cov coveralls
 
   - python setup.py build_ext --inplace
 
