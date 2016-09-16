@@ -1,0 +1,57 @@
+north_atlantic:
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -95.
+        urcrnrlat: 77.
+        urcrnrlon: 50.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 5.
+        lon_0: -20.
+        rsphere: !!python/tuple [6378137.00, 6356752.3142]
+
+svalbard:
+     descr: Over Svalbard
+     map_par:
+        llcrnrlat: 72.0
+        llcrnrlon: -5.0
+        urcrnrlat: 80.0
+        urcrnrlon: 45.0
+        area_thresh: 10.0
+        lat_0: 80.0
+        lon_0: 20.0
+        projection: lcc
+        resolution: h
+        rsphere: !!python/tuple [6378137.0, 6356752.3142]
+
+
+npolar_70:
+    descr: Zoom on polar project 70N
+    map_par:
+        area_thresh: 1000.
+        resolution: i
+        projection: npstere
+        lat_1: 5.
+        lon_0: -80.
+        rsphere: (6378137.00, 6356752.3142)
+        boundinglat: 65.
+        anchor: W
+    fig_par:
+        figsize: (6, 6)
+        axlocs: !!python/list [0.1, 0.05, 0.7, .85]
+
+grace:
+    descr: Based around GRACE Campaigns
+    map_par:
+        llcrnrlat: 60.0
+        llcrnrlon: -70.0
+        urcrnrlat: 75.0
+        urcrnrlon: -30.00
+        area_thresh: 100.
+        resolution: i
+        projection: aea
+        lat_0: 60.
+        lat_1: 60.
+        lon_0: -55.
+        rsphere: !!python/tuple [6378137.00, 6356752.3142]

@@ -12,6 +12,8 @@ __version__ = "0.02"
 
 import numpy as np
 import math
+import os.path
+import yaml
 
 import datetime as dt
 import pdb
@@ -33,6 +35,7 @@ from matplotlib.ticker import NullFormatter
 
 
 class Structure(dict):
+
     def __getattr__(self, attr):
         return self[attr]
 
@@ -155,13 +158,13 @@ class KML_File:
             file.close()
 
 
-def map_regions(map_region='default', projection=None, m=None, MapPar=None):
+def map_regions(map_region='default', map_par=None, fig_par=None):
     """
     This is a core function, used throughout this module. It is called
     by the :func:`get_FIGURE` function. If you want to create a new
     region, this is where it should be added. Follow the protocol for the
     existing regions below. The idea is to move these regions out of here
-    eventually, and have them be called from a file or database. 
+    eventually, and have them be called from a file or database.
 
     .. note::
         Generally, I just use region names anymore, and not projection. It is
@@ -171,10 +174,10 @@ def map_regions(map_region='default', projection=None, m=None, MapPar=None):
 
     USAGE::
 
-        > MapPar,FigPar = map_regions(map_region="POLARCAT")
+        > map_par, fig_par = map_regions(map_region="POLARCAT")
 
     Returns
-      Two dictionaries, first  a MapPar dictionary with keywords that are the
+      Two dictionaries, first  a map_par dictionary with keywords that are the
       same as what is need to create a
       `basemap`<http://matplotlib.sourceforge.net/basemap/doc/html/users/mapsetup.html>_ instance.
 
@@ -196,7 +199,7 @@ def map_regions(map_region='default', projection=None, m=None, MapPar=None):
                         regions
       ============      ==========================
 
-      Second, a FigPar dictionary that contains options that may be passed to the
+      Second, a fig_par dictionary that contains options that may be passed to the
       :mod:`matplotlib.pyplot` :func:`figure` function.
 
       ============      ==========================
@@ -207,357 +210,448 @@ def map_regions(map_region='default', projection=None, m=None, MapPar=None):
       ============      ==========================
 
       .. note::
-          You can override the FigPar.figsize in your region definition.
+          You can override the fig_par.figsize in your region definition.
+
+
+
+    """
+    # Set some default values
+    map_par_ = Structure()
+    if map_par is not None:
+        map_par_.set_with_dict(map_par)
+    fig_par_ = Structure()
+    if fig_par is not None:
+        fig_par_.set_with_dict(fig_par)
+    map_par, fig_par = map_par_, fig_par_
+
+    map_par.anchor = 'C'
+    fig_par.figsize = (8, 7)  # w,h tuple
+    # rect = l,b,w,h
+    fig_par.axlocs = [0.05, 0.01, .8, .9]
+
+    # Access the database
+    mapdb_file = os.path.join(os.path.dirname(__file__), 'mapping_db.yml')
+    with open(mapdb_file) as mapdb:
+        mapping_db = yaml.load(mapdb)
+
+    # Get the mapping params (should be always there)
+    try:
+        region_map_par = mapping_db[map_region]['map_par']
+    except KeyError:
+        raise KeyError("region {} not found".format(map_region))
+    map_par.set_with_dict(region_map_par)
+
+    # Get the figure params (not always present)
+    if 'fig_par' in mapping_db[map_region]:
+        fig_par.set_with_dict(mapping_db[map_region]['fig_par'])
+
+    print(map_par, fig_par)
+    return map_par, fig_par
+
+# TODO: to be removed in favor of the new one mased on a YAML file
+def map_regions_(map_region='default', projection=None, m=None, map_par=None):
+    """
+    This is a core function, used throughout this module. It is called
+    by the :func:`get_FIGURE` function. If you want to create a new
+    region, this is where it should be added. Follow the protocol for the
+    existing regions below. The idea is to move these regions out of here
+    eventually, and have them be called from a file or database. 
+
+    .. note::
+        Generally, I just use region names anymore, and not projection. It is
+        easiest to name your new region uniquely, then simply define
+        region="myregion" when you call one of the plotting routines. For the most
+        part they take "region" as a keyword.
+
+    USAGE::
+
+        > map_par,fig_par = map_regions(map_region="POLARCAT")
+
+    Returns
+      Two dictionaries, first  a map_par dictionary with keywords that are the
+      same as what is need to create a
+      `basemap`<http://matplotlib.sourceforge.net/basemap/doc/html/users/mapsetup.html>_ instance.
+
+      ============      ==========================
+      keys              description
+      ============      ==========================
+      llcrnrlat         lower left latitude
+      llcrnrlon         lower left longitude
+      urcrnrlat         upper right latitude
+      urcrnrlon         upper right longitude
+      area_thresh       area threshold
+      resolution        resolution
+      projection        projection
+      lat_1             lat_1
+      lon_0             lon_0
+      rsphere           (6378137.00,6356752.3142)
+      m                 you can pass an m object
+                        which is needed for some
+                        regions
+      ============      ==========================
+
+      Second, a fig_par dictionary that contains options that may be passed to the
+      :mod:`matplotlib.pyplot` :func:`figure` function.
+
+      ============      ==========================
+      keys              description
+      ============      ==========================
+      figsize           size of the figure
+      axlocs            locations of the axes
+      ============      ==========================
+
+      .. note::
+          You can override the fig_par.figsize in your region definition.
 
 
 
     """
     # set some default values
     MP = Structure()
-    if MapPar:
-        MP.set_with_dict(MapPar)
-        MapPar = MP
+    if map_par:
+        MP.set_with_dict(map_par)
+        map_par = MP
     else:
-        MapPar = Structure()
-    FigPar = Structure()
+        map_par = Structure()
+    fig_par = Structure()
 
-    MapPar.anchor = 'C'
-    FigPar.figsize = (8, 7)  # w,h tuple
+    map_par.anchor = 'C'
+    fig_par.figsize = (8, 7)  # w,h tuple
     # rect = l,b,w,h
-    FigPar.axlocs = [0.05, 0.01, .8, .9]
+    fig_par.axlocs = [0.05, 0.01, .8, .9]
 
     if map_region == None or map_region in ['NorthernHemisphere', 'default']:
         "NorthernHemisphere is default"
-        MapPar.projection = 'cyl'
-        MapPar.llcrnrlat = 0
-        MapPar.urcrnrlat = 90
-        MapPar.llcrnrlon = -180
-        MapPar.urcrnrlon = 180
-        MapPar.resolution = 'c'
-        # MapPar.anchor='W'
-        FigPar.figsize = (8, 3)  # w,h tuple
-        FigPar.axlocs = [0.1, 0.1, .7, .8]
+        map_par.projection = 'cyl'
+        map_par.llcrnrlat = 0
+        map_par.urcrnrlat = 90
+        map_par.llcrnrlon = -180
+        map_par.urcrnrlon = 180
+        map_par.resolution = 'c'
+        # map_par.anchor='W'
+        fig_par.figsize = (8, 3)  # w,h tuple
+        fig_par.axlocs = [0.1, 0.1, .7, .8]
 
     if map_region == 'EarthMBTFPQ':
         "Most of the Earth"
-        MapPar.projection = 'mbtfpq'
-        # MapPar.llcrnrlat=-40
-        # MapPar.urcrnrlat=85
-        # MapPar.llcrnrlon=-180
-        # MapPar.urcrnrlon=180
-        MapPar.resolution = 'c'
-        MapPar.lon_0 = 0
-        # MapPar.anchor='W'
-        FigPar.figsize = (8, 7)  # w,h tuple
-        FigPar.axlocs = [0.05, 0.01, .8, .96]
+        map_par.projection = 'mbtfpq'
+        # map_par.llcrnrlat=-40
+        # map_par.urcrnrlat=85
+        # map_par.llcrnrlon=-180
+        # map_par.urcrnrlon=180
+        map_par.resolution = 'c'
+        map_par.lon_0 = 0
+        # map_par.anchor='W'
+        fig_par.figsize = (8, 7)  # w,h tuple
+        fig_par.axlocs = [0.05, 0.01, .8, .96]
 
     if map_region == 'EarthMerc':
         "Most of the Earth"
-        MapPar.projection = 'merc'
-        MapPar.llcrnrlat = -40
-        MapPar.urcrnrlat = 85
-        MapPar.llcrnrlon = -180
-        MapPar.urcrnrlon = 180
-        MapPar.resolution = 'c'
-        MapPar.lat_ts = 20
-        # MapPar.anchor='W'
-        FigPar.figsize = (8, 7)  # w,h tuple
-        FigPar.axlocs = [0.05, 0.01, .8, .96]
+        map_par.projection = 'merc'
+        map_par.llcrnrlat = -40
+        map_par.urcrnrlat = 85
+        map_par.llcrnrlon = -180
+        map_par.urcrnrlon = 180
+        map_par.resolution = 'c'
+        map_par.lat_ts = 20
+        # map_par.anchor='W'
+        fig_par.figsize = (8, 7)  # w,h tuple
+        fig_par.axlocs = [0.05, 0.01, .8, .96]
 
     if map_region == 'NH':
         "NorthernHemisphere is default"
-        MapPar.projection = 'merc'
-        MapPar.llcrnrlat = -40
-        MapPar.urcrnrlat = 85
-        MapPar.llcrnrlon = -180
-        MapPar.urcrnrlon = 180
-        MapPar.resolution = 'c'
-        MapPar.lat_ts = 20
-        # MapPar.anchor='W'
-        FigPar.figsize = (8, 7)  # w,h tuple
-        FigPar.axlocs = [0.05, 0.01, .8, .96]
+        map_par.projection = 'merc'
+        map_par.llcrnrlat = -40
+        map_par.urcrnrlat = 85
+        map_par.llcrnrlon = -180
+        map_par.urcrnrlon = 180
+        map_par.resolution = 'c'
+        map_par.lat_ts = 20
+        # map_par.anchor='W'
+        fig_par.figsize = (8, 7)  # w,h tuple
+        fig_par.axlocs = [0.05, 0.01, .8, .96]
 
     elif map_region in ['Globe', 'Earth']:
         """ Whole earth, mercator """
-        MapPar.projection = 'merc'
-        MapPar.llcrnrlat = -75
-        MapPar.urcrnrlat = 85
-        MapPar.llcrnrlon = -180
-        MapPar.urcrnrlon = 180
-        MapPar.resolution = 'c'
-        # MapPar.anchor='W'
-        # FigPar.figsize=(8,3) #w,h tuple
-        FigPar.axlocs = [0.05, 0.05, .7, .8]
+        map_par.projection = 'merc'
+        map_par.llcrnrlat = -75
+        map_par.urcrnrlat = 85
+        map_par.llcrnrlon = -180
+        map_par.urcrnrlon = 180
+        map_par.resolution = 'c'
+        # map_par.anchor='W'
+        # fig_par.figsize=(8,3) #w,h tuple
+        fig_par.axlocs = [0.05, 0.05, .7, .8]
 
     elif map_region == 'WholeEarth':
         " Use Mollweid "
-        MapPar.projection = 'moll'
-        MapPar.lon_0 = 0
-        MapPar.resolution = 'c'
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.1, 0.05, 0.7, .85]
+        map_par.projection = 'moll'
+        map_par.lon_0 = 0
+        map_par.resolution = 'c'
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.1, 0.05, 0.7, .85]
 
     elif map_region == 1 and projection == 'lcc' or map_region == "NorwegianSea":
         "Norwegian Sea"
-        MapPar.llcrnrlat = 55.
-        MapPar.llcrnrlon = -5.
-        MapPar.urcrnrlat = 75.
-        MapPar.urcrnrlon = 50.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 60.
-        MapPar.lon_0 = 15.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 55.
+        map_par.llcrnrlon = -5.
+        map_par.urcrnrlat = 75.
+        map_par.urcrnrlon = 50.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 60.
+        map_par.lon_0 = 15.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'SOLAS' or map_region == "solas":
-        MapPar.llcrnrlat = 45.
-        MapPar.llcrnrlon = -125.
-        MapPar.urcrnrlat = 78.
-        MapPar.urcrnrlon = -40.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.axlocs = [0.1, 0.05, 0.7, .85]
+        map_par.llcrnrlat = 45.
+        map_par.llcrnrlon = -125.
+        map_par.urcrnrlat = 78.
+        map_par.urcrnrlon = -40.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.axlocs = [0.1, 0.05, 0.7, .85]
 
     elif map_region == 'obuoy':
-        MapPar.llcrnrlat = 50.
-        MapPar.llcrnrlon = -179.
-        MapPar.urcrnrlat = 80.
-        MapPar.urcrnrlon = -119.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'merc'
-        MapPar.lat_0 = 70.
-        MapPar.lon_0 = -150.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 50.
+        map_par.llcrnrlon = -179.
+        map_par.urcrnrlat = 80.
+        map_par.urcrnrlon = -119.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'i'
+        map_par.projection = 'merc'
+        map_par.lat_0 = 70.
+        map_par.lon_0 = -150.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'NORTHSEA' or map_region == "NorthSea":
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -55.
-        MapPar.urcrnrlat = 78.
-        MapPar.urcrnrlon = 50.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.axlocs = [0.1, 0.05, 0.7, .85]
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -55.
+        map_par.urcrnrlat = 78.
+        map_par.urcrnrlon = 50.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.axlocs = [0.1, 0.05, 0.7, .85]
 
     elif map_region == 'Asia':
-        MapPar.llcrnrlat = 0.
-        MapPar.llcrnrlon = 60.
-        MapPar.urcrnrlat = 75.
-        MapPar.urcrnrlon = 180.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 20.
-        MapPar.lon_0 = 100.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 0.
+        map_par.llcrnrlon = 60.
+        map_par.urcrnrlat = 75.
+        map_par.urcrnrlon = 180.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 20.
+        map_par.lon_0 = 100.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'Japan':
-        MapPar.llcrnrlat = 25.
-        MapPar.llcrnrlon = 125.
-        MapPar.urcrnrlat = 45.
-        MapPar.urcrnrlon = 160.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 35.
-        MapPar.lon_0 = 140.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (8, 7)  # w,h tuple
+        map_par.llcrnrlat = 25.
+        map_par.llcrnrlon = 125.
+        map_par.urcrnrlat = 45.
+        map_par.urcrnrlon = 160.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 35.
+        map_par.lon_0 = 140.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (8, 7)  # w,h tuple
         # rect = l,b,w,h
-        FigPar.axlocs = [0.05, 0.01, 0.8, .99]
+        fig_par.axlocs = [0.05, 0.01, 0.8, .99]
 
     elif map_region == 'JapanOld':
-        MapPar.llcrnrlat = 25.
-        MapPar.llcrnrlon = 125.
-        MapPar.urcrnrlat = 45.
-        MapPar.urcrnrlon = 160.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 35.
-        MapPar.lon_0 = 140.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 25.
+        map_par.llcrnrlon = 125.
+        map_par.urcrnrlat = 45.
+        map_par.urcrnrlon = 160.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 35.
+        map_par.lon_0 = 140.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'Pacific_old':
         """Larger Scale Overview of the North Atlantic LAEA"""
-        MapPar.llcrnrlat = -30.
-        MapPar.llcrnrlon = 130.
-        MapPar.urcrnrlat = 60.
-        MapPar.urcrnrlon = -80.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'merc'
-        MapPar.lat_0 = 40.
-        MapPar.lat_1 = 40.
-        MapPar.lon_0 = -160.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.08, 0.05, 0.7, .85]
+        map_par.llcrnrlat = -30.
+        map_par.llcrnrlon = 130.
+        map_par.urcrnrlat = 60.
+        map_par.urcrnrlon = -80.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'merc'
+        map_par.lat_0 = 40.
+        map_par.lat_1 = 40.
+        map_par.lon_0 = -160.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.08, 0.05, 0.7, .85]
 
 
     elif map_region == 'NorthAtlantic':
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -95.
-        MapPar.urcrnrlat = 77.
-        MapPar.urcrnrlon = 50.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -95.
+        map_par.urcrnrlat = 77.
+        map_par.urcrnrlon = 50.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'NorthAtlanticWide':
         """Larger Scale Overview of the North Atlantic LAEA"""
-        MapPar.llcrnrlat = 50.
-        MapPar.llcrnrlon = -120.
-        MapPar.urcrnrlat = 75.
-        MapPar.urcrnrlon = 40.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 40.
-        MapPar.lat_1 = 20.
-        MapPar.lon_0 = -40.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 50.
+        map_par.llcrnrlon = -120.
+        map_par.urcrnrlat = 75.
+        map_par.urcrnrlon = 40.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 40.
+        map_par.lat_1 = 20.
+        map_par.lon_0 = -40.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
 
     elif map_region == 'EYJ2':
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -25.
-        MapPar.urcrnrlat = 65.
-        MapPar.urcrnrlon = 45.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 15.
-        MapPar.lon_0 = -100.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (5, 4)
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -25.
+        map_par.urcrnrlat = 65.
+        map_par.urcrnrlon = 45.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 15.
+        map_par.lon_0 = -100.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (5, 4)
 
     elif map_region == 'CALNEX':
-        MapPar.llcrnrlat = 33.
-        MapPar.llcrnrlon = -125.
-        MapPar.urcrnrlat = 39.
-        MapPar.urcrnrlon = -115.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 35.
-        MapPar.lon_0 = -120.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.05, 0.05, 0.7, .85]
+        map_par.llcrnrlat = 33.
+        map_par.llcrnrlon = -125.
+        map_par.urcrnrlat = 39.
+        map_par.urcrnrlon = -115.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 35.
+        map_par.lon_0 = -120.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.05, 0.05, 0.7, .85]
 
     elif map_region == 'EYJ':
-        MapPar.llcrnrlat = 32.
-        MapPar.llcrnrlon = -125.
-        MapPar.urcrnrlat = 40.
-        MapPar.urcrnrlon = -117.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'h'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -120.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.05, 0.05, 0.8, .85]
+        map_par.llcrnrlat = 32.
+        map_par.llcrnrlon = -125.
+        map_par.urcrnrlat = 40.
+        map_par.urcrnrlon = -117.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'h'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -120.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.05, 0.05, 0.8, .85]
 
     elif map_region == 'SAVAAv2':
-        "for Volcanoe eruption, requires a m instance passed in the MapPar Structure"
-        MapPar.projection = "geos"
-        MapPar.resolution = 'l'
-        MapPar.lon_0 = 6.
-        MapPar.llcrnrx = 0
-        MapPar.llcrnry = 0
+        "for Volcanoe eruption, requires a m instance passed in the map_par Structure"
+        map_par.projection = "geos"
+        map_par.resolution = 'l'
+        map_par.lon_0 = 6.
+        map_par.llcrnrx = 0
+        map_par.llcrnry = 0
         # In this case a Basemap instance is required
         # in advance
-        MapPar.urcrnrx = MapPar.m.urcrnrx / 2.
-        MapPar.urcrnry = MapPar.m.urcrnry / 2.
+        map_par.urcrnrx = map_par.m.urcrnrx / 2.
+        map_par.urcrnry = map_par.m.urcrnry / 2.
 
 
     elif map_region == 'VAUUAV_MODIS':
         "Zoom over Kongsfjorden"
-        MapPar.llcrnrlat = 78.8
-        MapPar.llcrnrlon = 11.6
-        MapPar.urcrnrlat = 79.2
-        MapPar.urcrnrlon = 12.6
-        MapPar.area_thresh = 10.
-        MapPar.resolution = 'h'
-        MapPar.projection = 'laea'
-        MapPar.lat_ts = 79.
-        MapPar.lon_0 = 12.
-        MapPar.lat_0 = 79.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 78.8
+        map_par.llcrnrlon = 11.6
+        map_par.urcrnrlat = 79.2
+        map_par.urcrnrlon = 12.6
+        map_par.area_thresh = 10.
+        map_par.resolution = 'h'
+        map_par.projection = 'laea'
+        map_par.lat_ts = 79.
+        map_par.lon_0 = 12.
+        map_par.lat_0 = 79.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'VAUUAV09':
         "Zoom over Kongsfjorden"
-        MapPar.llcrnrlat = 78.87
-        MapPar.llcrnrlon = 11.7
-        MapPar.urcrnrlat = 78.98
-        MapPar.urcrnrlon = 12.5
-        MapPar.area_thresh = 10.
-        MapPar.resolution = 'h'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 75.
-        MapPar.lon_0 = 20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 78.87
+        map_par.llcrnrlon = 11.7
+        map_par.urcrnrlat = 78.98
+        map_par.urcrnrlon = 12.5
+        map_par.area_thresh = 10.
+        map_par.resolution = 'h'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 75.
+        map_par.lon_0 = 20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
         pd = 2
         md = 5
     elif map_region == 'alaska':
         "Over alaska"
-        MapPar.llcrnrlat = 30.
-        MapPar.llcrnrlon = -185.
-        MapPar.urcrnrlat = 60.
-        MapPar.urcrnrlon = -60.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_0 = 50.
-        MapPar.lon_0 = -135.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 30.
+        map_par.llcrnrlon = -185.
+        map_par.urcrnrlat = 60.
+        map_par.urcrnrlon = -60.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_0 = 50.
+        map_par.lon_0 = -135.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
 
     elif map_region == 'GreenlandPoly':
         "Over Greenland"
-        MapPar.llcrnrlat = 50.
-        MapPar.llcrnrlon = -55.
-        MapPar.urcrnrlat = 75.
-        MapPar.urcrnrlon = -21.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'poly'
-        MapPar.lat_0 = 70.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 50.
+        map_par.llcrnrlon = -55.
+        map_par.urcrnrlat = 75.
+        map_par.urcrnrlon = -21.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'poly'
+        map_par.lat_0 = 70.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'CICCI':
         "Zoom over Kongsfjorden"
-        MapPar.llcrnrlat = 78.7
-        MapPar.llcrnrlon = 11
-        MapPar.urcrnrlat = 79.8
-        MapPar.urcrnrlon = 14.5
-        MapPar.area_thresh = 10.
-        MapPar.resolution = 'h'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 75.
-        MapPar.lon_0 = 20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 78.7
+        map_par.llcrnrlon = 11
+        map_par.urcrnrlat = 79.8
+        map_par.urcrnrlon = 14.5
+        map_par.area_thresh = 10.
+        map_par.resolution = 'h'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 75.
+        map_par.lon_0 = 20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
         pd = 2
         md = 5
 
     elif map_region == 'Svalbard':
         "Over Svalbard"
-        MapPar.update({'area_thresh': 10.0,
+        map_par.update({'area_thresh': 10.0,
                        'lat_0': 80.0,
                        'llcrnrlat': 72.0,
                        'llcrnrlon': -5.0,
@@ -570,7 +664,7 @@ def map_regions(map_region='default', projection=None, m=None, MapPar=None):
 
     elif map_region == 'stads-ortho':
         "Stads nested output"
-        MapPar.update({
+        map_par.update({
             'lat_0': 70.0,
             'lon_0': 10.0,
             'projection': 'ortho',
@@ -579,7 +673,7 @@ def map_regions(map_region='default', projection=None, m=None, MapPar=None):
 
     elif map_region == 'stads-nest':
         "Stads nested output"
-        MapPar.update({
+        map_par.update({
             'area_thresh': 1000.,
             'lat_0': 60.0,
             'llcrnrlat': 70.0,
@@ -593,366 +687,366 @@ def map_regions(map_region='default', projection=None, m=None, MapPar=None):
 
     elif map_region == 'GreenlandLaea':
         "Over Greenland"
-        MapPar.llcrnrlat = 57.
-        MapPar.llcrnrlon = -55.
-        MapPar.urcrnrlat = 75.
-        MapPar.urcrnrlon = -3.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'laea'
-        MapPar.lat_0 = 70.
-        MapPar.lon_0 = -42.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 57.
+        map_par.llcrnrlon = -55.
+        map_par.urcrnrlat = 75.
+        map_par.urcrnrlon = -3.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'laea'
+        map_par.lat_0 = 70.
+        map_par.lon_0 = -42.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
 
     elif map_region == 'CentralGreenland':
         "Centered around Summit, Greenland"
-        MapPar.llcrnrlat = 68.
-        MapPar.llcrnrlon = -55.
-        MapPar.urcrnrlat = 74.
-        MapPar.urcrnrlon = -15
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 70.
-        MapPar.lon_0 = -40.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 68.
+        map_par.llcrnrlon = -55.
+        map_par.urcrnrlat = 74.
+        map_par.urcrnrlon = -15
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 70.
+        map_par.lon_0 = -40.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'GEOSummit':
         "Zoom near Summit, Greenland"
-        MapPar.llcrnrlat = 72.
-        MapPar.llcrnrlon = -41
-        MapPar.urcrnrlat = 73.
-        MapPar.urcrnrlon = -37.
-        MapPar.area_thresh = 1.
-        MapPar.resolution = 'h'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 70.
-        MapPar.lon_0 = -40.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 72.
+        map_par.llcrnrlon = -41
+        map_par.urcrnrlat = 73.
+        map_par.urcrnrlon = -37.
+        map_par.area_thresh = 1.
+        map_par.resolution = 'h'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 70.
+        map_par.lon_0 = -40.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'GEOSummitZoom':
         "Zoom near Summit, Greenland"
-        MapPar.llcrnrlat = 72.55
-        MapPar.llcrnrlon = -38.52
-        MapPar.urcrnrlat = 72.6
-        MapPar.urcrnrlon = -38.4
-        MapPar.area_thresh = 10.
-        MapPar.resolution = 'h'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 70.
-        MapPar.lon_0 = -38.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 72.55
+        map_par.llcrnrlon = -38.52
+        map_par.urcrnrlat = 72.6
+        map_par.urcrnrlon = -38.4
+        map_par.area_thresh = 10.
+        map_par.resolution = 'h'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 70.
+        map_par.lon_0 = -38.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 2 and projection == 'lcc':
         "Whole North Atlantic"
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -95.
-        MapPar.urcrnrlat = 75.
-        MapPar.urcrnrlon = 50.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -95.
+        map_par.urcrnrlat = 75.
+        map_par.urcrnrlon = 50.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'north-atlantic':
         "Whole North Atlantic"
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -95.
-        MapPar.urcrnrlat = 75.
-        MapPar.urcrnrlon = 50.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -95.
+        map_par.urcrnrlat = 75.
+        map_par.urcrnrlon = 50.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'finland':
         "North Norway"
-        MapPar.llcrnrlat = 59.
-        MapPar.llcrnrlon = 15.
-        MapPar.urcrnrlat = 71.
-        MapPar.urcrnrlon = 40.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 65.
-        MapPar.lon_0 = 25.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 59.
+        map_par.llcrnrlon = 15.
+        map_par.urcrnrlat = 71.
+        map_par.urcrnrlon = 40.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 65.
+        map_par.lon_0 = 25.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'Europe':
         "Europe Mercator"
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -20.
-        MapPar.urcrnrlat = 68.
-        MapPar.urcrnrlon = 40.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'merc'
-        MapPar.lat_1 = 60.
-        MapPar.lon_0 = 10.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.08, 0.05, 0.7, .85]
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -20.
+        map_par.urcrnrlat = 68.
+        map_par.urcrnrlon = 40.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'merc'
+        map_par.lat_1 = 60.
+        map_par.lon_0 = 10.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.08, 0.05, 0.7, .85]
 
     elif map_region == 'Europe_ortho':
         "Europe ORTHO"
-        # MapPar.llcrnrlat=35.
-        # MapPar.llcrnrlon=-20.
-        # MapPar.urcrnrlat=68.
-        # MapPar.urcrnrlon=40.
-        MapPar.area_thresh = 10000.
-        MapPar.resolution = 'c'
-        MapPar.projection = 'ortho'
-        MapPar.lat_0 = 60.
-        MapPar.lon_0 = 10.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.05, 0.05, 0.8, .85]
+        # map_par.llcrnrlat=35.
+        # map_par.llcrnrlon=-20.
+        # map_par.urcrnrlat=68.
+        # map_par.urcrnrlon=40.
+        map_par.area_thresh = 10000.
+        map_par.resolution = 'c'
+        map_par.projection = 'ortho'
+        map_par.lat_0 = 60.
+        map_par.lon_0 = 10.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.05, 0.05, 0.8, .85]
 
     elif map_region == 3 and projection == 'lcc':
         "North Norway"
-        MapPar.llcrnrlat = 65.
-        MapPar.llcrnrlon = 10.
-        MapPar.urcrnrlat = 72.
-        MapPar.urcrnrlon = 30.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 60.
-        MapPar.lon_0 = 15.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 65.
+        map_par.llcrnrlon = 10.
+        map_par.urcrnrlat = 72.
+        map_par.urcrnrlon = 30.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 60.
+        map_par.lon_0 = 15.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 4 and projection == 'lcc':
         "Greenland Sea, Fram Strait"
-        MapPar.llcrnrlat = 72.
-        MapPar.llcrnrlon = -20.
-        MapPar.urcrnrlat = 80.
-        MapPar.urcrnrlon = 30.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 70.
-        MapPar.lon_0 = 0.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 72.
+        map_par.llcrnrlon = -20.
+        map_par.urcrnrlat = 80.
+        map_par.urcrnrlon = 30.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 70.
+        map_par.lon_0 = 0.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 4 and projection == 'aea':
         "Greenland Sea, Fram Strait"
-        MapPar.llcrnrlat = 72.
-        MapPar.llcrnrlon = -20.
-        MapPar.urcrnrlat = 80.
-        MapPar.urcrnrlon = 30.
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'lcc'
-        MapPar.lat_0 = 70.
-        MapPar.lon_0 = 0.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 72.
+        map_par.llcrnrlon = -20.
+        map_par.urcrnrlat = 80.
+        map_par.urcrnrlon = 30.
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'lcc'
+        map_par.lat_0 = 70.
+        map_par.lon_0 = 0.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 5 and projection == 'lcc':
         "Whole North Atlantic and Norwegian, Greenland Seas"
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -95.
-        MapPar.urcrnrlat = 81.
-        MapPar.urcrnrlon = 40.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'lcc'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        FigPar.figsize = (6, 5)
-        FigPar.axlocs = [0.08, 0.05, 0.7, .8]
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -95.
+        map_par.urcrnrlat = 81.
+        map_par.urcrnrlon = 40.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'lcc'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        fig_par.figsize = (6, 5)
+        fig_par.axlocs = [0.08, 0.05, 0.7, .8]
 
     elif map_region == 'Pacific':
         """National Geospatial-Intelligence Agency: DMANC1
       North America"""
-        MapPar.llcrnrlat = 5.
-        MapPar.llcrnrlon = -200.
-        MapPar.urcrnrlat = 55.
-        MapPar.urcrnrlon = -110.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 40.
-        MapPar.lat_1 = 20.
-        MapPar.lon_0 = -170.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 5.
+        map_par.llcrnrlon = -200.
+        map_par.urcrnrlat = 55.
+        map_par.urcrnrlon = -110.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 40.
+        map_par.lat_1 = 20.
+        map_par.lon_0 = -170.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'DMANC1':
         """National Geospatial-Intelligence Agency: DMANC1
       North America"""
-        MapPar.llcrnrlat = 5.
-        MapPar.llcrnrlon = -130.
-        MapPar.urcrnrlat = 55.
-        MapPar.urcrnrlon = -10.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 40.
-        MapPar.lat_1 = 20.
-        MapPar.lon_0 = -90.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 5.
+        map_par.llcrnrlon = -130.
+        map_par.urcrnrlat = 55.
+        map_par.urcrnrlon = -10.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 40.
+        map_par.lat_1 = 20.
+        map_par.lon_0 = -90.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'NorthPole':
         "Whole North Atlantic and Norwegian, Greenland Seas"
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -95.
-        MapPar.urcrnrlat = 81.
-        MapPar.urcrnrlon = 40.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'npstere'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -80.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        MapPar.boundinglat = 65.
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -95.
+        map_par.urcrnrlat = 81.
+        map_par.urcrnrlon = 40.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'npstere'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -80.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        map_par.boundinglat = 65.
 
     elif map_region == 'npolar':
         "Same as POLARCAT"
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'npstere'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        MapPar.boundinglat = 25.
-        MapPar.anchor = 'W'
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.1, 0.05, 0.7, .85]
-        # FigPar.axlocs = [0.1,0.05,0.9,0.8]
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'i'
+        map_par.projection = 'npstere'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        map_par.boundinglat = 25.
+        map_par.anchor = 'W'
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.1, 0.05, 0.7, .85]
+        # fig_par.axlocs = [0.1,0.05,0.9,0.8]
 
 
     elif map_region == 'npolar_70':
         "Zoom on polar project 70N"
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'npstere'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -80.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        MapPar.boundinglat = 65.
-        MapPar.anchor = 'W'
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.1, 0.05, 0.7, .85]
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'i'
+        map_par.projection = 'npstere'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -80.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        map_par.boundinglat = 65.
+        map_par.anchor = 'W'
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.1, 0.05, 0.7, .85]
 
 
     elif map_region == 'POLARCAT':
         "Whole North Atlantic and Norwegian, Greenland Seas"
-        MapPar.llcrnrlat = 35.
-        MapPar.llcrnrlon = -95.
-        MapPar.urcrnrlat = 81.
-        MapPar.urcrnrlon = 40.
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'npstere'
-        MapPar.lat_1 = 5.
-        MapPar.lon_0 = -20.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
-        MapPar.boundinglat = 45.
-        MapPar.anchor = 'W'
-        FigPar.figsize = (6, 6)
-        FigPar.axlocs = [0.1, 0.05, 0.7, .85]
-        # FigPar.axlocs = [0.1,0.05,0.9,0.8]
+        map_par.llcrnrlat = 35.
+        map_par.llcrnrlon = -95.
+        map_par.urcrnrlat = 81.
+        map_par.urcrnrlon = 40.
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'npstere'
+        map_par.lat_1 = 5.
+        map_par.lon_0 = -20.
+        map_par.rsphere = (6378137.00, 6356752.3142)
+        map_par.boundinglat = 45.
+        map_par.anchor = 'W'
+        fig_par.figsize = (6, 6)
+        fig_par.axlocs = [0.1, 0.05, 0.7, .85]
+        # fig_par.axlocs = [0.1,0.05,0.9,0.8]
 
     # elif map_region=='NorthernHemisphere':
     #    """Northern Hemisphere"""
-    #    MapPar.llcrnrlat=0.
-    #    MapPar.llcrnrlon=-180.
-    #    MapPar.urcrnrlat=90.
-    #    MapPar.urcrnrlon=180.
-    #    MapPar.area_thresh=1000.
-    #    MapPar.resolution='l'
-    #    MapPar.projection='merc'
-    #    MapPar.lat_0=50.
-    #    MapPar.lat_1=40['m'].
-    #    MapPar.lon_0=-110.
-    #    MapPar.lon_1=110.
-    #    MapPar.rsphere=(6378137.00,6356752.3142)
+    #    map_par.llcrnrlat=0.
+    #    map_par.llcrnrlon=-180.
+    #    map_par.urcrnrlat=90.
+    #    map_par.urcrnrlon=180.
+    #    map_par.area_thresh=1000.
+    #    map_par.resolution='l'
+    #    map_par.projection='merc'
+    #    map_par.lat_0=50.
+    #    map_par.lat_1=40['m'].
+    #    map_par.lon_0=-110.
+    #    map_par.lon_1=110.
+    #    map_par.rsphere=(6378137.00,6356752.3142)
 
     elif map_region == 'met.no:c_map1':
         """Met.no Sea Ice Chart: c_map1 Norwegian / Greenland Seas"""
-        MapPar.llcrnrlat = 57.6
-        MapPar.llcrnrlon = -27.3
-        MapPar.urcrnrlat = 68.27
-        MapPar.urcrnrlon = 86.5
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 90.
-        MapPar.lat_1 = 75.
-        MapPar.lon_0 = 0.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 57.6
+        map_par.llcrnrlon = -27.3
+        map_par.urcrnrlat = 68.27
+        map_par.urcrnrlon = 86.5
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 90.
+        map_par.lat_1 = 75.
+        map_par.lon_0 = 0.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'met.no:cust1':
         """Met.no Sea Ice Chart: c_map1 Norwegian / Greenland Seas"""
-        MapPar.llcrnrlat = 74.74
-        MapPar.llcrnrlon = -14.24
-        MapPar.urcrnrlat = 80.44
-        MapPar.urcrnrlon = 10.95
-        MapPar.area_thresh = 1000.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 90.
-        MapPar.lat_1 = 75.
-        MapPar.lon_0 = 0.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 74.74
+        map_par.llcrnrlon = -14.24
+        map_par.urcrnrlat = 80.44
+        map_par.urcrnrlon = 10.95
+        map_par.area_thresh = 1000.
+        map_par.resolution = 'l'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 90.
+        map_par.lat_1 = 75.
+        map_par.lon_0 = 0.
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
     elif map_region == 'GRACE':
         """Based around GRACE Campaigns"""
-        MapPar.llcrnrlat = 60.0
-        MapPar.llcrnrlon = -70.0
-        MapPar.urcrnrlat = 75.0
-        MapPar.urcrnrlon = -30.00
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'i'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 60.
-        MapPar.lat_1 = 60.
-        MapPar.lon_0 = -55.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 60.0
+        map_par.llcrnrlon = -70.0
+        map_par.urcrnrlat = 75.0
+        map_par.urcrnrlon = -30.00
+        map_par.area_thresh = 100.
+        map_par.resolution = 'i'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 60.
+        map_par.lat_1 = 60.
+        map_par.lon_0 = -55.
+        map_par.rsphere = (6378137.00, 6356752.3142)
         pd = 2
         md = 5
 
     elif map_region == 'falcon':
         """Based around falcon flights"""
-        MapPar.llcrnrlat = 48.0
-        MapPar.llcrnrlon = -15.0
-        MapPar.urcrnrlat = 54.0
-        MapPar.urcrnrlon = -5.00
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 50.
-        MapPar.lat_1 = 50.
-        MapPar.lon_0 = -10.
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 48.0
+        map_par.llcrnrlon = -15.0
+        map_par.urcrnrlat = 54.0
+        map_par.urcrnrlon = -5.00
+        map_par.area_thresh = 100.
+        map_par.resolution = 'l'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 50.
+        map_par.lat_1 = 50.
+        map_par.lon_0 = -10.
+        map_par.rsphere = (6378137.00, 6356752.3142)
         pd = 2
         md = 5
 
     elif map_region == 'EUCAARI':
         """EUCAARI Domain"""
-        MapPar.llcrnrlat = 38.0
-        MapPar.llcrnrlon = -15.0
-        MapPar.urcrnrlat = 68.0
-        MapPar.urcrnrlon = 30.00
-        MapPar.area_thresh = 100.
-        MapPar.resolution = 'l'
-        MapPar.projection = 'aea'
-        MapPar.lat_0 = 50.
-        MapPar.lat_1 = 50.
-        MapPar.lon_0 = 7.5
-        MapPar.rsphere = (6378137.00, 6356752.3142)
+        map_par.llcrnrlat = 38.0
+        map_par.llcrnrlon = -15.0
+        map_par.urcrnrlat = 68.0
+        map_par.urcrnrlon = 30.00
+        map_par.area_thresh = 100.
+        map_par.resolution = 'l'
+        map_par.projection = 'aea'
+        map_par.lat_0 = 50.
+        map_par.lat_1 = 50.
+        map_par.lon_0 = 7.5
+        map_par.rsphere = (6378137.00, 6356752.3142)
 
-    # MapPar.boundinglat=50.
+    # map_par.boundinglat=50.
     try:
-        del MapPar['m']  # in case
+        del map_par['m']  # in case
     except:
         pass
-    return MapPar, FigPar
+    return map_par, fig_par
 
 
 def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
@@ -1179,8 +1273,7 @@ def grid_to_netcdf(H, D, nco_filename, spc, time):
 
 
 def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
-               projection=None, getm=True,
-               MapPar=None, FigPar=None,
+               getm=True, map_par=None, fig_par=None,
                image=None):
     """
     This is a core function, used throughout this module. It is called
@@ -1231,16 +1324,14 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
         if m == None:
             if image:
                 fig, m = get_base_image(image, map_region=map_region,
-                                        projection=projection,
-                                        MapPar=MapPar,
-                                        FigPar=FigPar,
+                                        map_par=map_par,
+                                        fig_par=fig_par,
                                         )
             else:
 
                 fig, m = get_base1(map_region=map_region,
-                                   projection=projection,
-                                   MapPar=MapPar,
-                                   FigPar=FigPar,
+                                   map_par=map_par,
+                                   fig_par=fig_par,
                                    fig=fig,
                                    )
 
@@ -1275,12 +1366,11 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
 
 
 def get_base1(map_region=1,
-              projection=None,
               figname=None,
               fig=None,
               drawlsmask=False,
-              MapPar=None,
-              FigPar=None):
+              map_par=None,
+              fig_par=None):
     """
     Primarily an internally used function, creates a
     basemap for plotting. Returns a fig object and
@@ -1293,24 +1383,22 @@ def get_base1(map_region=1,
 
     ## Use map_regions function to define
     ## input paramters for Basemap
-    MapPar_sd, FigPar_sd = map_regions(map_region=map_region,
-                                       projection=projection,
-                                       MapPar=MapPar)
-    if MapPar:
-        MapPar_sd.set_with_dict(MapPar)
-    if FigPar:
-        FigPar_sd.set_with_dict(FigPar)
+    map_par_sd, fig_par_sd = map_regions(map_region=map_region, map_par=map_par)
+    if map_par:
+        map_par_sd.set_with_dict(map_par)
+    if fig_par:
+        fig_par_sd.set_with_dict(fig_par)
 
     # create the figure
     if fig == None:
-        axlocs = FigPar_sd.pop('axlocs')
-        fig = plt.figure(**FigPar_sd)
+        axlocs = fig_par_sd.pop('axlocs')
+        fig = plt.figure(**fig_par_sd)
         ax = fig.add_axes(axlocs)
     else:
         ax = fig.gca()
 
     print(Basemap)
-    m = Basemap(**MapPar_sd)
+    m = Basemap(**map_par_sd)
     print('getting base1')
     print(m)
     plt.axes(ax)  ## make sure axes ax are current
@@ -1377,7 +1465,7 @@ def get_base2(**kwargs):
 
     # define Lambert Conformal basemap for North America.
     mr = {'map_region': reg}
-    mp, figpar = map_regions(map_region=reg)
+    mp, fig_par = map_regions(map_region=reg)
 
     m = Basemap(**mp)
     ax = fig.add_axes(
@@ -1453,7 +1541,7 @@ def get_base3(**kwargs):
                      )
         # fig=figure(1,figsize=(57.625,43.75))
     # Use map_regions function to define input paramters for Basemap
-    mp, figpar = map_regions(map_region)
+    mp, fig_par = map_regions(map_region)
     m = Basemap(**mp)
     ax = fig.add_axes([0, 0, 1, 1],
                       frameon=False)  # need to change back to [0.1,0.1,0.7,0.7]
@@ -1523,7 +1611,7 @@ def get_base_image(imagefile, **kwargs):
 
     # define Lambert Conformal basemap for North America.
     mr = {'map_region': reg}
-    mp, figpar = map_regions(map_region=reg)
+    mp, fig_par = map_regions(map_region=reg)
 
     m = Basemap(**mp)
     ax = fig.add_axes(
@@ -1579,7 +1667,6 @@ def plot_track(lon, lat,
                zlevel=None, zsize=None, base=1, marker='o',
                plotargs=None,
                map_region=None,
-               projection=None,
                scatter=False,
                units=''):
     """ Plot a longitude,latitude course over a basemap. Accepts several
@@ -1642,7 +1729,7 @@ def plot_track(lon, lat,
         plot_kwargs = set_plotkwargs(plotargs, plot_kwargs)
 
     if FIGURE == None:
-        FIGURE = get_FIGURE(map_region=map_region, projection=projection)
+        FIGURE = get_FIGURE(map_region=map_region,)
 
     ##Get fig if exists
     fig = FIGURE.fig

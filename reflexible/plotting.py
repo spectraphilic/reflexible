@@ -19,7 +19,7 @@ from reflexible import mapping as mp
 def plot_at_level(H, data, level=1,
                    ID=' ', rel_i=None, species=None,
                    timestamp=None,
-                   map_region=5, projection='lcc',
+                   map_region=5,
                    overlay=False,
                    datainfo_str=None, log=True,
                    data_range=None, FIGURE=None,
@@ -68,7 +68,6 @@ def plot_at_level(H, data, level=1,
                               data_range=data_range,
                               rel_i=rel_i, log=log,
                               map_region=map_region,
-                              projection=projection,
                               units=units, datainfo_str=datainfo_str,
                               overlay=overlay,
                               FIGURE=FIGURE, **kwargs)
@@ -83,7 +82,7 @@ plot_footprint = plot_at_level
 def plot_totalcolumn(H, data=None,
                    ID=' ', rel_i=None, species=None,
                    timestamp=None,
-                   map_region=5, projection='lcc',
+                   map_region=5,
                    data_range=None,
                    FIGURE=None, overlay=False,
                    datainfo_str=None, **kwargs):
@@ -123,7 +122,7 @@ def plot_totalcolumn(H, data=None,
     FIGURE = plot_sensitivity(H, data,
                               data_range=data_range,
                               rel_i=rel_i, map_region=map_region,
-                              projection=projection, units=units,
+                              units=units,
                               datainfo_str=datainfo_str,
                               FIGURE=FIGURE, overlay=overlay, **kwargs)
 
@@ -136,21 +135,21 @@ def plot_totalcolumn(H, data=None,
 
 
 def plot_sensitivity(H, data,
-             data_range=None,
-             units='ns m^2 / kg',
-             datainfo_str=None,
-             plottitle=None,
-             rel_i=None,
-             map_region=None, projection=None,
-             dropm=None,
-             overlay=False,
-             transform=True,
-             log=True,
-             FIGURE=None,
-             MapPar=None,
-             FigPar=None,
-             cax_title=None,
-             method='contourf', lsmask=False):
+                     data_range=None,
+                     units='ns m^2 / kg',
+                     datainfo_str=None,
+                     plottitle=None,
+                     rel_i=None,
+                     map_region=None,
+                     dropm=None,
+                     overlay=False,
+                     transform=True,
+                     log=True,
+                     FIGURE=None,
+                     map_par=None,
+                     fig_par=None,
+                     cax_title=None,
+                     method='contourf', lsmask=False):
     """ plot_sensitivity: core function for plotting FLEXPART output.
 
     Usage::
@@ -184,7 +183,6 @@ def plot_sensitivity(H, data,
       plottitle             Title for the plot.
       rel_i                 Release index to plot from the data array
       map_region                A map_region specified in mapping.py
-      projection            [deprecated] use pre-defined map_regions.
       dropm                 Force creation of a new basemap instance
       overlay               Force removal of previous figure elements.
       transform             For use with imshow method, if your data is not
@@ -192,7 +190,7 @@ def plot_sensitivity(H, data,
                             the data to the basemap projection.
       log                   Create a logarithmic color scale.
       FIGURE                A FIGURE instance from mapping module get_FIGURE
-      MapPar                A Structure of paramters to be passed to the
+      map_par                A Structure of paramters to be passed to the
                             basemap class when creating an instance.
       method                The method to use for plotting array data. May be
                             one of: [pcolormesh], imshow, or contourf
@@ -220,14 +218,12 @@ def plot_sensitivity(H, data,
 
     if FIGURE is None:
         FIGURE = mp.get_FIGURE(map_region=map_region,
-                               projection=projection,
-                               MapPar=MapPar, FigPar=FigPar)
+                               map_par=map_par, fig_par=fig_par)
     else:
         if FIGURE.m is None:
             FIGURE = mp.get_FIGURE(fig=FIGURE.fig, ax=FIGURE.ax,
                                    map_region=map_region,
-                                   projection=projection,
-                                   MapPar=MapPar, FigPar=FigPar)
+                                   map_par=map_par, fig_par=fig_par)
 
     if overlay is False:
         del FIGURE.ax.images[FIGURE.indices.images:]
@@ -445,13 +441,13 @@ def plot_sensitivity(H, data,
     return FIGURE
 
 def plot_trajectory(H, T, rel_i, FIGURE=None,
-                    map_region=None, projection=None,
+                    map_region=None,
                     overlay=True,
                     draw_circles=True,
                     draw_labels=True, days_back=20,
                     cbar2=True,
                     cbar2_title=None,
-                    MapPar=None):
+                    map_par=None):
     """Plot the center trajectory of the plume on the map
 
     Usage::
@@ -475,7 +471,6 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
       =============         =============================================
       rel_i                 **required** release index
       FIGURE                A "FIGURE" object[None] (see mapping.py)
-      projection            A projection pre-defined in :mod:`mapping`
       overlay               [True] will overlay the trajectory
                             on top of another map instance.
       draw_circles          [True] will mark the trajectory with
@@ -486,7 +481,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                             shown? [20]
       cbar2                 [True] draws the scale bar as a second axis.
       cbar2_title            Optional argument to overide the cbar title.
-      MapPar                A Structure of mapping parameters to pass
+      map_par                A Structure of mapping parameters to pass
                             to the basemap instance if desired.
       =============         =============================================
 
@@ -504,8 +499,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
 
     # # Set up the FIGURE
     if FIGURE == None:
-        FIGURE = mp.get_FIGURE(map_region=map_region, projection=projection,
-                               MapPar=MapPar)
+        FIGURE = mp.get_FIGURE(map_region=map_region, map_par=map_par)
     # #Get fig info and make active
     fig = FIGURE.fig
     m = FIGURE.m
