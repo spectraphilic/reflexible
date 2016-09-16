@@ -111,44 +111,40 @@ class KML_File:
         if point:
             file.write(
                 "<Placemark>\n"
-                "  <description>" + description + "</description>\n"
-                                                  "  <name>" + name + "</name>\n"
-                                                                      "  <styleUrl>#normalPlaceMarker</styleUrl>"
-                                                                      "  <LookAt>\n"
-                                                                      "    <longitude>" + str(
-                    longitude) + "</longitude>\n"
-                                 "    <latitude>" + str(
-                    latitude) + "</latitude>\n"
-                                "    <range>" + str(range) + "</range>\n"
-                                                             "    <tilt>" + str(
-                    tilt) + "</tilt>\n"
-                            "    <heading>" + str(heading) + "</heading>\n"
-                                                             "  </LookAt>\n"
-                                                             "  <visibility>0</visibility>\n"
-                                                             "   <Point>\n"
-                                                             "    <extrude>1</extrude>\n"
-                                                             "    <altitudeMode>relativeToGround</altitudeMode>\n"
-                                                             "    <coordinates>" + str(
-                    longitude) + "," + str(latitude) +
+                "  <description>" + description +
+                "</description>\n"
+                "  <name>" + name + "</name>\n"
+                "  <styleUrl>#normalPlaceMarker</styleUrl>"
+                "  <LookAt>\n"
+                "    <longitude>" + str(longitude) + "</longitude>\n"
+                "    <latitude>" + str(latitude) + "</latitude>\n"
+                "    <range>" + str(range) + "</range>\n"
+                "    <tilt>" + str(tilt) + "    </tilt>\n"
+                "    <heading>" + str(heading) + "</heading>\n"
+                "  </LookAt>\n"
+                "  <visibility>0</visibility>\n"
+                "   <Point>\n"
+                "    <extrude>1</extrude>\n"
+                "    <altitudeMode>relativeToGround</altitudeMode>\n"
+                "    <coordinates>" + str(longitude) + "," + str(latitude) +
                 ", " + str(altitude) + "</coordinates>\n"
-                                       "   </Point>\n"
-                                       " </Placemark>\n")
+                "   </Point>\n"
+                " </Placemark>\n")
             file.close()
 
         else:
             ## let's create line strings
 
             file.write(
-
                 "<Placemark>\n" \
                 "  <description>" + description + "</description>\n"
-                                                  "  <name>" + name + "</name>\n"
-                                                                      "  <styleUrl>#normalPlaceMarker</styleUrl>"
-                                                                      "  <visibility>1</visibility>\n"
-                                                                      "       <LineString>\n"
-                                                                      "         <extrude>0</extrude>\n"
-                                                                      "           <tessellate>0</tessellate>\n"
-                                                                      "              <coordinates>\n")
+                "  <name>" + name + "</name>\n"
+                "  <styleUrl>#normalPlaceMarker</styleUrl>"
+                "  <visibility>1</visibility>\n"
+                "       <LineString>\n"
+                "         <extrude>0</extrude>\n"
+                "           <tessellate>0</tessellate>\n"
+                "              <coordinates>\n")
             for i, lat in enumerate(latitude):
                 file.write("%s,%s,0 " % (longitude[i], lat))
             file.write("\n")
