@@ -5,3 +5,4 @@ xarray
 numpy
 pandas
 basemap
+yaml
