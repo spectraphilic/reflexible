@@ -1,3 +1,64 @@
+
+northern_hemisphere:
+    alias: default
+    descr: Northern Hemisphere (default)
+    map_par:
+        projection: cyl
+        llcrnrlat: 0
+        urcrnrlat: 90
+        llcrnrlon: -180
+        urcrnrlon: 180
+        resolution: c
+        # anchor: W
+    fig_par:
+        figsize: [8, 3]  # w,h tuple
+        axlocs: [0.1, 0.1, .7, .8]
+
+earth:
+    alias: globe, world
+    descr: Whole earth, mercator
+    map_par:
+        projection: merc
+        llcrnrlat: -75
+        urcrnrlat: 85
+        llcrnrlon: -180
+        urcrnrlon: 180
+        resolution: c
+        # anchor: W
+    fig_par:
+        # figsize [8, 3]  # w,h tuple
+        axlocs: [0.05, 0.05, .7, .8]
+
+earth_mbtfpq:
+    descr: "Most of the Earth"
+    map_par:
+        projection: mbtfpq
+        # llcrnrlat: -40
+        # urcrnrlat: 85
+        # llcrnrlon: -180
+        # urcrnrlon: 180
+        resolution: c
+        lon_0: 0
+        # map_par.anchor: W
+    fig_par:
+        figsize: [8, 7]  # w,h tuple
+        axlocs: [0.05, 0.01, .8, .96]
+
+earth_merc:
+    descr: Most of the Earth
+    map_par:
+        projection: merc
+        llcrnrlat: -40
+        urcrnrlat: 85
+        llcrnrlon: -180
+        urcrnrlon: 180
+        resolution: c
+        lat_ts: 20
+        # anchor: W
+    fig_par:
+        figsize: [8, 7]  # w,h tuple
+        axlocs: [0.05, 0.01, .8, .96]
+
 north_atlantic:
     map_par:
         llcrnrlat: 35.
@@ -9,7 +70,521 @@ north_atlantic:
         projection: lcc
         lat_1: 5.
         lon_0: -20.
-        rsphere: !!python/tuple [6378137.00, 6356752.3142]
+        rsphere: [6378137.00, 6356752.3142]
+
+whole_earth:
+    descr: Use Mollweid
+    map_par:
+        projection: moll
+        lon_0: 0
+        resolution: c
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.1, 0.05, 0.7, .85]
+
+norwegian_sea:
+    descr: Norwegian Sea
+    map_par:
+        llcrnrlat: 55.
+        llcrnrlon: -5.
+        urcrnrlat: 75.
+        urcrnrlon: 50.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 60.
+        lon_0: 15.
+        rsphere: [6378137.00, 6356752.3142]
+
+solas:
+    map_par:
+        llcrnrlat: 45.
+        llcrnrlon: -125.
+        urcrnrlat: 78.
+        urcrnrlon: -40.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 5.
+        lon_0: -20.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        axlocs: [0.1, 0.05, 0.7, .85]
+
+obuoy:
+    map_par:
+        llcrnrlat: 50.
+        llcrnrlon: -179.
+        urcrnrlat: 80.
+        urcrnrlon: -119.
+        area_thresh: 1000.
+        resolution: i
+        projection: merc
+        lat_0: 70.
+        lon_0: -150.
+        rsphere: [6378137.00, 6356752.3142]
+
+north_sea:
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -55.
+        urcrnrlat: 78.
+        urcrnrlon: 50.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 5.
+        lon_0 : -20.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        axlocs: [0.1, 0.05, 0.7, .85]
+
+asia:
+    map_par:
+        llcrnrlat: 0.
+        llcrnrlon: 60.
+        urcrnrlat: 75.
+        urcrnrlon: 180.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 20.
+        lon_0: 100.
+        rsphere: [6378137.00, 6356752.3142]
+
+japan:
+    map_par:
+        llcrnrlat: 25.
+        llcrnrlon: 125.
+        urcrnrlat: 45.
+        urcrnrlon: 160.
+        area_thresh: 100.
+        resolution: i
+        projection: lcc
+        lat_1: 35.
+        lon_0: 140.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        figsize: [8, 7]  # w,h tuple
+        axlocs: [0.05, 0.01, 0.8, .99]
+
+japan_old:
+    map_par:
+        llcrnrlat: 25.
+        llcrnrlon: 125.
+        urcrnrlat: 45.
+        urcrnrlon: 160.
+        area_thresh: 100.
+        resolution: i
+        projection: lcc
+        lat_1: 35.
+        lon_0: 140.
+        rsphere: [6378137.00, 6356752.3142]
+
+pacific_old:
+    descr: Larger Scale Overview of the North Atlantic LAEA
+    map_par:
+        llcrnrlat: -30.
+        llcrnrlon: 130.
+        urcrnrlat: 60.
+        urcrnrlon: -80.
+        area_thresh: 1000.
+        resolution: l
+        projection: merc
+        lat_0: 40.
+        lat_1: 40.
+        lon_0: -160.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.08, 0.05, 0.7, .85]
+
+north_atlantic:
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -95.
+        urcrnrlat: 77.
+        urcrnrlon: 50.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 5.
+        lon_0: -20.
+        rsphere: [6378137.00, 6356752.3142]
+
+north_atlantic_wide:
+    descr: Larger Scale Overview of the North Atlantic LAEA
+    map_par:
+        llcrnrlat: 50.
+        llcrnrlon: -120.
+        urcrnrlat: 75.
+        urcrnrlon: 40.
+        area_thresh: 1000.
+        resolution: l
+        projection: aea
+        lat_0: 40.
+        lat_1: 20.
+        lon_0: -40.
+        rsphere: [6378137.00, 6356752.3142]
+
+eyj:
+    map_par:
+        llcrnrlat: 32.
+        llcrnrlon: -125.
+        urcrnrlat: 40.
+        urcrnrlon: -117.
+        area_thresh: 100.
+        resolution: h
+        projection: lcc
+        lat_1: 5.
+        lon_0: -120.
+        rsphere: (6378137.00, 6356752.3142)
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.05, 0.05, 0.8, .85]
+
+eyj2:
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -25.
+        urcrnrlat: 65.
+        urcrnrlon: 45.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 15.
+        lon_0: -100.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        figsize: [5, 4]
+
+calnex:
+    map_par:
+        llcrnrlat: 33.
+        llcrnrlon: -125.
+        urcrnrlat: 39.
+        urcrnrlon: -115.
+        area_thresh: 1000.
+        resolution: i
+        projection: lcc
+        lat_1: 35.
+        lon_0: -120.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.05, 0.05, 0.7, .85]
+
+savaav2:
+    descr: for Volcanoe eruption, requires a m instance passed in the map_par Structure
+    map_par:
+        projection: geos
+        resolution: l
+        lon_0: 6.
+        llcrnrx: 0
+        llcrnry: 0
+        # In this case a Basemap instance is required
+        # in advance
+        # TODO: what to do with the 'required' m?
+        # urcrnrx: m.urcrnrx / 2.
+        # urcrnry: m.urcrnry / 2.
+
+vauuav_modis:
+    descr: Zoom over Kongsfjorden
+    map_par:
+        llcrnrlat: 78.8
+        llcrnrlon: 11.6
+        urcrnrlat: 79.2
+        urcrnrlon: 12.6
+        area_thresh: 10.
+        resolution: h
+        projection: laea
+        lat_ts: 79.
+        lon_0: 12.
+        lat_0: 79.
+        rsphere: [6378137.00, 6356752.3142]
+
+vauuav09:
+    descr: Zoom over Kongsfjorden
+    map_par:
+        llcrnrlat: 78.87
+        llcrnrlon: 11.7
+        urcrnrlat: 78.98
+        urcrnrlon: 12.5
+        area_thresh: 10.
+        resolution: h
+        projection: lcc
+        lat_1: 75.
+        lon_0: 20.
+        rsphere: (6378137.00, 6356752.3142)
+        # TODO: waht to do with 'dp' and 'md'?
+        #pd = 2
+        #md = 5
+
+alaska:
+    descr: Over Alaska
+    map_par:
+        llcrnrlat: 30.
+        llcrnrlon: -185.
+        urcrnrlat: 60.
+        urcrnrlon: -60.
+        area_thresh: 1000.
+        resolution: i
+        projection: lcc
+        lat_0: 50.
+        lon_0: -135.
+        rsphere: [6378137.00, 6356752.3142]
+
+greenland_poly:
+    descr: Over Greenland
+    map_par:
+        llcrnrlat: 50.
+        llcrnrlon: -55.
+        urcrnrlat: 75.
+        urcrnrlon: -21.
+        area_thresh: 100.
+        resolution: i
+        projection: poly
+        lat_0: 70.
+        lon_0: -20.
+        rsphere: [6378137.00, 6356752.3142]
+
+cicci:
+    descr: Zoom over Kongsfjorden
+    map_par:
+        llcrnrlat: 78.7
+        llcrnrlon: 11
+        urcrnrlat: 79.8
+        urcrnrlon: 14.5
+        area_thresh: 10.
+        resolution: h
+        projection: lcc
+        lat_1: 75.
+        lon_0: 20.
+        rsphere: [6378137.00, 6356752.3142]
+        # TODO: waht to do with 'dp' and 'md'?
+        #pd = 2
+        #md = 5
+
+stads_ortho:
+    descr: Stads nested output
+    map_par:
+        lat_0: 70.0
+        lon_0: 10.0
+        projection: ortho
+        resolution: l
+
+stads_nest:
+    descr: Stads nested output
+    map_par:
+        area_thresh: 1000.
+        lat_0: 60.0
+        llcrnrlat: 70.0
+        llcrnrlon: -25.0
+        lon_0: 10.0
+        projection: merc
+        resolution: i
+        rsphere: [6378137.0, 6356752.3142]
+        urcrnrlat: 85.0
+        urcrnrlon: 35.0
+
+greenland_laea:
+    descr: Over Greenland
+    map_par:
+        llcrnrlat: 57.
+        llcrnrlon: -55.
+        urcrnrlat: 75.
+        urcrnrlon: -3.
+        area_thresh: 100.
+        resolution: i
+        projection: laea
+        lat_0: 70.
+        lon_0: -42.
+        rsphere: [6378137.00, 6356752.3142]
+
+central_greenland:
+    descr: Centered around Summit, Greenland
+    map_par:
+        llcrnrlat: 68.
+        llcrnrlon: -55.
+        urcrnrlat: 74.
+        urcrnrlon: -15
+        area_thresh: 100.
+        resolution: i
+        projection: lcc
+        lat_1: 70.
+        lon_0: -40.
+        rsphere: [6378137.00, 6356752.3142]
+
+geo_summit:
+    descr: Zoom near Summit, Greenland
+    map_par:
+        llcrnrlat: 72.
+        llcrnrlon: -41
+        urcrnrlat: 73.
+        urcrnrlon: -37.
+        area_thresh: 1.
+        resolution: h
+        projection: lcc
+        lat_1: 70.
+        lon_0: -40.
+        rsphere: [6378137.00, 6356752.3142]
+
+geo_summit_zoom:
+    descr: Zoom near Summit, Greenland
+    map_par:  
+        llcrnrlat: 72.55
+        llcrnrlon: -38.52
+        urcrnrlat: 72.6
+        urcrnrlon: -38.4
+        area_thresh: 10.
+        resolution: h
+        projection: lcc
+        lat_1: 70.
+        lon_0: -38.
+        rsphere: [6378137.00, 6356752.3142]
+
+whole_north_atlantic:
+    descr: Whole North Atlantic
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -95.
+        urcrnrlat: 75.
+        urcrnrlon: 50.
+        area_thresh: 1000.
+        resolution: l
+        projection: lcc
+        lat_1: 5.
+        lon_0: -20.
+        rsphere: [6378137.00, 6356752.3142]
+
+finland:
+    descr: North Norway
+    map_par:
+        llcrnrlat: 59.
+        llcrnrlon: 15.
+        urcrnrlat: 71.
+        urcrnrlon: 40.
+        area_thresh: 100.
+        resolution: i
+        projection: lcc
+        lat_1: 65.
+        lon_0: 25.
+        rsphere: [6378137.00, 6356752.3142]
+
+europe:
+    descr: Europe Mercator
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -20.
+        urcrnrlat: 68.
+        urcrnrlon: 40.
+        area_thresh: 100.
+        resolution: i
+        projection: merc
+        lat_1: 60.
+        lon_0: 10.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.08, 0.05, 0.7, .85]
+
+europe_ortho:
+    descr: Europe ORTHO
+    map_par:
+        area_thresh: 10000.
+        resolution: c
+        projection: ortho
+        lat_0: 60.
+        lon_0: 10.
+        rsphere: [6378137.00, 6356752.3142]
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.05, 0.05, 0.8, .85]
+
+pacific:
+    descr: |
+           National Geospatial-Intelligence Agency: DMANC1
+           North America
+    map_par:
+        llcrnrlat: 5.
+        llcrnrlon: -200.
+        urcrnrlat: 55.
+        urcrnrlon: -110.
+        area_thresh: 1000.
+        resolution: l
+        projection: aea
+        lat_0: 40.
+        lat_1: 20.
+        lon_0: -170.
+        rsphere: [6378137.00, 6356752.3142]
+
+dmanc1:
+    descr: |
+           National Geospatial-Intelligence Agency: DMANC1
+           North America
+    map_par:
+        llcrnrlat: 5.
+        llcrnrlon: -130.
+        urcrnrlat: 55.
+        urcrnrlon: -10.
+        area_thresh: 1000.
+        resolution: 'l'
+        projection: 'aea'
+        lat_0: 40.
+        lat_1: 20.
+        lon_0: -90.
+        rsphere: [6378137.00, 6356752.3142]
+
+north_pole:
+    descr: Whole North Atlantic and Norwegian, Greenland Seas
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -95.
+        urcrnrlat: 81.
+        urcrnrlon: 40.
+        area_thresh: 1000.
+        resolution: l
+        projection: npstere
+        lat_1: 5.
+        lon_0: -80.
+        rsphere: [6378137.00, 6356752.3142]
+        boundinglat: 65.
+
+npolar:
+    descr: Same as polarcat
+    map_par:
+        area_thresh: 1000.
+        resolution: i
+        projection: npstere
+        lat_1: 5.
+        lon_0: -20.
+        rsphere: [6378137.00, 6356752.3142]
+        boundinglat: 25.
+        anchor: W
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.1, 0.05, 0.7, .85]
+        #axlocs: [0.1, 0.05, 0.9, 0.8]
+
+polarcat:
+    descr: Whole North Atlantic and Norwegian, Greenland Seas
+    map_par:
+        llcrnrlat: 35.
+        llcrnrlon: -95.
+        urcrnrlat: 81.
+        urcrnrlon: 40.
+        area_thresh: 1000.
+        resolution: 'l'
+        projection: 'npstere'
+        lat_1: 5.
+        lon_0: -20.
+        rsphere: [6378137.00, 6356752.3142]
+        boundinglat: 45.
+        anchor: W
+    fig_par:
+        figsize: [6, 6]
+        axlocs: [0.1, 0.05, 0.7, .85]
+        # axlocs = [0.1, 0.05, 0.9, 0.8]
 
 svalbard:
      descr: Over Svalbard
@@ -23,8 +598,7 @@ svalbard:
         lon_0: 20.0
         projection: lcc
         resolution: h
-        rsphere: !!python/tuple [6378137.0, 6356752.3142]
-
+        rsphere: [6378137.0, 6356752.3142]
 
 npolar_70:
     descr: Zoom on polar project 70N
@@ -34,12 +608,13 @@ npolar_70:
         projection: npstere
         lat_1: 5.
         lon_0: -80.
-        rsphere: (6378137.00, 6356752.3142)
+        rsphere: [6378137.00, 6356752.3142]
+        rsphere2: [6378137.00, 6356752.3142]
         boundinglat: 65.
         anchor: W
     fig_par:
-        figsize: (6, 6)
-        axlocs: !!python/list [0.1, 0.05, 0.7, .85]
+        figsize: [6, 6]
+        axlocs: [0.1, 0.05, 0.7, .85]
 
 grace:
     descr: Based around GRACE Campaigns
@@ -54,4 +629,37 @@ grace:
         lat_0: 60.
         lat_1: 60.
         lon_0: -55.
-        rsphere: !!python/tuple [6378137.00, 6356752.3142]
+        rsphere: [6378137.00, 6356752.3142]
+
+falcon:
+    descr: Based around falcon flights
+    map_par:
+        llcrnrlat: 48.0
+        llcrnrlon: -15.0
+        urcrnrlat: 54.0
+        urcrnrlon: -5.00
+        area_thresh: 100.
+        resolution: l
+        projection: aea
+        lat_0: 50.
+        lat_1: 50.
+        lon_0: -10.
+        rsphere: [6378137.00, 6356752.3142]
+        # TODO: waht to do with 'dp' and 'md'?
+        # pd = 2
+        # md = 5
+
+eucaari:
+    descr: EUCAARI Domain
+    map_par:
+        llcrnrlat: 38.0
+        llcrnrlon: -15.0
+        urcrnrlat: 68.0
+        urcrnrlon: 30.00
+        area_thresh: 100.
+        resolution: l
+        projection: aea
+        lat_0: 50.
+        lat_1: 50.
+        lon_0: 7.5
+        rsphere: [6378137.00, 6356752.3142]
