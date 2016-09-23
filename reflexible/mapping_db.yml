@@ -317,8 +317,8 @@ vauuav09:
         lon_0: 20.
         rsphere: (6378137.00, 6356752.3142)
         # TODO: waht to do with 'dp' and 'md'?
-        #pd = 2
-        #md = 5
+        #pd: 2
+        #md: 5
 
 alaska:
     descr: Over Alaska
@@ -362,8 +362,8 @@ cicci:
         lon_0: 20.
         rsphere: [6378137.00, 6356752.3142]
         # TODO: waht to do with 'dp' and 'md'?
-        #pd = 2
-        #md = 5
+        #pd: 2
+        #md: 5
 
 stads_ortho:
     descr: Stads nested output
@@ -431,7 +431,7 @@ geo_summit:
 
 geo_summit_zoom:
     descr: Zoom near Summit, Greenland
-    map_par:  
+    map_par:
         llcrnrlat: 72.55
         llcrnrlon: -38.52
         urcrnrlat: 72.6
@@ -584,7 +584,7 @@ polarcat:
     fig_par:
         figsize: [6, 6]
         axlocs: [0.1, 0.05, 0.7, .85]
-        # axlocs = [0.1, 0.05, 0.9, 0.8]
+        # axlocs: [0.1, 0.05, 0.9, 0.8]
 
 svalbard:
      descr: Over Svalbard
@@ -646,8 +646,8 @@ falcon:
         lon_0: -10.
         rsphere: [6378137.00, 6356752.3142]
         # TODO: waht to do with 'dp' and 'md'?
-        # pd = 2
-        # md = 5
+        # pd: 2
+        # md: 5
 
 eucaari:
     descr: EUCAARI Domain

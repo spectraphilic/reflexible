@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import sys
 import math
+import os
 import os.path
 import re
 import datetime as dt
@@ -180,9 +181,8 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
         > map_par, fig_par = map_regions(map_region="polarcat")
 
     Returns
-      Two dictionaries, first  a map_par dictionary with keywords that are the
-      same as what is need to create a
-      `basemap`<http://matplotlib.sourceforge.net/basemap/doc/html/users/mapsetup.html>_ instance.
+      Two dictionaries, first a map_par dictionary with keywords that are the
+      same as what is need to create a basemap instance of matplotlib.
 
       ============      ==========================
       keys              description
@@ -232,10 +232,16 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
     # rect = l,b,w,h
     fig_par.axlocs = [0.05, 0.01, .8, .9]
 
-    # Get the database out of the YAML file
+    # Get the database out of the system YAML file
     mapdb_file = os.path.join(os.path.dirname(__file__), 'mapping_db.yml')
     with open(mapdb_file) as mapdb:
         mapping_db = yaml.load(mapdb)
+
+    # and merge it with a possible one pointed by REFLEXIBLE_MAPDB env var
+    if 'REFLEXIBLE_MAPDB' in os.environ:
+        user_mapdb_file = os.environ['REFLEXIBLE_MAPDB']
+        with open(user_mapdb_file) as mapdb:
+            mapping_db.update(yaml.load(mapdb))
 
     # Lookup the region and its aliases
     try:
@@ -246,7 +252,6 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
             if 'alias' in mapping_db[key]:
                 alias = mapping_db[key]['alias']
                 if map_region in re.split(',\s*', alias):
-                    map_region = key
                     region = mapping_db[key]
                     break
         else:
