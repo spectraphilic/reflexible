@@ -1,38 +1,40 @@
-#!/usr/bin/env python 
-""" Matplotlib Basemap Tool Suite """
-
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # John F Burkhart - 2010
 # Licence : this code is released under the matplotlib license
+""" Matplotlib Basemap Tool Suite """
 
 from __future__ import print_function
 
-__author__ = "John F Burkhart <jfburkhart@gmail.com>"
-__version__ = "0.03"
-
-import numpy as np
+import sys
 import math
 import os.path
-import yaml
 import re
-
 import datetime as dt
-import pdb
-# from matplotlib import interactive, use
-# use("Agg")
-# interactive(False)
+
+import yaml
+import numpy as np
 import matplotlib as mpl
-from matplotlib import colors, cm
 from matplotlib.collections import LineCollection
-# mpl.use('Agg')
+
+try:
+    from mpl_toolkits.basemap import Basemap
+except ImportError:
+    from matplotlib.toolkits.basemap import Basemap
+from PIL import Image
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap, shiftgrid
 from netCDF4 import Dataset as NetCDFFile
-
-TEX = False
+# mpl.use("Agg")
+# mp.interactive(False)
+# mpl.use('Agg')
 # !!NEED TO FIX!! #
 from matplotlib.ticker import NullFormatter
+TEX = False
+
+__author__ = "John F Burkhart <jfburkhart@gmail.com>"
+__version__ = "0.03"
 
 
 class Structure(dict):
@@ -89,7 +91,7 @@ class KML_File:
     def open_folder(self, name):
         file = open(self.filepath, "a")
         file.write(
-            "<Folder>\n" \
+            "<Folder>\n"
             "  <name>" + name + "</name>\n")
         file.close()
 
@@ -137,10 +139,10 @@ class KML_File:
             file.close()
 
         else:
-            ## let's create line strings
+            # let's create line strings
 
             file.write(
-                "<Placemark>\n" \
+                "<Placemark>\n"
                 "  <description>" + description + "</description>\n"
                 "  <name>" + name + "</name>\n"
                 "  <styleUrl>#normalPlaceMarker</styleUrl>"
@@ -170,12 +172,12 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
     .. note::
         Generally, I just use region names anymore, and not projection. It is
         easiest to name your new region uniquely, then simply define
-        region="myregion" when you call one of the plotting routines. For the most
-        part they take "region" as a keyword.
+        region="myregion" when you call one of the plotting routines. For the
+        most part they take "region" as a keyword.
 
     USAGE::
 
-        > map_par, fig_par = map_regions(map_region="POLARCAT")
+        > map_par, fig_par = map_regions(map_region="polarcat")
 
     Returns
       Two dictionaries, first  a map_par dictionary with keywords that are the
@@ -200,8 +202,8 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
                         regions
       ============      ==========================
 
-      Second, a fig_par dictionary that contains options that may be passed to the
-      :mod:`matplotlib.pyplot` :func:`figure` function.
+      Second, a fig_par dictionary that contains options that may be passed to
+      the :mod:`matplotlib.pyplot` :func:`figure` function.
 
       ============      ==========================
       keys              description
@@ -258,8 +260,7 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
     if 'fig_par' in region:
         fig_par.set_with_dict(region['fig_par'])
 
-    #print(map_region, map_par, fig_par)
-    # map_par.boundinglat=50.
+    # print(map_region, map_par, fig_par)
     try:
         del map_par['m']  # in case
     except:
@@ -315,8 +316,9 @@ def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
         meridians = np.arange(-180, 181, 20)
     else:
         meridians = np.arange(m.llcrnrlon, m.urcrnrlon, md)
-    MD = m.drawmeridians(meridians, labels=location,
-                         linewidth=linewidth, color=color, fontproperties=p_leg)
+    m_m = m.drawmeridians(meridians, labels=location,
+                          linewidth=linewidth, color=color,
+                          fontproperties=p_leg)
 
     # setup map to have parallels.
     if ydiff > ydiv:
@@ -327,7 +329,6 @@ def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
         maxlat = m.urcrnrlat
 
     pd = pd_options[(np.abs(np.array(pd_options) - pd)).argmin()]
-    # print(pd)
     if m.projection in ['npstere', 'spstere']:
         parallels = np.arange(30, 91, 10)
     else:
@@ -337,12 +338,13 @@ def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
             parallels = np.arange(m.llcrnrlat, maxlat, pd)
 
     print(parallels, m.llcrnrlat, maxlat, pd)
-    MP = m.drawparallels(parallels, labels=location,
-                         linewidth=linewidth, color=color, fontproperties=p_leg)
-    return MP, MD
+    m_p = m.drawparallels(parallels, labels=location,
+                          linewidth=linewidth, color=color,
+                          fontproperties=p_leg)
+    return m_p, m_m
 
 
-def plot_ECMWF(nc, variable, time, level, map_region='NorthAmerica'):
+def plot_ECMWF(nc, variable, time, level, map_region='north_america'):
     """ uses :function:`plot_grid`_ to plot a netcdf file downloaded
     from ECMWF MARS data store.
     """
@@ -378,6 +380,7 @@ def default_netcdf(nco_filename,
                    history=""
                    ):
     """ A function to add default information to a netcdf file.
+
     Adds default attributes to the ncfile using keyword arguments.
 
     Usage::
@@ -495,10 +498,10 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
                image=None):
     """
     This is a core function, used throughout this module. It is called
-    by various functions. The idea is that I create a :class:`Structure` that 
+    by various functions. The idea is that I create a :class:`Structure` that
     contains the figure, ax, and m instance. I also add a field for "indices".
-    I'm not sure this all makes the most sense, but it is what I came up with in
-    order to be able to reuse figures. This saves a huge amount of time, as
+    I'm not sure this all makes the most sense, but it is what I came up with
+    in order to be able to reuse figures. This saves a huge amount of time, as
     creating then basemap instance can be time consuming.
     This whole concept overall really needs to be reviewed!
 
@@ -509,14 +512,14 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
 
         > FIG = get_FIGURE()
         or
-        > FIG = get_FIGURE(map_region='POLARCAT')
+        > FIG = get_FIGURE(map_region='polarcat')
 
     Returns
-       This will return the "FIG" object, which has attributes: `fig`, `ax`, 
+       This will return the "FIG" object, which has attributes: `fig`, `ax`,
        `m`, and `indices`. The indices are used for deleting lines, texts,
-       collections, etc. if and when we are reusing the figure instance. The 
-       indices basically give us a reference to the *empty* map, so we can delete
-       lines without losing meridians or parallels for example.
+       collections, etc. if and when we are reusing the figure instance. The
+       indices basically give us a reference to the *empty* map, so we can
+       delete lines without losing meridians or parallels for example.
 
 
     ============      ======================================
@@ -529,7 +532,7 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
     m                 The basemap instance so you can do:
                       x,y = FIG.m(lon,lat)
     ax                The axes
-    indices           with index for texts, images, lines, 
+    indices           with index for texts, images, lines,
                       and collections
     ============      ======================================
 
@@ -539,7 +542,7 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
     FIGURE = Structure()
 
     if getm:
-        if m == None:
+        if m is None:
             if image:
                 fig, m = get_base_image(image, map_region=map_region,
                                         map_par=map_par,
@@ -556,18 +559,18 @@ def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
             FIGURE.fig = fig
             FIGURE.m = m
             FIGURE.ax = fig.gca()
-    elif m == None:
+    elif m is None:
         FIGURE.m = None
     else:
         FIGURE.m = m
 
-    if fig == None:
+    if fig is None:
         FIGURE.fig = plt.figure()
         fig = FIGURE.fig
     else:
         FIGURE.fig = fig
 
-    if ax == None:
+    if ax is None:
         FIGURE.ax = fig.gca()
         ax = FIGURE.ax
     else:
@@ -596,19 +599,20 @@ def get_base1(map_region=1,
 
     Usage::
 
-      >fig,m=get_base1(map_region="regionname")
+      >fig, m=get_base1(map_region="region_name")
     """
 
-    ## Use map_regions function to define
-    ## input paramters for Basemap
-    map_par_sd, fig_par_sd = map_regions(map_region=map_region, map_par=map_par)
+    # Use map_regions function to define
+    # input parameters for Basemap
+    map_par_sd, fig_par_sd = map_regions(map_region=map_region,
+                                         map_par=map_par)
     if map_par:
         map_par_sd.set_with_dict(map_par)
     if fig_par:
         fig_par_sd.set_with_dict(fig_par)
 
     # create the figure
-    if fig == None:
+    if fig is None:
         axlocs = fig_par_sd.pop('axlocs')
         fig = plt.figure(**fig_par_sd)
         ax = fig.add_axes(axlocs)
@@ -619,19 +623,19 @@ def get_base1(map_region=1,
     m = Basemap(**map_par_sd)
     print('getting base1')
     print(m)
-    plt.axes(ax)  ## make sure axes ax are current
-    ## draw coastlines and political boundaries.
+    plt.axes(ax)   # make sure axes ax are current
+    # draw coastlines and political boundaries.
     m.drawcoastlines(linewidth=0.8)
     m.drawcountries(linewidth=0.2)
     m.drawstates(linewidth=0.2)
     if drawlsmask:
         m.drawlsmask(ocean_color='#008EBA', zorder=0)
     # m.fillcontinents(zorder=0.)
-    ## draw parallels and meridians.
-    ## use draw_grid function
-    MP, MD = draw_grid(m)
+    # draw parallels and meridians
+    # use draw_grid function
+    m_p, m_m = draw_grid(m)
 
-    if figname != None:
+    if figname is not None:
         plt.savefig(figname)
     return fig, m
 
@@ -640,46 +644,29 @@ def get_base2(**kwargs):
     """ Warps NASA Blue Marble Image version
     Create basemap figure for plotting on top of
     returns a figure and a basemap instance:
-    usage: fig,m=get_base1(map_region=2) """
-    ## Get Keyword Arguments
-    if 'map_region' in kwargs.keys():
-        reg = kwargs['map_region']
-    else:
-        reg = 1
-    if 'figname' in kwargs.keys():
-        figname = kwargs['figname']
-    else:
-        figname = None
-    if 'figure' in kwargs.keys():
-        fig = kwargs['figure']
-    else:
-        fig = None
-    ##IMPORTS
-    import pylab as P
-    try:
-        from mpl_toolkits.basemap import Basemap
-    except:
-        from matplotlib.toolkits.basemap import Basemap
-    from matplotlib.image import pil_to_array
-    from PIL import Image
+    usage: fig, m = get_base1(map_region=region) """
+    # Get Keyword Arguments
+    reg = kwargs.get('map_region', 'default')
+    figname = kwargs.get('figname', None)
+    fig = kwargs.get('figure', None)
 
     # shows how to warp an image from one map projection to another.
     # image from http://visibleearth.nasa.gov/
 
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open('land_shallow_topo_2048.jpg')
-    rgba = pil_to_array(pilImage)
-    rgba = rgba.astype(P.float32) / 255.  # convert to normalized floats.
+    rgba = mpl.image.pil_to_array(pilImage)
+    rgba = rgba.astype(plt.float32) / 255.  # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
     nlons = rgba.shape[1]
     nlats = rgba.shape[0]
     delta = 360. / float(nlons)
-    lons = P.arange(-180. + 0.5 * delta, 180., delta)
-    lats = P.arange(-90. + 0.5 * delta, 90., delta)
+    lons = np.arange(-180. + 0.5 * delta, 180., delta)
+    lats = np.arange(-90. + 0.5 * delta, 90., delta)
 
     # create new figure
-    fig = P.figure(1, figsize=(8, 6))
+    fig = plt.figure(1, figsize=(8, 6))
 
     # define Lambert Conformal basemap for North America.
     mr = {'map_region': reg}
@@ -688,17 +675,18 @@ def get_base2(**kwargs):
     m = Basemap(**mp)
     ax = fig.add_axes(
         [0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
-    P.axes(ax)  # make the original axes current again
+    plt.axes(ax)  # make the original axes current again
     # transform to nx x ny regularly spaced native projection grid
-    # nx and ny chosen to have roughly the same horizontal res as original image.
-    dx = 2. * P.pi * m.rmajor / float(nlons)
-    nx = int((m.xmax - m.xmin) / dx) + 1;
+    # nx and ny chosen to have roughly the same horizontal res as original
+    # image.
+    dx = 2. * np.pi * m.rmajor / float(nlons)
+    nx = int((m.xmax - m.xmin) / dx) + 1
     ny = int((m.ymax - m.ymin) / dx) + 1
-    rgba_warped = P.zeros((ny, nx, 4), P.Float64)
+    rgba_warped = np.zeros((ny, nx, 4), np.float64)
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     for k in range(4):
-        rgba_warped[:, :, k] = m.transform_scalar(rgba[:, :, k], lons, lats, nx,
-                                                  ny)
+        rgba_warped[:, :, k] = m.transform_scalar(
+            rgba[:, :, k], lons, lats, nx, ny)
     # plot warped rgba image.
     im = m.imshow(rgba_warped)
     # draw coastlines.
@@ -712,72 +700,52 @@ def get_base2(**kwargs):
 def get_base3(**kwargs):
     """ Custom version for sea ice. """
 
-    ## Get Keyword Arguments
-    if 'map_region' in kwargs.keys():
-        map_region = kwargs['map_region']
-    else:
-        map_region = 1
-    if 'figname' in kwargs.keys():
-        figname = kwargs['figname']
-    else:
-        figname = None
-    if 'figure' in kwargs.keys():
-        fig = kwargs['figure']
-    else:
-        fig = None
-    if 'basefile' in kwargs.keys():
-        basefile = kwargs['basefile']
-    else:
-        basefile = None
+    # Get Keyword Arguments
+    map_region = kwargs.get('map_region', 'default')
+    figname = kwargs.get('figname', None)
+    fig = kwargs.get('figure', None)
+    basefile = kwargs.get('basefile', None)
     # the data is interpolated to the native projection grid.
-    from PIL import Image
-    from matplotlib import interactive
-    try:
-        from mpl_toolkits.basemap import Basemap
-    except:
-        from matplotlib.toolkits.basemap import Basemap
-    from matplotlib.image import pil_to_array
-    from pylab import title, colorbar, show, close, \
-        axes, cm, load, arange, figure, \
-        text, savefig, setp, draw, clf, cla
 
     # read in jpeg image to rgba array of normalized floats.
-    if basefile != None:
+    if basefile is not None:
         pilImage = Image.open(basefile)
-        rgba = pil_to_array(pilImage)
+        rgba = mpl.image.pil_to_array(pilImage)
         rgba = rgba.astype(np.float32) / 255.  # convert to normalized floats.
 
-    interactive(False)
-    ## create the figure.
-    if fig == None:
-        fig = figure(1, \
-                     dpi=100,
-                     frameon=False,
-                     facecolor=None,
-                     edgecolor=None,
-                     figsize=(12, 9.11)
-                     )
-        # fig=figure(1,figsize=(57.625,43.75))
+    mpl.interactive(False)
+    # create the figure.
+    if fig is None:
+        fig = plt.figure(1,
+                         dpi=100,
+                         frameon=False,
+                         facecolor=None,
+                         edgecolor=None,
+                         figsize=(12, 9.11)
+                         )
+        # fig = plt.figure(1, figsize=(57.625, 43.75))
     # Use map_regions function to define input paramters for Basemap
     mp, fig_par = map_regions(map_region)
     m = Basemap(**mp)
-    ax = fig.add_axes([0, 0, 1, 1],
-                      frameon=False)  # need to change back to [0.1,0.1,0.7,0.7]
-    axes(ax)  # make the original axes current again
-    ## draw coastlines and political boundaries.
+    ax = fig.add_axes(
+        [0, 0, 1, 1],
+        frameon=False)  # need to change back to [0.1,0.1,0.7,0.7]
+    plt.axes(ax)  # make the original axes current again
+    # draw coastlines and political boundaries.
     m.drawcoastlines(linewidth=.5)
     m.drawcountries(linewidth=.5)
     m.drawstates(linewidth=.5)
-    ## draw parallels and meridians.
+    # draw parallels and meridians.
     draw_grid(m, linewidth=0.5)
 
-    if figname != None:
-        savefig(figname)
+    if figname is not None:
+        plt.savefig(figname)
     return fig, m
 
 
 def get_base_image(imagefile, **kwargs):
-    """ Warps NASA Blue Marble Image version
+    """Warps NASA Blue Marble Image version.
+
     Create basemap figure for plotting on top of
     returns a figure and a basemap instance.
 
@@ -787,34 +755,17 @@ def get_base_image(imagefile, **kwargs):
 
 
     """
-    ## Get Keyword Arguments
-    if 'map_region' in kwargs.keys():
-        reg = kwargs['map_region']
-    else:
-        reg = 1
-    if 'figname' in kwargs.keys():
-        figname = kwargs['figname']
-    else:
-        figname = None
-    if 'figure' in kwargs.keys():
-        fig = kwargs['figure']
-    else:
-        fig = None
-    ##IMPORTS
-    import matplotlib.pyplot as plt
-    try:
-        from mpl_toolkits.basemap import Basemap
-    except:
-        from matplotlib.toolkits.basemap import Basemap
-    from matplotlib.image import pil_to_array
-    from PIL import Image
+    # Get Keyword Arguments
+    reg = kwargs.get('map_region', 'default')
+    figname = kwargs.get('figname', None)
+    fig = kwargs.get('figure', None)
 
     # shows how to warp an image from one map projection to another.
     # image from http://visibleearth.nasa.gov/
 
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open(imagefile)
-    rgba = pil_to_array(pilImage)
+    rgba = mpl.image.pil_to_array(pilImage)
     rgba = rgba.astype(np.float32) / 255.  # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
@@ -836,7 +787,8 @@ def get_base_image(imagefile, **kwargs):
         [0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
     plt.axes(ax)  # make the original axes current again
     # transform to nx x ny regularly spaced native projection grid
-    # nx and ny chosen to have roughly the same horizontal res as original image.
+    # nx and ny chosen to have roughly the same horizontal res as original
+    # image.
     dx = 2. * np.pi * m.rmajor / float(nlons)
     nx = int((m.xmax - m.xmin) / dx) + 1
     ny = int((m.ymax - m.ymin) / dx) + 1
@@ -844,8 +796,8 @@ def get_base_image(imagefile, **kwargs):
     # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
     try:
         for k in range(4):
-            rgba_warped[:, :, k] = m.transform_scalar(rgba[:, :, k], lons, lats,
-                                                      nx, ny)
+            rgba_warped[:, :, k] = m.transform_scalar(
+                rgba[:, :, k], lons, lats, nx, ny)
     except:
         rgba_warped = rgba
         print('problem with transform_scalar')
@@ -919,7 +871,7 @@ def plot_track(lon, lat,
 
     """
 
-    ## make tick lables smaller and set parameters for colorbar
+    # make tick lables smaller and set parameters for colorbar
     mpl.rcParams['xtick.labelsize'] = 8.5
     mpl.rcParams['ytick.labelsize'] = 8.5
     p_cax = mpl.font_manager.FontProperties(size='7')
@@ -931,12 +883,12 @@ def plot_track(lon, lat,
         lat = [lat]
         scatter = True
 
-    if zsize == None:
+    if zsize is None:
         zsize = np.ones(len(lon)) * 1000
 
-    ## Default plot_kwargs
+    # Default plot_kwargs
     plot_kwargs = {}
-    if plotargs != None:
+    if plotargs is not None:
         plot_kwargs = set_plotkwargs(plotargs, plot_kwargs)
     else:
         plotargs = {'zorder': 10,
@@ -946,20 +898,20 @@ def plot_track(lon, lat,
                     }
         plot_kwargs = set_plotkwargs(plotargs, plot_kwargs)
 
-    if FIGURE == None:
+    if FIGURE is None:
         FIGURE = get_FIGURE(map_region=map_region,)
 
-    ##Get fig if exists
+    # Get fig if exists
     fig = FIGURE.fig
     m = FIGURE.m
     ax = FIGURE.ax
     nullfmt = NullFormatter()
-    if ax == None:
+    if ax is None:
         az = plt.gca()
         pos = az.get_position()
         l, b, w, h = getattr(pos, 'bounds', pos)
         ax = fig.add_axes([l, b, w, h], frameon=False)
-    if overlay == False:
+    if overlay:
         del ax.collections[FIGURE.indices.collections:]
 
     # Make sure the axes and figure are current
@@ -967,20 +919,20 @@ def plot_track(lon, lat,
     plt.axes(ax)
     # PRINT CRUISE TRACK
     cx, cy = m(lon, lat)
-    if zlevel != None:
+    if zlevel is not None:
         if scatter:
-            ## Set plotting kwargs
-            # if plotargs == None:
+            # Set plotting kwargs
+            # if plotargs is None:
             #    plotargs = {'zorder':10,
             #                'alpha':0.35,
             #                'edgecolor':None
             #                }
             plot_kwargs = set_plotkwargs(plotargs, plot_kwargs)
-            # from pylab import linspace, cm, colorbar,scatter, cla, axes
-            # m.scatter(cx,cy,25*linspace(0,1,(len(cx))),zlevel,cmap=cm.spectral,marker='o',faceted=False,zorder=10)
+            # m.scatter(cx, cy, 25 * np.linspace(0,1,(len(cx))), zlevel,
+            #           cmap=mpl.cm.spectral,marker='o',faceted=False,zorder=10)
             cmap = plt.get_cmap('jet')
-            # c=m.scatter(cx,cy,zsize,zlevel,cmap=cmap,marker=marker,
-            #            **plot_kwargs)
+            # c = m.scatter(cx, cy, zsize, zlevel, cmap=cmap, marker=marker,
+            #               **plot_kwargs)
             c = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
                           **plot_kwargs)
             # pos = az.get_position()
@@ -1026,8 +978,8 @@ def plot_track(lon, lat,
             elif np.rank(cx) == 2:
                 for i in range(cx.shape[0]):
                     points = np.array([cx[i, :], cy[i, :]]).T.reshape(-1, 1, 2)
-                    segments = np.concatenate([points[:-1], points[1:]], axis=1)
-
+                    segments = np.concatenate([points[:-1], points[1:]],
+                                              axis=1)
                     lc = LineCollection(segments, cmap=plt.get_cmap('jet'),
                                         norm=plt.Normalize(zlevel.min(),
                                                            zlevel.max()))
@@ -1037,19 +989,19 @@ def plot_track(lon, lat,
             else:
                 raise IOError(
                     "input array shape zlevel cannot be greater than rank-2")
-
-
     else:
         if scatter:
             m.scatter(cx, cy, **plot_kwargs)
         else:
             m.plot(cx, cy, **plot_kwargs)
         print('boring')
+
     plt.axes(ax)
     ax.xaxis.set_major_formatter(nullfmt)
     ax.yaxis.set_major_formatter(nullfmt)
     plt.setp(ax, xticks=[], yticks=[])
     # ax.axesPatch.set_alpha(0.0)
+
     if figname:
         plt.savefig(figname)
     FIGURE.fig = fig
@@ -1058,7 +1010,7 @@ def plot_track(lon, lat,
     return FIGURE
 
 
-def plot_grid(D, map_region='POLARCAT', dres=0.5,
+def plot_grid(D, map_region='polarcat', dres=0.5,
               transform=True, figname=None, fillcontinents=False,
               points=False):
     """ plot an array over a basemap. The required argument "D" is
@@ -1118,8 +1070,8 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
             lons = x
             lats = y
 
-            ## CHANGED THIS HERE FOR THE CODEX ##
-            ## Be sure to set map_region=None                          ##
+            # CHANGED THIS HERE FOR THE CODEX #
+            # Be sure to set map_region=None                          #
     if isinstance(map_region, str):
         print("getting basemap with map_region: %s" % map_region)
         fig, m = get_base1(map_region=map_region)
@@ -1129,33 +1081,33 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
         a = 6378.273e3
         ec = 0.081816153
         b = a * np.sqrt(1. - ec ** 2)
-        m = Basemap(projection='stere', lat_0=90, lon_0=-45, lat_ts=70, \
-                    llcrnrlat=33.92, llcrnrlon=279.96, \
-                    urcrnrlon=102.34, urcrnrlat=31.37, \
+        m = Basemap(projection='stere', lat_0=90, lon_0=-45, lat_ts=70,
+                    llcrnrlat=33.92, llcrnrlon=279.96,
+                    urcrnrlon=102.34, urcrnrlat=31.37,
                     rsphere=(a, b))
         #        m = Basemap(width=12000000,height=8000000,
-        #                resolution='l',projection='npstere',\
+        #                resolution='l',projection='npstere',
         #                lat_ts=50,lat_0=50,lon_0=-107.)#Set up a basemap
         m.drawcoastlines()
 
-    if points == True:
+    if points:
         # Plot individual data points
-        norm = colors.normalize(z.min(), z.max())
+        norm = mpl.colors.normalize(z.min(), z.max())
         xpt, ypt = m(x, y)
-        cmap = [cm.jet(norm(i)) for i in z]
+        cmap = [mpl.cm.jet(norm(i)) for i in z]
         m.scatter(xpt, ypt, s=z / 100., edgecolors='none', color=cmap)
         # for i in range(len(y)):
         #     xpt,ypt = m(x[i],y[i])
-        #     cmap = cm.jet(norm(z[i]))
-        #     #cmap = 'k'
+        #     cmap = mpl.cm.jet(norm(z[i]))
+        #     # cmap = 'k'
         #     m.plot([xpt],[ypt],'.',color=cmap,markersize=2)
-        #     #plt.plot(x[i],y[i],'.',color=cmap,markersize=2)
+        #     # plt.plot(x[i],y[i],'.',color=cmap,markersize=2)
 
-    if points == False:
+    if points:
         # transform Z data into projection
         # transform to nx x ny regularly spaced native projection grid
         dx = 2. * np.pi * m.rmajor / len(lons)
-        nx = int((m.xmax - m.xmin) / dx) + 1;
+        nx = int((m.xmax - m.xmin) / dx) + 1
         ny = int((m.ymax - m.ymin) / dx) + 1
         if transform:
             # Need this if we choose lon,lat approach
@@ -1174,7 +1126,7 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
             m.fillcontinents()
         plt.colorbar()
         # plt.imshow(Z)
-    if figname != None:
+    if figname is not None:
         # plt.ylim([40,90])
         # plt.title('data locations on mercator grid')
         plt.savefig(figname)
@@ -1184,7 +1136,7 @@ def plot_grid(D, map_region='POLARCAT', dres=0.5,
     return fig, m
 
 
-#### LateX #####
+# ### LateX ###
 if TEX:
     mpl.rc('font', **{'family': 'sans-serif',
                       'sans-serif': ['Helvetica']
@@ -1198,11 +1150,10 @@ def read_satdata(c, dat, D, start_time, stop_time=None, satellite='Calipso'):
     """ Reads text files for a few defined format satellite groundtrack data
 
     .. note::
-        Not ready 
+        Not ready
     """
-    import datetime
-    if stop_time == None:
-        stop_time = start_time + datetime.timedelta(1)
+    if stop_time is None:
+        stop_time = start_time + dt.timedelta(1)
     if satellite == 'Calipso':
         for l in c.readlines():
             l = l.strip().split()
@@ -1211,7 +1162,7 @@ def read_satdata(c, dat, D, start_time, stop_time=None, satellite='Calipso'):
         for d in dat:
             t = ' '.join(d[:4])
             t = t[:-4]
-            t = datetime.datetime.strptime(t, '%d %b %Y %H:%M:%S')
+            t = dt.datetime.strptime(t, '%d %b %Y %H:%M:%S')
             if t > start_time and t < stop_time:
                 lat, lon, rng = d[4:]
                 D.append((t, lon, lat, rng))
@@ -1225,8 +1176,8 @@ def read_satdata(c, dat, D, start_time, stop_time=None, satellite='Calipso'):
                         y, m, d = l[0].split('/')
                     if len(l) > 3:
                         hr, mn, sc = l[0].split(':')
-                        t = datetime.datetime(int(y), int(m), int(d), int(hr),
-                                              int(mn), int(sc))
+                        t = dt.datetime(int(y), int(m), int(d), int(hr),
+                                        int(mn), int(sc))
                         # print(start_time, t, stop_time)
                         if t > start_time and t < stop_time:
                             # print('yes!')
@@ -1234,16 +1185,16 @@ def read_satdata(c, dat, D, start_time, stop_time=None, satellite='Calipso'):
                                 lat, lon, rng = l[1:]
                                 D.append((t, lon, lat, rng))
                             except:
-                                lat, lon, hdg, ltlat, ltlon,\
-                                rtlat, rtlon = l[1:]
+                                (lat, lon, hdg, ltlat, ltlon,
+                                 rtlat, rtlon) = l[1:]
                                 D.append((t, lon, lat, hdg))
 
-    t0 = datetime.datetime(2009, 4, 15)
+    t0 = dt.datetime(2009, 4, 15)
     Sets = {}
     i = 0
 
     for t in D:
-        if t[0] - t0 < datetime.timedelta(minutes=60):
+        if t[0] - t0 < dt.timedelta(minutes=60):
             Sets[i].append(t)
         else:
             t0 = t[0]
@@ -1308,9 +1259,6 @@ def Sat_tracks(map, start_time=None, stop_time=None,
     stop_time
     input_data_file
     """
-    import datetime, sys
-    from pylab import text
-    from matplotlib import colors, cm
     if ifile is None:
         if satellite == 'Calipso':
             if 'lin' in sys.platform:
@@ -1331,18 +1279,18 @@ def Sat_tracks(map, start_time=None, stop_time=None,
         SATELLITEDAT = ifile
         print('Using: ' + ifile)
 
-    if plotargs == None:
+    if plotargs is None:
         plot_kwargs = {'linewidth': 1,
                        'color': 'b',
                        'linestyle': '--'}
     else:
         plot_kwargs = set_plotkwargs(plotargs)
 
-    if start_time == None:
-        start_time = datetime.datetime(2010, 5, 11)
-    if stop_time == None:
-        stop_time = start_time + datetime.timedelta(30)
-    if Sets == None:
+    if start_time is None:
+        start_time = dt.datetime(2010, 5, 11)
+    if stop_time is None:
+        stop_time = start_time + dt.timedelta(30)
+    if Sets is None:
         c = open(SATELLITEDAT, 'r')
         dat, D = [], []
         # doy=start_time.strftime('%Y%m%d')
@@ -1354,9 +1302,9 @@ def Sat_tracks(map, start_time=None, stop_time=None,
     # PRINT TRACK
     tinit = Sets[1][0][0]
     tend = Sets[24][0][0]
-    norm = colors.normalize(0, len(Sets))
+    norm = mpl.colors.normalize(0, len(Sets))
     for k, D in enumerate(Sets.values()):
-        cmap = cm.jet(norm(k))
+        cmap = mpl.cm.jet(norm(k))
         clon = [-1 * float(i[1]) for i in D]
         clat = [float(i[2]) for i in D]
         cx, cy = map(clon, clat)
@@ -1378,11 +1326,11 @@ def Sat_tracks(map, start_time=None, stop_time=None,
             t_txt = [i[0].strftime('%H:%M') for i in D[::frq]]
 
             for i in range(len(tx)):
-                if (tx[i] < map.urcrnrx and
-                    ty[i] < map.urcrnry and
-                    tx[i] > map.llcrnrx and
-                    ty[i] > map.llcrnry):
-                    text(tx[i], ty[i], t_txt[i], size=8)
+                if ((tx[i] < map.urcrnrx) and
+                        (ty[i] < map.urcrnry) and
+                        (tx[i] > map.llcrnrx) and
+                        (ty[i] > map.llcrnry)):
+                    plt.text(tx[i], ty[i], t_txt[i], size=8)
                     # title('%s Track: %s' % (satellite,doy))
 
     return map, [tinit, tend]
@@ -1439,12 +1387,13 @@ def gridarea(xl, yl, xr, yr, method='gcd'):
     # A = ((np.pi/180)*R**2)*abs((np.sin(yr)-np.sin(yl)))*abs(xr-xl)
     # return A
     # if method == 'radians':
-    ##Area is calculated using the latitude at the upper bound of the grid-cell, using Radians
-    ##lat = latitude of center of the grid cell.
+    # Area is calculated using the latitude at the upper bound of the
+    # grid-cell, using Radians
+    # lat = latitude of center of the grid cell.
     # radians = (90.0 - (lat+yres/2))*3.141593/180.0
-    ##Calculate cosines:
+    # Calculate cosines:
     # cosines = np.cos(radians)-np.cos(radians + (yres*3.141593)/180.0)
-    ##Calculate area in square kilometers:
+    # Calculate area in square kilometers:
     # area = (6371221.3*6371221.3*3.141593*cosines/360.0)*1.0e-6
     # return area
     if method == 'gcd':
@@ -1457,18 +1406,15 @@ def gridarea(xl, yl, xr, yr, method='gcd'):
         return area
 
 
-__version__ = '1.0.1'
-
-
 class GreatCircle(object):
     """
-   formula for perfect sphere from Ed Williams' 'Aviation Formulary'
-   (http://williams.best.vwh.net/avform.htm)
+    formula for perfect sphere from Ed Williams' 'Aviation Formulary'
+    (http://williams.best.vwh.net/avform.htm)
 
-   code for ellipsoid posted to GMT mailing list by Jim Leven in Dec 1999
+    code for ellipsoid posted to GMT mailing list by Jim Leven in Dec 1999
 
-   Contact: Jeff Whitaker <jeffrey.s.whitaker@noaa.gov>
-   """
+    Contact: Jeff Whitaker <jeffrey.s.whitaker@noaa.gov>
+    """
 
     def __init__(self, rmajor, rminor, lon1, lat1, lon2, lat2):
         """
@@ -1509,10 +1455,10 @@ class GreatCircle(object):
         self.azimuth12 = a12
         self.azimuth21 = a21
         # great circle arc-length distance (in radians).
-        self.gcarclen = 2. * math.asin(
-            math.sqrt((math.sin((lat1 - lat2) / 2)) ** 2 + \
+        self.gcarclen = (2. * math.asin(
+            math.sqrt((math.sin((lat1 - lat2) / 2)) ** 2 +
                       math.cos(lat1) * math.cos(lat2) * (
-                      math.sin((lon1 - lon2) / 2)) ** 2))
+                          math.sin((lon1 - lon2) / 2)) ** 2)))
         # check to see if points are antipodal (if so, route is undefined).
         if self.gcarclen == math.pi:
             self.antipodal = True
@@ -1537,8 +1483,8 @@ class GreatCircle(object):
         if npoints <= 1:
             raise ValueError('npoints must be greater than 1')
         elif npoints == 2:
-            return [math.degrees(self.lon1), math.degrees(self.lon2)],\
-                   [math.degrees(self.lat1), math.degrees(self.lat2)]
+            return ([math.degrees(self.lon1), math.degrees(self.lon2)],
+                    [math.degrees(self.lat1), math.degrees(self.lat2)])
         # can't do it if endpoints are antipodal, since
         # route is undefined.
         if self.antipodal:
@@ -1557,8 +1503,10 @@ class GreatCircle(object):
         if self.f == 0.:
             A = np.sin((1 - f) * d) / math.sin(d)
             B = np.sin(f * d) / math.sin(d)
-            x = A * math.cos(lat1) * math.cos(lon1) + B * math.cos(lat2) * math.cos(lon2)
-            y = A * math.cos(lat1) * math.sin(lon1) + B * math.cos(lat2) * math.sin(lon2)
+            x = (A * math.cos(lat1) * math.cos(lon1) +
+                 B * math.cos(lat2) * math.cos(lon2))
+            y = (A * math.cos(lat1) * math.sin(lon1) +
+                 B * math.cos(lat2) * math.sin(lon2))
             z = A * math.sin(lat1) + B * math.sin(lat2)
             lats = np.arctan2(z, np.sqrt(x ** 2 + y ** 2))
             lons = np.arctan2(y, x)
@@ -1586,13 +1534,13 @@ class GreatCircle(object):
 
 
 #
-# --------------------------------------------------------------------- 
+# ---------------------------------------------------------------------
 # |                                                                    |
 # |     geodetic.py -  a collection of geodetic functions              |
 # |                                                                    |
-# --------------------------------------------------------------------- 
-# 
-# 
+# ---------------------------------------------------------------------
+#
+#
 # ----------------------------------------------------------------------
 # | Algrothims from Geocentric Datum of Australia Technical Manual      |
 # |                                                                     |
@@ -1626,14 +1574,13 @@ class GreatCircle(object):
 # | Calculate: the ellipsoidal distance (s) and                         |
 # | forward and reverse azimuths between the points (alpha12, alpha21). |
 # |                                                                     |
-# ---------------------------------------------------------------------- 
+# ----------------------------------------------------------------------
 
 def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
-    """ 
-
+    """
       Returns the distance between two geographic points on the ellipsoid
       and the forward and reverse azimuths between these points.
-      lats, longs and azimuths are in radians, distance in metres 
+      lats, longs and azimuths are in radians, distance in metres
 
       Returns ( s, alpha12,  alpha21 ) as a tuple
 
@@ -1656,37 +1603,40 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
     last_lembda = -4000000.0  # an impossibe value
     omega = lembda
 
-    # Iterate the following equations, 
-    #  until there is no significant change in lembda 
+    # Iterate the following equations,
+    #  until there is no significant change in lembda
 
     while (last_lembda < -3000000.0 or
-        lembda != 0 and
-        abs((last_lembda - lembda) / lembda) > 1.0e-9):
-        sqr_sin_sigma = pow(math.cos(U2) * math.sin(lembda), 2) +\
-                        pow((math.cos(U1) * math.sin(U2) -
-                        math.sin(U1) * math.cos(U2) * math.cos(lembda)), 2)
+           lembda != 0 and
+           abs((last_lembda - lembda) / lembda) > 1.0e-9):
+        sqr_sin_sigma = (
+            pow(math.cos(U2) * math.sin(lembda), 2) +
+            pow((math.cos(U1) * math.sin(U2) -
+                 math.sin(U1) * math.cos(U2) * math.cos(lembda)), 2))
 
-        Sin_sigma = math.sqrt(sqr_sin_sigma)
+        sin_sigma = math.sqrt(sqr_sin_sigma)
 
-        Cos_sigma = math.sin(U1) * math.sin(U2) + math.cos(U1) * math.cos(U2) * math.cos(lembda)
+        cos_sigma = (math.sin(U1) * math.sin(U2) +
+                     math.cos(U1) * math.cos(U2) * math.cos(lembda))
 
-        sigma = math.atan2(Sin_sigma, Cos_sigma)
+        sigma = math.atan2(sin_sigma, cos_sigma)
 
-        Sin_alpha = math.cos(U1) * math.cos(U2) * math.sin(lembda) / math.sin(sigma)
-        alpha = math.asin(Sin_alpha)
+        sin_alpha = (math.cos(U1) * math.cos(U2) *
+                     math.sin(lembda) / math.sin(sigma))
+        alpha = math.asin(sin_alpha)
 
-        Cos2sigma_m = math.cos(sigma) - (
-        2 * math.sin(U1) * math.sin(U2) / pow(math.cos(alpha), 2))
+        cos2sigma_m = math.cos(sigma) - (
+            2 * math.sin(U1) * math.sin(U2) / pow(math.cos(alpha), 2))
 
         C = (f / 16) * pow(math.cos(alpha), 2) * (
-        4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
+            4 + f * (4 - 3 * pow(math.cos(alpha), 2)))
 
         last_lembda = lembda
 
-        lembda = omega + (1 - C) * f * math.sin(alpha) * (
-        sigma + C * math.sin(sigma) *
-        (Cos2sigma_m + C * math.cos(sigma) * (
-            -1 + 2 * pow(Cos2sigma_m, 2))))
+        lembda = (omega + (1 - C) * f * math.sin(alpha) * (
+            sigma + C * math.sin(sigma) *
+            (cos2sigma_m + C * math.cos(sigma) *
+             (-1 + 2 * pow(cos2sigma_m, 2)))))
 
     u2 = pow(math.cos(alpha), 2) * (a * a - b * b) / (b * b)
 
@@ -1694,22 +1644,21 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 
     B = (u2 / 1024) * (256 + u2 * (-128 + u2 * (74 - 47 * u2)))
 
-    delta_sigma = B * Sin_sigma * (Cos2sigma_m + (B / 4) *
-                                   (Cos_sigma * (-1 + 2 * pow(Cos2sigma_m, 2)) -
-                                    (B / 6) * Cos2sigma_m * (
-                                    -3 + 4 * sqr_sin_sigma) *
-                                    (-3 + 4 * pow(Cos2sigma_m, 2))))
+    delta_sigma = (B * sin_sigma * (
+        cos2sigma_m + (B / 4) *
+        (cos_sigma * (-1 + 2 * pow(cos2sigma_m, 2)) -
+         (B / 6) * cos2sigma_m * (-3 + 4 * sqr_sin_sigma) *
+         (-3 + 4 * pow(cos2sigma_m, 2)))))
 
     s = b * A * (sigma - delta_sigma)
 
     alpha12 = math.atan2((math.cos(U2) * math.sin(lembda)),
-                         (math.cos(U1) * math.sin(U2) - math.sin(U1) * math.cos(
-                             U2) * math.cos(lembda)))
+                         (math.cos(U1) * math.sin(U2) -
+                          math.sin(U1) * math.cos(U2) * math.cos(lembda)))
 
-    alpha21 = math.atan2((math.cos(U1) * math.sin(lembda)),
-                         (
-                         -math.sin(U1) * math.cos(U2) + math.cos(U1) * math.sin(
-                             U2) * math.cos(lembda)))
+    alpha21 = math.atan2((math.cos(U1) * math.sin(lembda)), (
+        -math.sin(U1) * math.cos(U2) + math.cos(U1) *
+        math.sin(U2) * math.cos(lembda)))
 
     if alpha12 < 0.0:
         alpha12 += two_pi
@@ -1724,10 +1673,10 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 
     return s, alpha12, alpha21
 
-    # END of Vincenty's Inverse formulae 
+    # END of Vincenty's Inverse formulae
 
 
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Vincenty's Direct formulae                                                |
 # Given: latitude and longitude of a point (phi1, lembda1) and              |
 # the geodetic azimuth (alpha12)                                            |
@@ -1736,18 +1685,17 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 # Calculate: the latitude and longitude of the second point (phi2, lembda2) |
 # and the reverse azimuth (alpha21).                                        |
 #                                                                           |
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     """
-
       Returns the lat and long of projected point and reverse azimuth
       given a reference point and a distance and azimuth to project.
-      lats, longs and azimuths are passed in decimal degrees
+      lats, longs and azimuths are passed in decimal degrees.
 
-      Returns ( phi2,  lambda2,  alpha21 ) as a tuple 
+      Returns ( phi2,  lambda2,  alpha21 ) as a tuple.
 
-      """
+    """
 
     two_pi = 2.0 * math.pi
 
@@ -1758,11 +1706,11 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
 
     b = a * (1.0 - f)
 
-    TanU1 = (1 - f) * math.tan(phi1)
-    U1 = math.atan(TanU1)
-    sigma1 = math.atan2(TanU1, math.cos(alpha12))
-    Sinalpha = math.cos(U1) * math.sin(alpha12)
-    cosalpha_sq = 1.0 - Sinalpha * Sinalpha
+    tan_u1 = (1 - f) * math.tan(phi1)
+    u1 = math.atan(tan_u1)
+    sigma1 = math.atan2(tan_u1, math.cos(alpha12))
+    sinalpha = math.cos(u1) * math.sin(alpha12)
+    cosalpha_sq = 1.0 - sinalpha * sinalpha
 
     u2 = cosalpha_sq * (a * a - b * b) / (b * b)
     A = 1.0 + (u2 / 16384) * (4096 + u2 * (-768 + u2 *
@@ -1774,39 +1722,39 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
 
     last_sigma = 2.0 * sigma + 2.0  # something impossible
 
-    # Iterate the following three equations 
-    # until there is no significant change in sigma 
+    # Iterate the following three equations
+    # until there is no significant change in sigma
 
     # two_sigma_m , delta_sigma
 
     while abs((last_sigma - sigma) / sigma) > 1.0e-9:
         two_sigma_m = 2 * sigma1 + sigma
 
-        delta_sigma = B * math.sin(sigma) * (
+        delta_sigma = (B * math.sin(sigma) * (
             math.cos(two_sigma_m) +
             (B / 4) * (math.cos(sigma) *
-            (-1 + 2 * math.pow(math.cos(two_sigma_m), 2) -
-            (B / 6) * math.cos(two_sigma_m) *
-            (-3 + 4 * math.pow(math.sin(sigma), 2)) *
-            (-3 + 4 * math.pow(math.cos(two_sigma_m), 2)))))
+                       (-1 + 2 * math.pow(math.cos(two_sigma_m), 2) -
+                       (B / 6) * math.cos(two_sigma_m) *
+                       (-3 + 4 * math.pow(math.sin(sigma), 2)) *
+                       (-3 + 4 * math.pow(math.cos(two_sigma_m), 2))))))
         last_sigma = sigma
         sigma = (s / (b * A)) + delta_sigma
 
-    phi2 = math.atan2((math.sin(U1) * math.cos(sigma) +
-                       math.cos(U1) * math.sin(
-                       sigma) * math.cos(alpha12)),
-                       ((1 - f) * math.sqrt(math.pow(Sinalpha, 2) +
-                       pow(math.sin(U1) * math.sin(sigma) -
-                           math.cos(U1) * math.cos(sigma) *
-                           math.cos(alpha12), 2))))
+    phi2 = math.atan2((math.sin(u1) * math.cos(sigma) +
+                       math.cos(u1) * math.sin(sigma) * math.cos(alpha12)),
+                      ((1 - f) * math.sqrt(
+                          math.pow(sinalpha, 2) +
+                          pow(math.sin(u1) * math.sin(sigma) -
+                              math.cos(u1) * math.cos(sigma) *
+                              math.cos(alpha12), 2))))
 
     lembda = math.atan2((math.sin(sigma) * math.sin(alpha12)),
-                        (math.cos(U1) * math.cos(sigma) -
-                         math.sin(U1) * math.sin(sigma) * math.cos(alpha12)))
+                        (math.cos(u1) * math.cos(sigma) -
+                         math.sin(u1) * math.sin(sigma) * math.cos(alpha12)))
 
     C = (f / 16) * cosalpha_sq * (4 + f * (4 - 3 * cosalpha_sq))
 
-    omega = lembda - (1 - C) * f * Sinalpha * \
+    omega = lembda - (1 - C) * f * sinalpha * \
                      (sigma + C * math.sin(sigma) * (math.cos(two_sigma_m) +
                                                      C * math.cos(sigma) * (
                                                          -1 + 2 * math.pow(
@@ -1816,8 +1764,8 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
 
     lembda2 = lembda1 + omega
 
-    alpha21 = math.atan2(Sinalpha, (-math.sin(U1) * math.sin(sigma) +
-                                    math.cos(U1) * math.cos(sigma) * math.cos(
+    alpha21 = math.atan2(sinalpha, (-math.sin(u1) * math.sin(sigma) +
+                                    math.cos(u1) * math.cos(sigma) * math.cos(
                                         alpha12)))
 
     alpha21 += two_pi / 2.0
@@ -1830,7 +1778,7 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
 
     # END of Vincenty's Direct formulae
 
-    ##---------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Notes:
     #
     # * "The inverse formulae may give no solution over a line
@@ -1847,11 +1795,11 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     #
     # alpha = Azimuth of the geodesic at the equator
     # U = Reduced latitude
-    # lembda = Difference in longitude on an auxiliary sphere (lembda1 & lembda2
-    #               are the geodetic longitudes of points 1 & 2)
+    # lembda = Difference in longitude on an auxiliary sphere (lembda1 &
+    #               lembda2 are the geodesic longitudes of points 1 & 2)
     # sigma = Angular distance on a sphere, from point 1 to point 2
     # sigma1 = Angular distance on a sphere, from the equator to point 1
-    # sigma2 = Angular distance on a sphere, from the equator to point 2
+    # sigma2 = Angular distance on a sphere, fr   om the equator to point 2
     # sigma_m = Angular distance on a sphere, from the equator to the
     #               midpoint of the line from point 1 to point 2
     # u, A, B, C = Internal variables
@@ -1875,13 +1823,13 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     # 127o10'25.07"
     #
     #
-    ##*******************************************************************
+    # *******************************************************************
 
     # Test driver
 
     # if __name__ == "__main__" :
 
-    ## WGS84
+    # WGS84
 
     # a = 6378137.0
     # b = 6356752.3142
@@ -1917,13 +1865,16 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     # sec = abs(lembda2 * 3600 - deg * 3600) - minn * 60
     # print(" %3i\xF8%3i\' %6.3f\" \n" % ( deg, minn, sec ))
 
-    # dist, alpha12, alpha21   = vinc_dist  ( f, a, math.radians(phi1), math.radians(lembda1), math.radians(phi2),  math.radians(lembda2) )
+    # dist, alpha12, alpha21   = vinc_dist( f, a, math.radians(phi1),
+    #    math.radians(lembda1), math.radians(phi2),  math.radians(lembda2) )
 
     # alpha12 = math.degrees(alpha12)
     # alpha21 = math.degrees(alpha21)
 
-    # print("\n Ellipsoidal Distance = %15.3f metres\n            should be         54972.271 m\n" % ( dist ))
-    # print("\n Forward and back azimuths = %15.6f, %15.6f \n" % ( alpha12, alpha21 ))
+    # print("\n Ellipsoidal Distance = %15.3f metres\n"
+    #       "      should be         54972.271 m\n" % ( dist ))
+    # print("\n Forward and back azimuths = %15.6f, %15.6f \n" % (
+    #       alpha12, alpha21 ))
     # deg = int(alpha12)
     # minn =int( abs(( alpha12 - deg) * 60.0 ) )
     # sec = abs(alpha12 * 3600 - deg * 3600) - minn * 60
@@ -1933,8 +1884,7 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     # sec = abs(alpha21 * 3600 - deg * 3600) - minn * 60
     # print(" Reverse azimuth = %3i\xF8%3i\' %6.3f\"\n" % ( deg, minn, sec ))
 
-
-    ## Test the direct function */
+    # Test the direct function
     # phi1 = -(( 3.7203 / 60. + 57) / 60. + 37 )
     # lembda1 = ( 29.5244 / 60. + 25) / 60. + 144
     # dist = 54972.271
@@ -1942,11 +1892,11 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     # phi2 = lembda2 = 0.0
     # alpha21 = 0.0
 
-    ephi2, lembda2, alpha21 = vinc_pt(f, a,
-                                      math.radians(phi1),
-                                      math.radians(lembda1),
-                                      math.radians(alpha12),
-                                      dist)
+    # ephi2, lembda2, alpha21 = vinc_pt(f, a,
+    #                                  math.radians(phi1),
+    #                                  math.radians(lembda1),
+    #                                  math.radians(alpha12),
+    #                                  dist)
 
     # phi2 = math.degrees(phi2)
     # lembda2 = math.degrees(lembda2)
@@ -1968,15 +1918,16 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     # sec = abs(alpha21 * 3600 - deg * 3600) - minn * 60
     # print(" Reverse azimuth = %3i\xF8%3i\' %6.3f\"\n\n" % ( deg, minn, sec ))
 
-    ## lat/lon of New York
+    # lat/lon of New York
     # lat1 = 40.78
     # lon1 = -73.98
-    ## lat/lon of London.
+    # lat/lon of London.
     # lat2 = 51.53
     # lon2 = 0.08
     # print('New York to London:')
     # gc = GreatCircle((2*a+b)/3.,(2*a+b)/3.,lon1,lat1,lon2,lat2)
-    # print('geodesic distance using a sphere with WGS84 mean radius = ',gc.distance)
+    # print('geodesic distance using a sphere with WGS84 mean radius = ',
+    #       gc.distance)
     # print('lon/lat for 10 equally spaced points along geodesic:')
     # lons,lats = gc.points(10)
     # for lon,lat in zip(lons,lats):
@@ -1990,6 +1941,5 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
 
 
 if __name__ == '__main__':
-    import sys
     # Some tests for reading the mapping YAML database
     map_regions(map_region=sys.argv[1])
