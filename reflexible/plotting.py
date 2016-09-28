@@ -1,35 +1,27 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
 
+import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numpy as np
-
-# Basemap
-try:
-    from mpl_toolkits.basemap import shiftgrid, addcyclic
-except ImportError:
-    from matplotlib.toolkits.basemap import shiftgrid, addcyclic
-
+from mpl_toolkits import basemap
 
 # local imports
 from reflexible import mapping as mp
 
 
 def plot_at_level(H, data, level=1,
-                   ID=' ', rel_i=None, species=None,
-                   timestamp=None,
-                   map_region=5,
-                   overlay=False,
-                   datainfo_str=None, log=True,
-                   data_range=None, FIGURE=None,
-                   plot_title=None,
-                   units=None,
-                   **kwargs
-                   ):
+                  ID=' ', rel_i=None, species=None,
+                  timestamp=None,
+                  map_region=5,
+                  overlay=False,
+                  datainfo_str=None, log=True,
+                  data_range=None, FIGURE=None,
+                  plot_title=None,
+                  units=None,
+                  **kwargs):
     """
-    TODO:
-    -make units a function of H['species']
+    TODO: make units a function of H['species']
     """
     if units is None:
         units = H.output_unit
@@ -282,7 +274,7 @@ def plot_sensitivity(H, data,
 
         if m.projection != 'merc':
             if lons[-1] - lons[0] < 360.:
-                topodat, lons = addcyclic(data, lons)
+                topodat, lons = basemap.addcyclic(data, lons)
 
         if m.projection == 'merc':
             topodat = data
