@@ -33,7 +33,7 @@ def plot_at_level(H, data, level=1,
     """
     if units is None:
         units = H.output_unit
-    
+
     if level == 1:
         level_desc = 'Footprint'
     else:
@@ -89,7 +89,7 @@ def plot_totalcolumn(H, data=None,
 
 
 
-    
+
     if 'units' in kwargs:
         units = kwargs.pop('units')
     else:
@@ -129,9 +129,6 @@ def plot_totalcolumn(H, data=None,
     FIGURE.ax.set_title(plot_title, fontsize=10)
 
     return FIGURE
-
-
-
 
 
 def plot_sensitivity(H, data,
@@ -378,7 +375,7 @@ def plot_sensitivity(H, data,
     # # using im2, not im (hack to prevent colors from being
     # # too compressed at the low end on the colorbar - results
     # # from highly nonuniform colormap)
-        cb = fig.colorbar(im, cax=cax) 
+        cb = fig.colorbar(im, cax=cax)
         FIGURE.cax = cax
         FIGURE.cb = cb
     # cb.update_normal(im2)
@@ -439,6 +436,7 @@ def plot_sensitivity(H, data,
         FIGURE.ax.set_title(plottitle, fontsize=10)
 
     return FIGURE
+
 
 def plot_trajectory(H, T, rel_i, FIGURE=None,
                     map_region=None,
@@ -520,7 +518,6 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     zlevel = t[:days_back, 4]
     zsize = np.ones(len(lon)) * 50
     marker = 'o'
-
 
     # # clear the previous track
     if 'circles' in FIGURE.keys():
@@ -606,6 +603,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
         FIGURE.cb2 = cb2
     return FIGURE
 
+
 def _gen_daylabels(P, H=None, dt=None):
     """
     Uses H.loutstep to calculate time steps back for plotting on clusters and trajectories. If dt = 86400, then labels will show 'days back'.
@@ -613,13 +611,13 @@ def _gen_daylabels(P, H=None, dt=None):
     """
     if dt is None and H is None:
         dt = 86400
-    
+
     elif H:
         dt = abs(H.loutstep)
 
-    if isinstance(P, int):  
+    if isinstance(P, int):
         return str(1 + int(abs(P)) / dt)
-    
+
     else:
         #return [str(int(abs(p))) for p in P]
         return [str(1 + int(abs(p)) / dt) for p in P]
@@ -644,6 +642,7 @@ def _gen_log_clevs(dat_min, dat_max):
     clevs = np.logspace(dmn, dmx, 100)
 
     return clevs
+
 
 def _gen_flexpart_colormap(ctbfile=None, colors=None):
     """Generate the ast colormap for FLEXPART."""

@@ -65,8 +65,8 @@ class TestMapping:
         p = tmpdir.join("userdb.yml")
         p.write(user_mapdb)
         userdb_file = str(p.realpath())
-
         os.environ['REFLEXIBLE_MAPDB'] = userdb_file
+
         self.map_par, self.fig_par = map_regions(self.region)
         if self.region == "default":
             assert self.map_par['llcrnrlat'] == 0.5
