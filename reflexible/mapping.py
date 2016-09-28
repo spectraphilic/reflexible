@@ -158,26 +158,43 @@ class KML_File:
 
 
 def map_regions(map_region='default', map_par=None, fig_par=None):
-    """
-    This is a core function, used throughout this module. It is called
-    by the :func:`get_FIGURE` function. If you want to create a new
-    region, this is where it should be added. Follow the protocol for the
-    existing regions below. The idea is to move these regions out of here
-    eventually, and have them be called from a file or database.
-
-    .. note::
-        Generally, I just use region names anymore, and not projection. It is
-        easiest to name your new region uniquely, then simply define
-        region="myregion" when you call one of the plotting routines. For the
-        most part they take "region" as a keyword.
+    """Given a `map_region`, return the associated parameters in mapping DB.
 
     USAGE::
+        map_par, fig_par = map_regions(map_region="polarcat")
 
-        > map_par, fig_par = map_regions(map_region="polarcat")
+    The list of regions know by reflexible by default is located in the
+    package file named 'mapping_db.yml'.  If you want to create a new region,
+    or override an existing one in reflexible itself, you can create it in
+    your own YAML file.  For example, suppose that you have the next
+    'myregions.yml' file::
+
+      northern_hemisphere:
+        descr: Northern Hemisphere
+        alias: my_own_nh
+        map_par:
+            projection: cyl
+            llcrnrlat: 0.5
+            urcrnrlat: 90
+            llcrnrlon: -180.7
+            urcrnrlon: 180
+            resolution: c
+            # anchor: W
+        fig_par:
+            figsize: [8, 3]  # w,h tuple
+            axlocs: [0.1, 0.1, .7, .8]
+
+    For informing reflexible on where your mapping file is located, you just
+    create the REFLEXIBLE_MAPDB environment variable with its path::
+
+      $ export REFLEXIBLE_MAPDB = $HOME/my_analysis/myregions.yml
+
+    Since this moment on, the definitions in your file will be used (with
+    highest priority) for finding the regions specified in `map_region`.
 
     Returns
       Two dictionaries, first a map_par dictionary with keywords that are the
-      same as what is need to create a basemap instance of matplotlib.
+      same as what is need to create a basemap instance of matplotlib:
 
       ============      ==========================
       keys              description
@@ -198,7 +215,7 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
       ============      ==========================
 
       Second, a fig_par dictionary that contains options that may be passed to
-      the :mod:`matplotlib.pyplot` :func:`figure` function.
+      the :mod:`matplotlib.pyplot` :func:`figure` function:
 
       ============      ==========================
       keys              description
@@ -208,24 +225,15 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
       ============      ==========================
 
       .. note::
-          You can override the fig_par.figsize in your region definition.
-
-
-
+          You can override the returned map_par and fig_par dicts by passing
+          dicts through the optional `map_par` and `fig_par` parameters.
     """
     # Set some default values
     map_par_ = Structure()
-    if map_par is not None:
-        map_par_.set_with_dict(map_par)
     fig_par_ = Structure()
-    if fig_par is not None:
-        fig_par_.set_with_dict(fig_par)
-    map_par, fig_par = map_par_, fig_par_
-
-    map_par.anchor = 'C'
-    fig_par.figsize = [8, 7]  # w,h tuple
-    # rect = l,b,w,h
-    fig_par.axlocs = [0.05, 0.01, .8, .9]
+    map_par_.anchor = 'C'
+    fig_par_.figsize = [8, 7]   # w,h tuple
+    fig_par_.axlocs = [0.05, 0.01, .8, .9]   # rect = l,b,w,h
 
     # Get the database out of the system YAML file
     mapdb_file = os.path.join(os.path.dirname(__file__), 'mapping_db.yml')
@@ -254,18 +262,24 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
 
     # Get the mapping params (should be always there)
     map_region_par = region['map_par']
-    map_par.set_with_dict(map_region_par)
+    map_par_.set_with_dict(map_region_par)
 
     # Get the figure params (not always present)
     if 'fig_par' in region:
-        fig_par.set_with_dict(region['fig_par'])
+        fig_par_.set_with_dict(region['fig_par'])
 
-    # print(map_region, map_par, fig_par)
+    # Override params if `map_par` or `fig_par` are passed
+    if map_par is not None:
+        map_par_.set_with_dict(map_par)
+    if fig_par is not None:
+        fig_par_.set_with_dict(fig_par)
+
+    # print(map_region, map_par_, fig_par_)
     try:
-        del map_par['m']  # in case
+        del map_par_['m']  # in case
     except:
         pass
-    return map_par, fig_par
+    return map_par_, fig_par_
 
 
 def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
@@ -605,7 +619,7 @@ def get_base1(map_region=1,
     # Use map_regions function to define
     # input parameters for Basemap
     map_par_sd, fig_par_sd = map_regions(map_region=map_region,
-                                         map_par=map_par)
+                                         map_par_=map_par)
     if map_par:
         map_par_sd.set_with_dict(map_par)
     if fig_par:

@@ -47,7 +47,6 @@ class TestMapping:
     def setup(self, request):
         self.region = request.param
 
-
     # Test the system mapping DB
     def test_system_mapdb(self):
         self.map_par, self.fig_par = map_regions(self.region)
@@ -57,7 +56,6 @@ class TestMapping:
         if self.region == "polarcat":
             assert self.map_par['llcrnrlat'] == 35.
             assert self.map_par['llcrnrlon'] == -95.
-
 
     # Test a user-provided mapping DB
     def test_user_mapdb(self, tmpdir):
@@ -75,3 +73,16 @@ class TestMapping:
             assert self.map_par['llcrnrlat'] == 90.
             assert self.map_par['llcrnrlon'] == 95.
 
+    # Test passing map_par as param
+    def test_map_par(self):
+        map_par = {'llcrnrlat': 1, 'llcrnrlon': 2}
+        self.map_par, self.fig_par = map_regions(self.region, map_par=map_par)
+        assert self.map_par['llcrnrlat'] == 1
+        assert self.map_par['llcrnrlon'] == 2
+
+    # Test passing fig_par as param
+    def test_fig_par(self):
+        fig_par = {'figsize': [7, 3], 'axlocs': [0.1, 0.2, .7, .9]}
+        self.map_par, self.fig_par = map_regions(self.region, fig_par=fig_par)
+        assert self.fig_par['figsize'] == [7, 3]
+        assert self.fig_par['axlocs'] == [0.1, 0.2, .7, .9]
