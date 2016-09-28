@@ -1,4 +1,4 @@
-# This is legacy code that could eventually be backported into reflexible
+# This is legacy code that could eventually be backported into reflexible again
 
 from __future__ import print_function
 
@@ -11,8 +11,12 @@ from netCDF4 import Dataset as NetCDFFile
 from PIL import Image
 
 import matplotlib as mpl
+import matplotlib.image
 import matplotlib.pyplot as plt
 from mpl_toolkits import basemap
+
+# This is just to make this legacy think that it can access those functions
+from reflexible.mapping import map_regions, draw_grid, get_FIGURE, get_base1
 
 # TODO: !!NEED TO FIX!!
 TEX = False
@@ -292,7 +296,7 @@ def get_base2(**kwargs):
     # read in jpeg image to rgba array of normalized floats.
     pilImage = Image.open('land_shallow_topo_2048.jpg')
     rgba = mpl.image.pil_to_array(pilImage)
-    rgba = rgba.astype(plt.float32) / 255.  # convert to normalized floats.
+    rgba = rgba.astype(np.float32) / 255.  # convert to normalized floats.
 
     # define lat/lon grid that image spans (projection='cyl').
     nlons = rgba.shape[1]
