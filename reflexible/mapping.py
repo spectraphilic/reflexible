@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image
 
 import matplotlib as mpl
+import matplotlib.image
 import matplotlib.pyplot as plt
 from mpl_toolkits import basemap
 
