@@ -10,9 +10,7 @@ import reflexible as rf
 # tuples locating test data, nested(True) and global(False)
 test_datasets = [('Fwd1_V10.0', False), ('Fwd1_V10.0', True)]
 
-
-def monotonically_increasing(l):
-    return all(x < y for x, y in zip(l, l[1:]))
+# TODO: finish code for plotting something related with the datasets above
 
 
 class Dataset:

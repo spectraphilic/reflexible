@@ -4,7 +4,9 @@ import os
 import reflexible as rf
 
 
-output_list = [('Fwd1_V10.0','grid_conc_20110101000000.nc'), ('Fwd1_V10.0','grid_conc_20110101000000_nest.nc')]
+output_list = [('Fwd1_V10.0','grid_conc_20110101000000.nc'),
+               ('Fwd1_V10.0','grid_conc_20110101000000_nest.nc')]
+
 
 class Dataset:
     def __init__(self, fp_name):
@@ -12,9 +14,7 @@ class Dataset:
         self.fp_filename = fp_name[1]
         self.fp_path = rf.datasets[fp_name[0]]
 
-
     def setup(self):
-
         #self.H = rf.Header(self.fp_path, absolute_path=False)
         ncfile = os.path.join(self.fp_path, self.fp_filename)
 
@@ -88,14 +88,16 @@ class TestStructure:
     def test_longitude(self):
         assert 'longitude' in self.ncid.variables
         var_attrs = self.ncid.variables['longitude'].ncattrs()
-        attr_names = ('long_name', 'axis', 'units', 'standard_name', 'description')
+        attr_names = ('long_name', 'axis', 'units', 'standard_name',
+                      'description')
         for attr in attr_names:
             assert attr in var_attrs
 
     def test_latitude(self):
         assert 'latitude' in self.ncid.variables
         var_attrs = self.ncid.variables['latitude'].ncattrs()
-        attr_names = ('long_name', 'axis', 'units', 'standard_name', 'description')
+        attr_names = ('long_name', 'axis', 'units', 'standard_name',
+                      'description')
         for attr in attr_names:
             assert attr in var_attrs
 
