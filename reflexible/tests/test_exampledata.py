@@ -22,7 +22,8 @@ class Dataset:
         return self.ncid, self.fp_path, ncfile, None
 
     def cleanup(self):
-        pass #self.tmpdir.remove(self.nc_path)
+        pass
+        #self.tmpdir.remove(self.nc_path)
 
 
 class TestStructure:
