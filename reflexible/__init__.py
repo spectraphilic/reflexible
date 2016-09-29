@@ -106,6 +106,6 @@ from . import conv2netcdf4
 from .scripts.create_ncfile import create_ncfile
 from .data_structures import (Header, Command, Release,
                               ReleasePoint, Ageclass)
-from .utils import Structure
+from .utils import Structure, CacheDict
 
 from .base_read import read_trajectories
