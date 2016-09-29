@@ -99,11 +99,13 @@ datasets = {
                                      "uio_examples/HelloWorld_V9.02/outputs"),
 }
 
+
 # Import the public functions here
 from .tests.all import test
 from . import conv2netcdf4
 from .scripts.create_ncfile import create_ncfile
 from .data_structures import (Header, Command, Release,
                               ReleasePoint, Ageclass)
+from .utils import Structure
 
 from .base_read import read_trajectories
