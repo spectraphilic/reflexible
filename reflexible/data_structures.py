@@ -374,7 +374,7 @@ class Header(object):
         self.nested = nested
         self.absolute_path = absolute_path
 
-        # check for nested or not, assumes only two nc files in 
+        # check for nested or not, assumes only two nc files in
         # output directory
         if nested:
             ncfile = [d for d in files if 'nest' in d][0]
@@ -513,10 +513,12 @@ class C(object):
             d = FD.grid_dates[pointspec]
             c = FD[(nspec, d)]
             c.slabs = get_slabs(self.Heightnn, c.data_cube)
+            c.total_column = np.squeeze(np.sum(c.data_cube, axis=2))
+            c.foot_print = c.data_cube[:,:,0]
 
         return c
 
-
+# TODO: Following John, the get_slabs function should be deprecated
 def get_slabs(Heightnn, grid):
     """Preps grid for plotting.
 
@@ -659,7 +661,7 @@ class FDC(object):
 
 
 class Command(object):
-    """ General COMMAND input for Flexpart 
+    """ General COMMAND input for Flexpart
 
     #TODO: use properties ??
     """
@@ -707,10 +709,10 @@ class Command(object):
             'MDOMAINFILL': [0,
                             '''If MDOMAINFILL is set to 1, the first box specified in file   RELEASES is used as the domain where domain-filling trajectory calculations are to be done. Particles are initialized uniformly distributed (according to the air mass distribution) in that domain at the beginning of the simulation, and are created at the boundaries throughout the simulation perio'''],
             'IND_SOURCE': [1, '''IND_SOURCE switches between different units for concentrations at  the source NOTE that in backward simulations the release of computational particles takes place at   the "receptor" and the sampling of particles at the "source".
-                1=mass units (for bwd-runs = concentration)   
+                1=mass units (for bwd-runs = concentration)
                 2=mass mixing ratio units'''],
             'IND_RECEPTOR': [1, '''IND_RECEPTOR switches between different units for concentrations at the receptor
-                          1=mas s units (concentrations) 
+                          1=mas s units (concentrations)
                           2=mas s mixing ratio units'''],
             'MQUASILAG': [0,
                           '''MQUASILAG indicates whether particles shall be numbered consecutively (1) or with their release location number (0). The first option allows tracking of individual particles using the partposit output files'''],
@@ -809,7 +811,7 @@ class Command(object):
 
 
 class Ageclass(object):
-    """ General COMMAND input for Flexpart 
+    """ General COMMAND input for Flexpart
 
     """
 

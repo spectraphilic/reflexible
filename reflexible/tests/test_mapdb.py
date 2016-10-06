@@ -59,7 +59,7 @@ class TestMapping:
 
     # Test a user-provided mapping DB
     def test_user_mapdb(self, tmpdir):
-        # Create a temporay file as the user DB
+        # Create a temporary file as the user DB
         p = tmpdir.join("userdb.yml")
         p.write(user_mapdb)
         userdb_file = str(p.realpath())

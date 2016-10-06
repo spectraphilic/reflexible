@@ -20,26 +20,14 @@ import matplotlib.image
 import matplotlib.pyplot as plt
 from mpl_toolkits import basemap
 
+from reflexible import Structure
+
 # mpl.use("Agg")
 # mp.interactive(False)
 # mpl.use('Agg')
 
 __author__ = "John F Burkhart <jfburkhart@gmail.com>"
 __version__ = "0.03"
-
-
-class Structure(dict):
-
-    def __getattr__(self, attr):
-        return self[attr]
-
-    def __setattr__(self, attr, value):
-        self[attr] = value
-
-    def set_with_dict(self, D):
-        """ set attributes with a dict """
-        for k in D.keys():
-            self.__setattr__(k, D[k])
 
 
 def map_regions(map_region='default', map_par=None, fig_par=None):
@@ -241,99 +229,6 @@ def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
                           linewidth=linewidth, color=color,
                           fontproperties=p_leg)
     return m_p, m_m
-
-
-def get_FIGURE(fig=None, ax=None, m=None, map_region=None,
-               getm=True, map_par=None, fig_par=None,
-               image=None):
-    """
-    This is a core function, used throughout this module. It is called
-    by various functions. The idea is that I create a :class:`Structure` that
-    contains the figure, ax, and m instance. I also add a field for "indices".
-    I'm not sure this all makes the most sense, but it is what I came up with
-    in order to be able to reuse figures. This saves a huge amount of time, as
-    creating then basemap instance can be time consuming.
-    This whole concept overall really needs to be reviewed!
-
-    .. note::
-        Generally you won't use this function direction.
-
-    USAGE::
-
-        > FIG = get_FIGURE()
-        or
-        > FIG = get_FIGURE(map_region='polarcat')
-
-    Returns
-       This will return the "FIG" object, which has attributes: `fig`, `ax`,
-       `m`, and `indices`. The indices are used for deleting lines, texts,
-       collections, etc. if and when we are reusing the figure instance. The
-       indices basically give us a reference to the *empty* map, so we can
-       delete lines without losing meridians or parallels for example.
-
-
-    ============      ======================================
-    keys              description
-    ============      ======================================
-    fig               a pyplot.fig instance, use
-                      plt.figure(FIG.fig.number) to make the
-                      fig active (for example to use
-                      plt.savefig('filename.png')
-    m                 The basemap instance so you can do:
-                      x,y = FIG.m(lon,lat)
-    ax                The axes
-    indices           with index for texts, images, lines,
-                      and collections
-    ============      ======================================
-
-
-
-    """
-    FIGURE = Structure()
-
-    if getm:
-        if m is None:
-            if image:
-                fig, m = get_base_image(image, map_region=map_region,
-                                        map_par=map_par,
-                                        fig_par=fig_par,
-                                        )
-            else:
-
-                fig, m = get_base1(map_region=map_region,
-                                   map_par=map_par,
-                                   fig_par=fig_par,
-                                   fig=fig,
-                                   )
-
-            FIGURE.fig = fig
-            FIGURE.m = m
-            FIGURE.ax = fig.gca()
-    elif m is None:
-        FIGURE.m = None
-    else:
-        FIGURE.m = m
-
-    if fig is None:
-        FIGURE.fig = plt.figure()
-        fig = FIGURE.fig
-    else:
-        FIGURE.fig = fig
-
-    if ax is None:
-        FIGURE.ax = fig.gca()
-        ax = FIGURE.ax
-    else:
-        FIGURE.ax = ax
-
-    FIGURE.indices = Structure()
-    FIGURE.indices.texts = len(FIGURE.ax.texts)
-    FIGURE.indices.images = len(FIGURE.ax.images)
-    FIGURE.indices.collections = len(FIGURE.ax.collections)
-    FIGURE.indices.lines = len(FIGURE.ax.lines)
-
-    print("Using figure: %s" % FIGURE.fig.number)
-    return FIGURE
 
 
 def get_base1(map_region=1,

@@ -9,7 +9,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import basemap
 
 # local imports
-from reflexible import mapping as mp
+import reflexible.mapping as mp
+from reflexible import Structure, CacheDict
+
+# Dictionary for caching the figures
+_figure_cache = CacheDict(10)
+
 
 
 def plot_at_level(H, data, level=1,
@@ -18,7 +23,7 @@ def plot_at_level(H, data, level=1,
                   map_region=5,
                   overlay=False,
                   datainfo_str=None, log=True,
-                  data_range=None, FIGURE=None,
+                  data_range=None,
                   plot_title=None,
                   units=None,
                   **kwargs):
@@ -61,16 +66,16 @@ def plot_at_level(H, data, level=1,
             plot_title = """ %s Sensitivity at %s %s: %s \n %s """ % (
                 ID, level_desc, H['alt_unit'], species, timestamp)
 
-    FIGURE = plot_sensitivity(H, data,
+    figure = plot_sensitivity(H, data,
                               data_range=data_range,
                               rel_i=rel_i, log=log,
                               map_region=map_region,
                               units=units, datainfo_str=datainfo_str,
                               overlay=overlay,
-                              FIGURE=FIGURE, **kwargs)
+                              **kwargs)
 
-    FIGURE.ax.set_title(plot_title, fontsize=10)
-    return FIGURE
+    figure.ax.set_title(plot_title, fontsize=10)
+    return figure
 
 
 def plot_totalcolumn(H, data=None,
@@ -78,7 +83,7 @@ def plot_totalcolumn(H, data=None,
                      timestamp=None,
                      map_region=5,
                      data_range=None,
-                     FIGURE=None, overlay=False,
+                     overlay=False,
                      datainfo_str=None, **kwargs):
     if 'units' in kwargs:
         units = kwargs.pop('units')
@@ -109,16 +114,88 @@ def plot_totalcolumn(H, data=None,
         plot_title = """
         %s Total Column Sensitivity: %s\n %s """ % (ID, species, timestamp)
 
-    FIGURE = plot_sensitivity(H, data,
+    figure = plot_sensitivity(H, data,
                               data_range=data_range,
                               rel_i=rel_i, map_region=map_region,
                               units=units,
                               datainfo_str=datainfo_str,
-                              FIGURE=FIGURE, overlay=overlay, **kwargs)
+                              overlay=overlay, **kwargs)
 
-    FIGURE.ax.set_title(plot_title, fontsize=10)
+    figure.ax.set_title(plot_title, fontsize=10)
 
-    return FIGURE
+    return figure
+
+
+def get_figure(fig=None, ax=None, m=None, map_region=None,
+               map_par=None, fig_par=None, image=None):
+    """Returns a matplotlib figure based on the parameters.
+
+    The idea is that I create a :class:`Structure` that contains the figure,
+    ax, and m instance. I also add a field for "indices".
+    This is so as to be able to reuse figures. This saves a huge amount of
+    time, as creating then basemap instance can be time consuming.
+
+    .. note::
+        Generally you won't use this function directly.
+
+    USAGE::
+        >>> fig = get_figure()
+        or
+        >>> fig = get_figure(map_region='polarcat')
+
+    Returns
+       This will return the "FIG" object, which has attributes: `fig`, `ax`,
+       `m`, and `indices`. The indices are used for deleting lines, texts,
+       collections, etc. if and when we are reusing the figure instance. The
+       indices basically give us a reference to the *empty* map, so we can
+       delete lines without losing meridians or parallels for example.
+
+         ============      ======================================
+         keys              description
+         ============      ======================================
+         fig               A pyplot.fig instance, use
+                           plt.figure(FIG.fig.number) to make the
+                           fig active (for example to use
+                           plt.savefig('filename.png')
+         m                 The basemap instance so you can do:
+                           x,y = FIG.m(lon,lat)
+         ax                The axes
+         indices           with index for texts, images, lines,
+                           and collections
+         ============      ======================================
+
+    """
+    figure = Structure()
+
+    if m is None:
+        if image:
+            fig, m = mp.get_base_image(image, map_region=map_region,
+                                       map_par=map_par, fig_par=fig_par)
+        else:
+            fig, m = mp.get_base1(map_region=map_region, map_par=map_par,
+                                  fig_par=fig_par, fig=fig)
+            figure.fig = fig
+            figure.m = m
+            figure.ax = fig.gca()
+    else:
+        figure.m = m
+
+    if fig is None:
+        figure.fig = plt.figure()
+        fig = figure.fig
+    else:
+        figure.fig = fig
+
+    figure.ax = ax if ax is not None else fig.gca()
+
+    figure.indices = Structure()
+    figure.indices.texts = len(figure.ax.texts)
+    figure.indices.images = len(figure.ax.images)
+    figure.indices.collections = len(figure.ax.collections)
+    figure.indices.lines = len(figure.ax.lines)
+
+    print("Using figure: %s" % figure.fig.number)
+    return figure
 
 
 def plot_sensitivity(H, data,
@@ -128,31 +205,30 @@ def plot_sensitivity(H, data,
                      plottitle=None,
                      rel_i=None,
                      map_region=None,
-                     dropm=None,
                      overlay=False,
                      transform=True,
                      log=True,
-                     FIGURE=None,
                      map_par=None,
                      fig_par=None,
                      cax_title=None,
-                     method='contourf', lsmask=False):
+                     method='contourf',
+                     lsmask=False):
     """ plot_sensitivity: core function for plotting FLEXPART output.
 
     Usage::
-        > FIG = plot_sensitivity(H,data,*kwargs)
+        FIG = plot_sensitivity(H,data,*kwargs)
 
-    This returns the FIGURE object, and plots the sensitivity from the data
+    This returns the figure object, and plots the sensitivity from the data
     contained in the "D" array.
 
     Inputs
-       H : a :class:`Header` instance for a FLEXPART run.
-       data : a 2d data array containing the sensitivity values to plot,
-         this can be extracted from a
-         grid instance (see :func:`readgridV8` and :func:`get_slabs`)
+        H : a :class:`Header` instance for a FLEXPART run.
+        data : a 2d data array containing the sensitivity values to plot,
+            this can be extracted from a grid instance
+            (see :func:`readgridV8` and :func:`get_slabs`)
 
     Returns
-      A "mapping.py" ``FIGURE`` object.
+        A "mapping.py" ``figure`` object.
 
     Arguments
 
@@ -169,24 +245,24 @@ def plot_sensitivity(H, data,
       datainfo_str          A string for labeling the scale bar.
       plottitle             Title for the plot.
       rel_i                 Release index to plot from the data array
-      map_region                A map_region specified in mapping.py
-      dropm                 Force creation of a new basemap instance
+      map_region            A map_region specified in mapping.py
       overlay               Force removal of previous figure elements.
       transform             For use with imshow method, if your data is not
                             in same coordinates as projection, try to transform
                             the data to the basemap projection.
       log                   Create a logarithmic color scale.
-      FIGURE                A FIGURE instance from mapping module get_FIGURE
-      map_par                A Structure of paramters to be passed to the
+      map_par               A Structure of parameters to be passed to the
                             basemap class when creating an instance.
+      fig_par               A Structure of parameters to be passed to the
+                            figure when creating an instance.
       method                The method to use for plotting array data. May be
-                            one of: [pcolormesh], imshow, or contourf
+                            one of: [pcolormesh], imshow, contour or contourf.
       lsmask                set to True to draw a grey landseamask [False]
       =============         ================================================
 
     .. todo::
         A lot!! There are some problems here and it is sensitive to options.
-        lsmask = True seems to only work with certain projections (POLARCAT)
+        lsmask = True seems to only work with certain projections (polarcat).
 
     .. note::
         This is the primary main function for creating plots of flexpart
@@ -199,37 +275,26 @@ def plot_sensitivity(H, data,
     """
     data = data.T
 
-    methods = ['imshow', 'pcolormesh', 'contourf', 'contour', 'None']
-    assert method in methods, "method keyword must be one of: %s" % methods
-
-    if FIGURE is None:
-        FIGURE = mp.get_FIGURE(map_region=map_region,
-                               map_par=map_par, fig_par=fig_par)
-    else:
-        if FIGURE.m is None:
-            FIGURE = mp.get_FIGURE(fig=FIGURE.fig, ax=FIGURE.ax,
-                                   map_region=map_region,
-                                   map_par=map_par, fig_par=fig_par)
+    # Look if the figure is in cache already, and if not, cache it
+    figure_key = map_region + str(map_par) + str(fig_par)
+    try:
+        figure = _figure_cache[figure_key]
+    except KeyError:
+        figure = _figure_cache[figure_key] = get_figure(
+            map_region=map_region, map_par=map_par, fig_par=fig_par)
 
     if overlay is False:
-        del FIGURE.ax.images[FIGURE.indices.images:]
-        del FIGURE.ax.collections[FIGURE.indices.collections:]
-        del FIGURE.ax.lines[FIGURE.indices.lines:]
-
-    if dropm is not None:
-        try:
-            del m
-            plt.close('all')
-        except:
-            print('could not drop m')
+        del figure.ax.images[figure.indices.images:]
+        del figure.ax.collections[figure.indices.collections:]
+        del figure.ax.lines[figure.indices.lines:]
 
     # make tick lables smaller
     mpl.rcParams['xtick.labelsize'] = 6
     mpl.rcParams['ytick.labelsize'] = 6
 
-    fig = FIGURE.fig
-    m = FIGURE.m
-    ax = FIGURE.ax
+    fig = figure.fig
+    m = figure.m
+    ax = figure.ax
 
     # make the figure current
     plt.figure(fig.number)
@@ -262,7 +327,6 @@ def plot_sensitivity(H, data,
             topodat = data
     else:
         # Check to see if a cyclic wraparound is required
-
         lons = np.arange(
             H.outlon0, H.outlon0 + (H.dxout * H.numxgrid), H.dxout)
         lats = np.arange(
@@ -290,7 +354,6 @@ def plot_sensitivity(H, data,
 
     if log:
         clevs = _gen_log_clevs(dat_min, dat_max)
-
     else:
         clevs = [i for i in
                  np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
@@ -318,17 +381,17 @@ def plot_sensitivity(H, data,
     colmap.set_over(color='k', alpha=0.8)
     # Plotting METHODS (pcolormesh now default, imshow is smoother)
     # print(topodat.max(), topodat.min(), topodat.shape)
+    # ERROR: tododat might be used uninitialized
     if method == 'imshow':
         im = m.imshow(topodat, cmap=colmap, zorder=-1,
                       norm=mpl.colors.LogNorm(vmin=clevs[0],
                                               vmax=clevs[-1]))
-
-    if method == 'pcolormesh':
+    elif method == 'pcolormesh':
         nx, ny = m(*np.meshgrid(lons, lats))
         im = m.pcolormesh(nx, ny, topodat, cmap=colmap,
                           norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                   vmax=clevs[-1]))
-    if method == 'contourf':
+    elif method == 'contourf':
         # Trying some fancier scaling
         # cnts,bins = np.histogram(topodat,bins=100)
         # topodat = np.ma.masked_where(topodat< .05* np.average((0,bins[1])),
@@ -337,12 +400,13 @@ def plot_sensitivity(H, data,
         im = m.contourf(nx, ny, topodat, cmap=colmap, levels=clevs,
                         norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                 vmax=clevs[-1]))
-
-    if method == 'contour':
+    elif method == 'contour':
         nx, ny = m(*np.meshgrid(lons, lats))
         im = m.contour(nx, ny, topodat, cmap=colmap,
                        norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                vmax=clevs[-1]))
+    else:
+        raise ValueError("`method` param '%s' is not a valid one." % method)
 
     # Get the current axes, and properties for use later
     pos = ax.get_position()
@@ -353,8 +417,8 @@ def plot_sensitivity(H, data,
     # changes here... no more 'ghost' axes
     # does a colorbar already exist?
     try:
-        cb = FIGURE.cb
-        cax = FIGURE.cax
+        cb = figure.cb
+        cax = figure.cax
         cb.update_normal(im)
     except:
         # make a copy of the image object, change
@@ -372,8 +436,8 @@ def plot_sensitivity(H, data,
         # too compressed at the low end on the colorbar - results
         # from highly nonuniform colormap)
         cb = fig.colorbar(im, cax=cax)
-        FIGURE.cax = cax
-        FIGURE.cb = cb
+        figure.cax = cax
+        figure.cb = cb
     # cb.update_normal(im2)
 
     # set colorbar label and ticks
@@ -406,8 +470,8 @@ def plot_sensitivity(H, data,
     # need to figure out how to resolve the indexing
     # of what texts, collections, etc to delete, when iterating.
     try:
-        del ax.texts[FIGURE.indices.texts:]
-        del ax.artists[FIGURE.indices.artists:]
+        del ax.texts[figure.indices.texts:]
+        del ax.artists[figure.indices.artists:]
     except:
         pass
     if datainfo_str:
@@ -421,24 +485,25 @@ def plot_sensitivity(H, data,
                            )
                  )
 
-    FIGURE.ax = ax
-    FIGURE.m = m
-    FIGURE.fig = fig
+    figure.ax = ax
+    figure.m = m
+    figure.fig = fig
 
     if plottitle is not None:
-        FIGURE.ax.set_title(plottitle, fontsize=10)
+        figure.ax.set_title(plottitle, fontsize=10)
 
-    return FIGURE
+    return figure
 
 
-def plot_trajectory(H, T, rel_i, FIGURE=None,
+def plot_trajectory(H, T, rel_i,
                     map_region=None,
                     overlay=True,
                     draw_circles=True,
                     draw_labels=True, days_back=20,
                     cbar2=True,
                     cbar2_title=None,
-                    map_par=None):
+                    map_par=None,
+                    fig_par=None):
     """Plot the center trajectory of the plume on the map
 
     Usage::
@@ -451,7 +516,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
 
 
     Returns
-      A :mod:`mapping` "FIGURE" object.
+      A :mod:`mapping` "figure" object.
 
     Arguments
 
@@ -461,7 +526,6 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
       keyword               Description [default]
       =============         =============================================
       rel_i                 **required** release index
-      FIGURE                A "FIGURE" object[None] (see mapping.py)
       overlay               [True] will overlay the trajectory
                             on top of another map instance.
       draw_circles          [True] will mark the trajectory with
@@ -471,9 +535,11 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
       days_back             For how many days back should the labels be
                             shown? [20]
       cbar2                 [True] draws the scale bar as a second axis.
-      cbar2_title            Optional argument to overide the cbar title.
-      map_par                A Structure of mapping parameters to pass
+      cbar2_title           Optional argument to overide the cbar title.
+      map_par               A Structure of mapping parameters to pass
                             to the basemap instance if desired.
+      fig_par               A Structure of parameters to be passed to the
+                            figure when creating an instance.
       =============         =============================================
 
     .. todo::
@@ -488,13 +554,18 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     if H:
         pass
 
-    # Set up the FIGURE
-    if FIGURE is None:
-        FIGURE = mp.get_FIGURE(map_region=map_region, map_par=map_par)
-    # #Get fig info and make active
-    fig = FIGURE.fig
-    m = FIGURE.m
-    ax = FIGURE.fig.axes[0]
+    # Set up the figure
+    figure_key = map_region + str(map_par) + str(fig_par)
+    try:
+        figure = _figure_cache[figure_key]
+    except KeyError:
+        figure = _figure_cache[figure_key] = get_figure(
+            map_region=map_region, map_par=map_par, fig_par=fig_par)
+
+    # Get fig info and make active
+    fig = figure.fig
+    m = figure.m
+    ax = figure.fig.axes[0]
     plt.figure(fig.number)
     plt.axes(ax)
 
@@ -502,7 +573,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     trjs = T['Trajectories']
     rel = rel_i + 1  # account for zero indexing
 
-    # #extract only releases of interest
+    # extract only releases of interest
     t = trjs[np.where(trjs[:, 0] == rel), :][0]
 
     # Get the data for the days_back we're interested in
@@ -513,11 +584,11 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
     marker = 'o'
 
     # clear the previous track
-    if 'circles' in FIGURE.keys():
-        del FIGURE['circles']
+    if 'circles' in figure.keys():
+        del figure['circles']
     if overlay is False:
-        del ax.collections[FIGURE.indices.collections:]
-        del ax.texts[FIGURE.indices.texts:]
+        del ax.collections[figure.indices.collections:]
+        del ax.texts[figure.indices.texts:]
 
     # plot the track
     cx, cy = m(lon, lat)
@@ -528,7 +599,7 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                             zorder=10, alpha=0.85)
 
         try:
-            FIGURE.circles = circles
+            figure.circles = circles
         except:
             pass
         # make the figure active again
@@ -542,8 +613,8 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
         l, b, w, h = pos.bounds
         if cbar2:
             try:
-                cb2 = FIGURE.cb2
-                cax2 = FIGURE.cax2
+                cb2 = figure.cb2
+                cax2 = figure.cax2
                 cb2.update_normal(circles)
             except:
                 cax2 = plt.axes([l + w + 0.03, b, 0.02, h])
@@ -551,8 +622,8 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                 # too compressed at the low end on the colorbar - results
                 # from highly nonuniform colormap)
                 cb2 = fig.colorbar(circles, cax=cax2)  # draw colorbar
-                FIGURE.cax2 = cax2
-                FIGURE.cb2 = cb2
+                figure.cax2 = cax2
+                figure.cb2 = cb2
         # check if a colorbar legend exists (this will cause
         # problems for subplot routines!)
         else:
@@ -591,15 +662,15 @@ def plot_trajectory(H, T, rel_i, FIGURE=None,
                             bbox=dict(facecolor='green', alpha=0.5)
                             )
 
-    FIGURE.fig = fig
-    FIGURE.m = m
-    FIGURE.ax = ax
+    figure.fig = fig
+    figure.m = m
+    figure.ax = ax
     if draw_circles:
         # ERROR: cax2 can be uninitialized here
-        FIGURE.cax2 = cax2
+        figure.cax2 = cax2
         # ERROR: cb2 can be uninitialized here
-        FIGURE.cb2 = cb2
-    return FIGURE
+        figure.cb2 = cb2
+    return figure
 
 
 def _gen_daylabels(P, H=None, dt=None):
