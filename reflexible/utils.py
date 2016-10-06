@@ -31,6 +31,7 @@ class CacheDict(dict):
         if len(self) > self.maxentries:
             # Remove a 10% of (arbitrary) elements from the cache
             entries_to_remove = self.maxentries // 10
+            entries_to_remove += 1  # to avoid removing no entries
             for k in self.keys()[:entries_to_remove]:
                 super(CacheDict, self).__delitem__(k)
         super(CacheDict, self).__setitem__(key, value)
