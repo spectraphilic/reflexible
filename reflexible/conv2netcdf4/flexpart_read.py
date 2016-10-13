@@ -706,7 +706,7 @@ def _get_header_version(bf):
     version = bf.read('13S').decode()
     # Somewhere in version 9.2 beta, the version length changed to 29
     # However, one *must* check which is the final size for this
-    if '9.2 b' in version:
+    if '9.2 b' in version or '10' in version:
          bf.seek(12)
          version = bf.read('29S').decode()
     bf.seek(ret)

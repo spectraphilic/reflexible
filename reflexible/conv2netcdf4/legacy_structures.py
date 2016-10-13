@@ -261,7 +261,7 @@ class Header(Structure):
             h = reflexible.conv2netcdf4.read_header(path, **readheader_ops)
             self.set_with_dict(h)
             self.lonlat()
-            self.version = 'V8'
+            self.version = 'V8'  # TODO: update to newer versions
         except:
             traceback.print_exc()
             raise IOError('''
