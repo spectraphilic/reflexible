@@ -51,7 +51,7 @@ class TestHeader:
         assert self.H.direction in ['forward', 'backward']
 
     def test_nspec(self):
-        assert self.H.nspec == self.H.nc.dims['numspec'] 
+        assert self.H.nspec == self.H.nc.dims['numspec']
 
     def test_species(self):
         """This test needs better consideration."""
@@ -63,7 +63,7 @@ class TestHeader:
             assert getattr(self.H, attr) == self.H.nc.dims[attr]
 
     def test_grid_dimensions(self):
-        grid_dims = (('numxgrid', 'longitude'), 
+        grid_dims = (('numxgrid', 'longitude'),
             ('numygrid', 'latitude'), ('numzgrid', 'height'))
         for hdim, ncdim in grid_dims:
             assert getattr(self.H, hdim) == self.H.nc.dims[ncdim]
