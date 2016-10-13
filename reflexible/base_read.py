@@ -38,6 +38,7 @@ import datetime as dt
 # Dependencies:
 # Numpy
 import numpy as np
+import pandas as pd
 
 from .data_structures import Trajectory
 
@@ -186,22 +187,136 @@ def read_trajectories(H, trajfile='trajectories.txt', ncluster=5,
         ncluster * ['xcluster', 'ycluster', 'zcluster', 'fcluster',
                     'rmscluster']
     RelTraj['info'] = \
-        """
-        Returns a dictionary:
-            R['Trajectories'] = array_of_floats(
-                releasenum,it1,xi,yi,zi,topoi,hmixi,tropoi,pvi,
-                rmsdisti,rmsi,zrmsdisti,zrmsi,hfri,pvfri,trfri,
-                (xclusti(k),yclusti(k),zclusti(k),fclusti(k),rmsclusti(k),k=1,5))
+    """
+    Returns a dictionary:
+        R['Trajectories'] = array_of_floats(
+            releasenum,it1,xi,yi,zi,topoi,hmixi,tropoi,pvi,
+            rmsdisti,rmsi,zrmsdisti,zrmsi,hfri,pvfri,trfri,
+            (xclusti(k),yclusti(k),zclusti(k),fclusti(k),rmsclusti(k),k=1,5))
 
-            R['RELEASE_ID'] = (dt_i1,dt_i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
-            R['info'] = this message
+        R['RELEASE_ID'] = (dt_i1,dt_i2,xp1,yp1,xp2,yp2,zp1,zp2,k,npart)
+        R['info'] = this message
 
-        To plot a trajectory timeseries:
-            RT = read_trajectories(H)
-            T = RT['Trajectories']
-            rel = 1
-            t = T[np.where(T[:,0]==rel),:][0]
-            plt.plot(t[:,1],t[:,14])
-            plt.savefig('trajectories.png')
-        """
+    To plot a trajectory timeseries:
+        RT = read_trajectories(H)
+        T = RT['Trajectories']
+        rel = 1
+        t = T[np.where(T[:,0]==rel),:][0]
+        plt.plot(t[:,1],t[:,14])
+        plt.savefig('trajectories.png')
+    """
     return RelTraj
+
+
+
+
+def read_partpositions(filename, nspec, xlon0, ylat0, dx, dy, dataframe=False, header=None):
+    """Read the particle positions in filename.
+
+    Parameters
+    ----------
+    filename : string
+      the file name of the particle raw files
+    nspec : int
+      number of species
+    xlon0 : float
+      the longitude
+    xlat0 : float
+      the latitude
+    dx : float
+      the cell size (x)
+    dy : float
+      the cell size (u)
+    dataframe : bool
+      Return a pandas DataFrame
+
+    Returns
+    -------
+    structured_numpy_array OR pandas DataFrame
+    """
+    CHUNKSIZE = 50 * 1000
+
+
+    xmass_dtype = [('xmass_%d' % (i+1), 'f4') for i in range(nspec)]
+    #note age is calculated from itramem by adding itimein
+    out_fields = [
+        ('npoint', 'i4'), ('xtra1', 'f4'), ('ytra1', 'f4'), ('ztra1', 'f4'),
+        ('itramem', 'i4'), ('topo', 'f4'), ('pvi', 'f4'), ('qvi', 'f4'),
+        ('rhoi', 'f4'), ('hmixi', 'f4'), ('tri', 'f4'), ('tti', 'f4')] + xmass_dtype
+    raw_fields = [('begin_recsize', 'i4')] + out_fields + [('end_recsize', 'i4')]
+    rectype = np.dtype(out_fields)
+    raw_rectype = np.dtype(raw_fields)
+    recsize = raw_rectype.itemsize
+
+    out = np.empty(CHUNKSIZE, dtype=rectype)
+    chunk = np.empty(CHUNKSIZE, dtype=raw_rectype)
+    chunk.flags.writeable = True
+
+    numparticlecount = 0
+    with open(filename, "rb", buffering=1) as f:
+        # The timein value is at the beginning of the file
+        reclen = np.ndarray(shape=1, buffer=f.read(4), dtype="i4")[0]
+        assert reclen == 4
+        itimein = np.ndarray(shape=1, buffer=f.read(4), dtype="i4")
+        reclen = np.ndarray(shape=1, buffer=f.read(4), dtype="i4")[0]
+        assert reclen == 4
+        i = 0
+        while True:
+            # Try to read a complete chunk
+            data = f.read(CHUNKSIZE * recsize)
+            read_records = int(len(data) / recsize)  # the actual number of records read
+            chunk = chunk[:read_records]
+            chunk.data[:] = data
+            # Recompute xtra1 and ytra1 fields for the recently added chunk
+            #chunk['xtra1'][:] = (chunk['xtra1'] - xlon0) / dx
+            #chunk['ytra1'][:] = (chunk['ytra1'] - ylat0) / dy
+            #chunk['age'][:] = (chunk['itramem'] + itimein)
+            # Add the chunk to the out array
+            out[i:i+read_records] = chunk
+            i += read_records
+            if read_records < CHUNKSIZE:
+                # We reached the end of the file
+                break
+            else:
+                # Enlarge out by CHUNKSIZE more elements
+                out = np.resize(out, out.size + CHUNKSIZE)
+
+        # Truncate at the max length (last row is always a sentinel, so remove it)
+        out = np.resize(out, i - 1)
+
+    if dataframe:
+        df = pd.DataFrame(out)
+        #df['age'] = df['itramem'] + itimein
+        df['age'] = (df['itramem'] - (df['npoint']-1) * 10800) + itimein
+        if header:
+            month = header.releasetimes[0].month
+            df['month'] = pd.Series(len(df) * [month])
+        return df
+    return out
+
+def read_shortpositions(filename, nspec, xlon0, ylat0, dx, dy, dataframe=False, header=None):
+    """Read the particle positions in filename.
+
+    Parameters
+    ----------
+    filename : string
+      the file name of the particle raw files
+    nspec : int
+      number of species
+    xlon0 : float
+      the longitude
+    xlat0 : float
+      the latitude
+    dx : float
+      the cell size (x)
+    dy : float
+      the cell size (u)
+    dataframe : bool
+      Return a pandas DataFrame
+
+    Returns
+    -------
+    structured_numpy_array OR pandas DataFrame
+    """
+    #TODO: read_shortposit see partoutput_short.f90
+    pass

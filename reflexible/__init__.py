@@ -108,4 +108,4 @@ from .data_structures import (Header, Command, Release,
                               ReleasePoint, Ageclass)
 from .utils import Structure, CacheDict
 
-from .base_read import read_trajectories
+from .base_read import read_trajectories, read_partpositions
