@@ -1,0 +1,14 @@
+To run this test, just execute FLEXPART in the current directory. 
+Contains the options directory from relese 10.dev
+The pathfile was modified
+The feature tested are the new SPECIES file.
+
+To run the test at NILU type
+
+mkdir output.mpi
+ln -s ../../src/FP_ecmwf_gfortran .
+./FP_ecmwf_gfortran
+
+
+
+

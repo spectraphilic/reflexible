@@ -1,0 +1,20 @@
+&RELEASES_CTRL
+ NSPEC=        1,
+ SPECNUM_REL= 15,
+ /
+&RELEASE
+ IDATE1=  20050501,
+ ITIME1=  000000,
+ IDATE2=  20050502,
+ ITIME2=  000000,
+ LON1=    10.5,
+ LON2=    11.0,
+ LAT1=    59.75,
+ LAT2=    60.25,
+ Z1=      0.0,
+ Z2=      100.0,
+ ZKIND=   1,
+ MASS=    1,
+ PARTS=   10000,
+ COMMENT= "OsloRelease"
+ /

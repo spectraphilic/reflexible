@@ -1,0 +1,26 @@
+ # ibdate,ibtime, iedate, ietime, flexversion
+    20050501           0    20050510           0 Ver. 10 Beta MPI (2015-05-01)
+ # interval, averaging time, sampling time
+       86400       86400        3600
+ # information on grid setup    
+ #outlon0,outlat0,numxgrid,numygrid,dxout,dyout
+  -179.000000      -90.0000000             360         180   1.00000000       1.00000000    
+ # numzgrid, outheight(.) 
+           3   100.000000       3000.00000       50000.0000    
+ # jjjjmmdd,ihmmss
+    20050501           0
+ # information on species
+ # 3*nspec,maxpointspec_act
+           3           1
+ # for nspec:
+ # 1, WD_ 
+ # 1, DD_ 
+ # numzgrid,species
+           1 WD_I-131  
+           1 DD_I-131  
+           3 I-131     
+ # information on model switches
+ # method,lsubgrid,lconvection, ind_source,ind_receptor
+           0           1           1           1           1
+ # information on age class     
+           1     1728000
