@@ -56,14 +56,12 @@ def read_releases(path):
     return {"release_point_names": np.array(rpnames, dtype="S45")}
 
 
-def read_species(fddir, species_dir, nspec):
+def read_species(options_dir, nspec):
     """Read metadata from SPECIES dir and return it as a dict.
 
     TODO: maybe the current version is specific of FLEXPART 9.
     """
-    if species_dir is None:
-        # Try in the options/ directory before giving up
-        species_dir = os.path.join(os.path.dirname(fddir), "options/SPECIES")
+    species_dir = os.path.join(options_dir, "SPECIES")
     if not os.path.isdir(species_dir):
         warnings.warn(
             "The SPECIES dir cannot be found.  Continuing without it!")
@@ -564,8 +562,7 @@ def write_variables(H, ncid, wetdep, drydep, write_releases, releases):
 def read_conffiles(filename, fddir, path):
     """Read FLEXPART config files and return a dictionary of metadata."""
     if path is None:
-        # Try in the options/ directory before giving up
-        path = os.path.join(os.path.dirname(fddir), "options/%s" % filename)
+        path = os.path.join(fddir, filename)
     if not os.path.isfile(path):
         warnings.warn(
             "The %s file cannot be found.  Continuing without it!" % filename)
@@ -582,16 +579,16 @@ def read_conffiles(filename, fddir, path):
     return {}
 
 
-def create_ncfile(fddir, nested, wetdep=False, drydep=False,
+def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
                   command_path=None, releases_path=None,
-                  species_dir=None, write_releases=True,
-                  dirout=None, outfile=None):
+                  write_releases=True,
+                  dirout=None):
     """Main function that create a netCDF4 file from a FLEXPART output.
 
     Parameters
     ----------
-    fddir : string
-      the directory where the FLEXDATA output files are stored.
+    pathnames : string
+      the file where the FLEXDATA <options> and <output> are specified.
     nested : bool
       use a nested output.
     wetdep : bool
@@ -602,48 +599,48 @@ def create_ncfile(fddir, nested, wetdep=False, drydep=False,
       path for the associated COMMAND file.
     releases_path : string
       path for the associated RELEASES file.
-    species_dir : string
-      path for the associated SPECIES dir.
     write_releases : string
       whether output of release point information.
     dirout : string
       the dir where the netCDF4 file will be created.
-    outfile : string
-      the complete path of the output file (overrides the ``dirout`` argument)
 
     Return
     ------
     string
       the full path of the netCDF4 file to be created.
     """
-    if fddir.endswith('/'):
-        # Remove the trailing '/'
-        fddir = fddir[:-1]
 
-    H = Header(fddir, nested=nested)
+    def get_dir(dir, parent_dir):
+        if dir.startswith('./'):
+            dir = os.path.join(parent_dir, dir)
+        return dir
+
+    if not os.path.isfile(pathnames):
+        raise IOError("pathnames file is not found at '{}'".format(pathnames))
+    # Get the <options> and <output> directories
+    with open(pathnames) as f:
+        options_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
+        output_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
+    H = Header(output_dir, nested=nested)
 
     if H.direction == "forward":
         fprefix = 'grid_conc_'
     else:
         fprefix = 'grid_time_'
 
-    command = read_conffiles("COMMAND", fddir, command_path)
-    releases = read_conffiles("RELEASES", fddir, releases_path)
-    species = read_species(fddir, species_dir, H.nspec)
+    command = read_conffiles("COMMAND", options_dir, command_path)
+    releases = read_conffiles("RELEASES", options_dir, releases_path)
+    species = read_species(options_dir, H.nspec)
 
-    if outfile:
-        # outfile has priority over previous flags
-        ncfname = outfile
+    if dirout is None:
+        path = os.path.dirname(output_dir)
+        fprefix = os.path.join(path, fprefix)
     else:
-        if dirout is None:
-            path = os.path.dirname(fddir)
-            fprefix = os.path.join(path, fprefix)
-        else:
-            fprefix = os.path.join(dirout, fprefix)
-        if H.nested:
-            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
-        else:
-            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
+        fprefix = os.path.join(dirout, fprefix)
+    if H.nested:
+        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
+    else:
+        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
 
     cache_size = 16 * H.numxgrid * H.numygrid * H.numzgrid
 
@@ -679,36 +676,22 @@ def main():
         )
     parser.add_argument(
         "-d", "--dirout",
-        help=("The dir where the netCDF4 file will be created."
-              "If not specified, then the fddir/.. is used.")
-        )
-    parser.add_argument(
-        "-o", "--outfile",
-        help=("The complete path for the output file."
-              "This overrides the --dirout flag.")
+        help=("The dir where the netCDF4 file will be created.  "
+              "If not specified, then the <output> dir is used.")
         )
     parser.add_argument(
         "-C", "--command-path",
-        help=("The path for the associated COMMAND file."
-              "If not specified, then the fddir/../options/COMMAND is used.")
+        help=("The path for the associated COMMAND file.  "
+              "If not specified, then the <options>/COMMAND is used.")
         )
     parser.add_argument(
         "-R", "--releases-path",
-        help=("The path for the associated RELEASES file."
-              "If not specified, then the fddir/../options/RELEASES is used.")
-        )
-    parser.add_argument(
-        "-S", "--species-dir",
-        help=("The path for the associated SPECIES dir."
-              "If not specified, then the fddir/../options/SPECIES is used.")
+        help=("The path for the associated RELEASES file.  "
+              "If not specified, then the <options>/RELEASES is used.")
         )
     parser.add_argument(
         "-r", "--dont-write-releases", action="store_true",
         help=("Don't write release point information.")
-        )
-    parser.add_argument(
-        "fddir", nargs="?",
-        help="The directory where the FLEXDATA output files are."
         )
     parser.add_argument(
         "--min-size", dest="min_size", action="store_true",
@@ -719,22 +702,25 @@ def main():
         "--complevel", type=int, default=9,
         help="Compression level for the netCDF4 file."
         )
+    parser.add_argument(
+        "pathnames", nargs="?",
+        help="The Flexpart pathnames file stating where options and output are."
+        )
 
     args = parser.parse_args()
 
     MIN_SIZE = args.min_size
     COMPLEVEL = args.complevel
 
-    if args.fddir is None:
-        # At least the FLEXDATA output dir is needed
+    if args.pathnames is None:
+        # The FLEXDATA pathnames file is mandatory
         parser.print_help()
         sys.exit(1)
 
-    ncfname = create_ncfile(args.fddir, args.nested, args.wetdep, args.drydep,
-                            args.command_path, args.releases_path,
-                            args.species_dir,
+    ncfname = create_ncfile(args.pathnames, args.nested, args.wetdep,
+                            args.drydep, args.command_path, args.releases_path,
                             not args.dont_write_releases,
-                            args.dirout, args.outfile)
+                            args.dirout)
     print("New netCDF4 file is available in: '%s'" % ncfname)
 
 

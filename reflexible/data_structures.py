@@ -11,8 +11,6 @@ import glob
 
 from math import (pi, cos, sqrt)
 import numpy as np
-import pandas as pd
-import netCDF4 as nc
 import xarray as xr
 
 import reflexible
@@ -182,7 +180,7 @@ class Header(object):
         for i in range(self.nspec):
             if self.iout in (1, 3, 5):
                 varname = "spec%03d_mr" % (i + 1)
-            if self.iout in (2,):  # XXX what to do with 3?
+            elif self.iout in (2,):  # XXX what to do with 3?
                 varname = "spec%03d_pptv" % (i + 1)
             ncvar = self.nc.variables[varname]
             l.append(ncvar.attrs['long_name'])
@@ -192,7 +190,7 @@ class Header(object):
     def output_unit(self):
         if self.iout in (1, 3, 5):
             varname = "spec001_mr"
-        if self.iout in (2,):  # XXX what to do with 3?
+        elif self.iout in (2,):  # XXX what to do with 3?
             varname = "spec001_pptv"
         ncvar = self.nc.variables[varname]
         return ncvar.attrs['units']
