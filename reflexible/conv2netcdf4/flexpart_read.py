@@ -15,17 +15,37 @@ from .helpers import closest
 
 def read_command(path, headerrows=7):
     with open(path, 'r') as comfile:
-        for i in range(headerrows):
+        if "&COMMAND" in comfile.readline():
+            return read_command_v10(path, 1)
+        for i in range(headerrows - 1):
             comfile.readline()
         signature = comfile.readline().strip()
         if signature[:5] == "1. __":
-            command = read_command_new(path, headerrows)
+            return read_command_v9(path, headerrows)
         else:
-            command = read_command_old(path, headerrows)
-    return command
+            return read_command_old(path, headerrows)
 
 
-def read_command_new(path, headerrows):
+def read_command_v10(path, headerrows):
+    lines = open(path, 'r').readlines()
+    command_vals = [i.strip() for i in lines[headerrows:]]  # clean line ends
+    commands = {}
+    for command in command_vals:
+        if '=' not in command:
+            break  # this is the end of commands
+        key, val = command.split("=")
+        val = val[:-1]   # get rid of the trailing ,
+        try:
+            commands[key] = int(val)
+        except ValueError:
+            try:
+                commands[key] = float(val)
+            except ValueError:
+                commands[key] = val
+    return commands
+
+
+def read_command_v9(path, headerrows):
     """Quick and dirty approach for reading COMMAND file for FP V9"""
     COMMAND_KEYS = (
         'SIM_DIR',

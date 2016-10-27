@@ -199,16 +199,17 @@ def write_metadata(H, command, ncid):
 
     # additional COMMAND settings
     if len(command) > 0:
-        ncid.itsplit = command['T_PARTSPLIT']
+        ncid.itsplit = command['ITSPLIT'] if 'ITSPLIT' in command else command['T_PARTSPLIT']
         ncid.linit_cond = command['LINIT_COND']
-        ncid.lsynctime = command['SYNC']
+        ncid.lsynctime = command['LSYNCTIME'] if 'LSYNCTIME' in command else command['SYNC']
         ncid.ctl = command['CTL']
         ncid.ifine = command['IFINE']
         ncid.iout = command['IOUT']
         ncid.ipout = command['IPOUT']
         ncid.lagespectra = command['LAGESPECTRA']
         ncid.ipin = command['IPIN']
-        ncid.ioutputforeachrelease = command['OUTPUTFOREACHRELEASE']
+        ncid.ioutputforeachrelease = command['IOUTPUTFOREACHRELEASE'] \
+            if 'IOUTPUTFOREACHRELEASE' in command else command['OUTPUTFOREACHRELEASE']
         ncid.iflux = command['IFLUX']
         ncid.mdomainfill = command['MDOMAINFILL']
         ncid.mquasilag = command['MQUASILAG']
