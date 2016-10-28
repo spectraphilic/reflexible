@@ -1,3 +1,4 @@
+import os
 import pytest
 import numpy as np
 
@@ -18,8 +19,10 @@ class Dataset:
     def setup(self, tmpdir, nested=False, wetdep=True, drydep=True):
         self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
-        rf.create_ncfile(self.fp_path, nested, wetdep, drydep, outfile=self.nc_path)
-        self.oldH = OldHeader(self.fp_path, nested=False)
+        pathnames = os.path.join(self.fp_path, "pathnames")
+        nc_path, options_dir, output_dir = rf.create_ncfile(
+            pathnames, nested, wetdep, drydep, outfile=self.nc_path)
+        self.oldH = OldHeader(output_dir, nested=False)
         self.oldH.fill_backward(nspec=(0,))
         self.wetdep = wetdep
         self.drydep = drydep

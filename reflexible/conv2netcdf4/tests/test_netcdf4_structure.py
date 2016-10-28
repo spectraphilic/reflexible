@@ -16,9 +16,10 @@ class Dataset:
     def setup(self, tmpdir, nested=False, wetdep=True, drydep=True):
         self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
-        rf.create_ncfile(self.fp_path, nested, wetdep, drydep, outfile=self.nc_path)
+        nc_path, options_dir, output_dir = rf.create_ncfile(
+            self.fp_path, nested, wetdep, drydep, outfile=self.nc_path)
         self.ncid = nc.Dataset(self.nc_path, 'r')
-        self.H = Header(self.fp_path, nested=False)
+        self.H = Header(output_dir, nested=False)
         self.wetdep = wetdep
         self.drydep = drydep
         return self.ncid, self.fp_path, self.nc_path, self.H

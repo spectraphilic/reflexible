@@ -90,14 +90,12 @@ def print_versions():
 # Some data sources (for testing purposes mainly)
 datasets = {
     'Fwd1_V10.0': os.path.join(this_dir, "uio_examples/Fwd1_V10.0"),
-    'Fwd1_V10.1': os.path.join(this_dir, "uio_examples/Fwd1_V10.1/output.mpi"),
-    'Bwd1_V9.02': os.path.join(this_dir, "uio_examples/Bwd1_V9.02/outputs"),
-    'Bwd2_V9.2beta': os.path.join(this_dir,
-                                  "uio_examples/Bwd2_V9.2beta/outputs"),
-    'Fwd1_V9.02': os.path.join(this_dir, "uio_examples/Fwd1_V9.02/outputs"),
-    'Fwd2_V9.02': os.path.join(this_dir, "uio_examples/Fwd2_V9.02/outputs"),
-    'HelloWorld_V9.02': os.path.join(this_dir,
-                                     "uio_examples/HelloWorld_V9.02/outputs"),
+    'Fwd1_V10.1': os.path.join(this_dir, "uio_examples/Fwd1_V10.1"),
+    'Bwd1_V9.02': os.path.join(this_dir, "uio_examples/Bwd1_V9.02"),
+    'Bwd2_V9.2beta': os.path.join(this_dir, "uio_examples/Bwd2_V9.2beta"),
+    'Fwd1_V9.02': os.path.join(this_dir, "uio_examples/Fwd1_V9.02"),
+    'Fwd2_V9.02': os.path.join(this_dir, "uio_examples/Fwd2_V9.02"),
+    'HelloWorld_V9.02': os.path.join(this_dir, "uio_examples/HelloWorld_V9.02"),
 }
 
 

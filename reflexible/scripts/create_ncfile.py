@@ -583,7 +583,7 @@ def read_conffiles(filename, fddir, path):
 def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
                   command_path=None, releases_path=None,
                   write_releases=True,
-                  dirout=None):
+                  dirout=None, outfile=None):
     """Main function that create a netCDF4 file from a FLEXPART output.
 
     Parameters
@@ -604,11 +604,13 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
       whether output of release point information.
     dirout : string
       the dir where the netCDF4 file will be created.
+    outfile : string
+      the complete path of the output file (overrides the ``dirout`` argument)
 
     Return
     ------
-    string
-      the full path of the netCDF4 file to be created.
+    tuple
+      (the path of the netCDF4 file, the options dir, the output dir).
     """
 
     def get_dir(dir, parent_dir):
@@ -633,15 +635,19 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
     releases = read_conffiles("RELEASES", options_dir, releases_path)
     species = read_species(options_dir, H.nspec)
 
-    if dirout is None:
-        path = os.path.dirname(output_dir)
-        fprefix = os.path.join(path, fprefix)
+    if outfile:
+        # outfile has priority over previous flags
+        ncfname = outfile
     else:
-        fprefix = os.path.join(dirout, fprefix)
-    if H.nested:
-        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
-    else:
-        ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
+        if dirout is None:
+            path = os.path.dirname(output_dir)
+            fprefix = os.path.join(path, fprefix)
+        else:
+            fprefix = os.path.join(dirout, fprefix)
+        if H.nested:
+            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + "_nest.nc"
+        else:
+            ncfname = fprefix + "%s%s" % (H.ibdate, H.ibtime) + ".nc"
 
     cache_size = 16 * H.numxgrid * H.numygrid * H.numzgrid
 
@@ -651,7 +657,7 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
     write_header(H, ncid, wetdep, drydep, write_releases, species)
     write_variables(H, ncid, wetdep, drydep, write_releases, releases)
     ncid.close()
-    return ncfname
+    return (ncfname, options_dir, output_dir)
 
 
 def main():
@@ -680,6 +686,10 @@ def main():
         help=("The dir where the netCDF4 file will be created.  "
               "If not specified, then the <output> dir is used.")
         )
+    parser.add_argument(
+        "-o", "--outfile",
+        help=("The complete path for the output file."
+              "This overrides the --dirout flag."))
     parser.add_argument(
         "-C", "--command-path",
         help=("The path for the associated COMMAND file.  "
@@ -718,12 +728,12 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    ncfname = create_ncfile(args.pathnames, args.nested, args.wetdep,
-                            args.drydep, args.command_path, args.releases_path,
-                            not args.dont_write_releases,
-                            args.dirout)
-    print("New netCDF4 file is available in: '%s'" % ncfname)
+    ncfname, options_dir, output_dir = create_ncfile(
+        args.pathnames, args.nested, args.wetdep, args.drydep,
+        args.command_path, args.releases_path, not args.dont_write_releases,
+        args.dirout, args.outfileN)
 
+    print("New netCDF4 file is available in: '%s'" % ncfname)
 
 if __name__ == '__main__':
     main()
