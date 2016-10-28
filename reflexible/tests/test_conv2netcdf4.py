@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 
 import reflexible as rf
-from reflexible.conv2netcdf4 import Header as OldHeader
+import reflexible.conv2netcdf4 as conv
 
 """Tests to check conversion from prior FP format into netcdf."""
 
@@ -15,14 +15,15 @@ class Dataset:
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
+        self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
+        self.fp_options, self.fp_output = conv.get_fpdirs(self.fp_pathnames)
 
     def setup(self, tmpdir, nested=False, wetdep=True, drydep=True):
         self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
-        pathnames = os.path.join(self.fp_path, "pathnames")
         nc_path, options_dir, output_dir = rf.create_ncfile(
-            pathnames, nested, wetdep, drydep, outfile=self.nc_path)
-        self.oldH = OldHeader(output_dir, nested=False)
+            self.fp_pathnames, nested, wetdep, drydep, outfile=self.nc_path)
+        self.oldH = conv.Header(output_dir, nested=False)
         self.oldH.fill_backward(nspec=(0,))
         self.wetdep = wetdep
         self.drydep = drydep

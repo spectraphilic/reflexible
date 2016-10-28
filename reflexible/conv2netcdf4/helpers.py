@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import os
 import datetime
 
 import numpy as np
@@ -10,6 +11,25 @@ import matplotlib.image as image
 # Matplotlib
 from matplotlib.dates import date2num
 
+
+def get_fpdirs(pathnames):
+    """Return the <options> and <output> dirs from a `pathnames` file."""
+    def get_dir(dir, parent_dir):
+        if dir.startswith('/'):
+            # Absolute path.  Just keep the last level and append to parent.
+            dir = dir[:-1] if dir.endswith('/') else dir
+            dir = os.path.join(parent_dir, os.path.basename(dir))
+        else:
+            dir = os.path.join(parent_dir, dir)
+        return dir
+
+    if not os.path.isfile(pathnames):
+        raise IOError("pathnames file is not found at '{}'".format(pathnames))
+    # Get the <options> and <output> directories
+    with open(pathnames) as f:
+        options_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
+        output_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
+    return options_dir, output_dir
 
 
 def data_range(data, min='median'):

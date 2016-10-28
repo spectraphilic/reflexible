@@ -27,7 +27,7 @@ from collections import defaultdict
 import netCDF4 as nc
 import numpy as np
 
-from reflexible.conv2netcdf4 import Header, read_command
+from reflexible.conv2netcdf4 import Header, read_command, get_fpdirs
 
 UNITS = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
 """Used in combination with H.nested to determine the value of the
@@ -613,21 +613,7 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
       (the path of the netCDF4 file, the options dir, the output dir).
     """
 
-    def get_dir(dir, parent_dir):
-        if dir.startswith('/'):
-            # Absolute path.  Just keep the last level and append to parent.
-            dir = dir[:-1] if dir.endswith('/') else dir
-            dir = os.path.join(parent_dir, os.path.basename(dir))
-        else:
-            dir = os.path.join(parent_dir, dir)
-        return dir
-
-    if not os.path.isfile(pathnames):
-        raise IOError("pathnames file is not found at '{}'".format(pathnames))
-    # Get the <options> and <output> directories
-    with open(pathnames) as f:
-        options_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
-        output_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
+    options_dir, output_dir = get_fpdirs(pathnames)
     H = Header(output_dir, nested=nested)
 
     if H.direction == "forward":
