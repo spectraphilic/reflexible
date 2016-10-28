@@ -566,7 +566,7 @@ def read_conffiles(filename, fddir, path):
         path = os.path.join(fddir, filename)
     if not os.path.isfile(path):
         warnings.warn(
-            "The %s file cannot be found.  Continuing without it!" % filename)
+            "The %s file cannot be found.  Continuing without it!" % path)
         return {}
     try:
         if filename == "COMMAND":
@@ -576,7 +576,7 @@ def read_conffiles(filename, fddir, path):
     except IOError:
         warnings.warn(
             "The %s file format is not supported.  "
-            "Continuing without it!" % filename)
+            "Continuing without it!" % path)
     return {}
 
 
@@ -614,7 +614,11 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
     """
 
     def get_dir(dir, parent_dir):
-        if dir.startswith('./'):
+        if dir.startswith('/'):
+            # Absolute path.  Just keep the last level and append to parent.
+            dir = dir[:-1] if dir.endswith('/') else dir
+            dir = os.path.join(parent_dir, os.path.basename(dir))
+        else:
             dir = os.path.join(parent_dir, dir)
         return dir
 
