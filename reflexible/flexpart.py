@@ -1,6 +1,10 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+import glob
+import warnings
+
+from reflexible import Header
 from reflexible.scripts import create_ncfile, read_conffiles, read_species
 import reflexible.conv2netcdf4 as conv
 
@@ -18,7 +22,22 @@ class Flexpart(object):
             Whether the nested version of the header would be read
         """
         self.fp_options, self.fp_output = conv.get_fpdirs(pathnames)
-        self.Header = conv.Header(self.fp_output, nested=nested)
+
+        # First try to use the NetCDF4 files, if they are in the output dir
+        ncfiles = glob.glob(self.fp_output + '/*.nc')
+        if ncfiles:
+            ncfile = [f for f in ncfiles if ("nest" in f) == nested][0]
+            self.Header = Header(ncfile)
+        else:
+            # If not, fall back to the original Flexpart format
+            warnings.warn(
+                "NetCDF4 files not found in output directory '{}'.  "
+                "You can always generate them from data there "
+                "with the `create_ncfile` command line utility.".format(
+                    self.fp_output))
+            self.Header = conv.Header(self.fp_output, nested=nested)
+
+        # Other config files
         self.Command = read_conffiles("COMMAND", self.fp_options, None)
         self.Releases = read_conffiles("RELEASES", self.fp_options, None)
         self.Species = read_species(self.fp_options, self.Header.nspec)
@@ -30,4 +49,4 @@ if __name__ == "__main__":
     fprun = Flexpart(sys.argv[1])
     print("Options dir:", fprun.fp_options)
     print("Output dir:", fprun.fp_output)
-    print("Species:", fprun.Species)
+    print("Header:", fprun.Header)
