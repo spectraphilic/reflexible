@@ -108,3 +108,5 @@ from .data_structures import (Header, Command, Release,
 from .utils import Structure, CacheDict
 
 from .base_read import read_trajectories, read_partpositions
+
+from .flexpart import Flexpart
