@@ -721,7 +721,7 @@ def main():
     ncfname, options_dir, output_dir = create_ncfile(
         args.pathnames, args.nested, args.wetdep, args.drydep,
         args.command_path, args.releases_path, not args.dont_write_releases,
-        args.dirout, args.outfileN)
+        args.dirout, args.outfile)
 
     print("New netCDF4 file is available in: '%s'" % ncfname)
 
