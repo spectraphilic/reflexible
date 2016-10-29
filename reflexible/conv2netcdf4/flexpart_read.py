@@ -22,7 +22,7 @@ def read_releases(pathname):
     if signature == "&":
         return read_releases_v10(pathname)
     else:
-        # This is probably broken, but apparently we should worry only about v10
+        # This is mainly a placeholder, but we should worry only about v10
         return read_releases_v9(pathname)
 
 
@@ -86,7 +86,23 @@ def read_releases_v10(pathname):
     return ctable
 
 
-def read_releases_v9(path, headerrows=11):
+def read_releases_v9(path):
+    """Read metadata from a RELEASES path and return it as a dict.
+
+    Only 'release_point_names' entry returned.
+    """
+    rpnames = []
+    with open(path) as f:
+        prev_line = None
+        for line in f:
+            if prev_line is not None and "comment" in line:
+                rpnames.append(prev_line.strip())
+            prev_line = line
+    # Return just the release point names for now
+    return {"release_point_names": np.array(rpnames, dtype="S45")}
+
+
+def read_releases_old(path, headerrows=11):
     """
     Reads a FLEXPART releases file.
 
