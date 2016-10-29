@@ -1,11 +1,11 @@
+"""Tests to check conversion from prior FP format into netcdf."""
+
 import os
 import pytest
 import numpy as np
 
 import reflexible as rf
 import reflexible.conv2netcdf4 as conv
-
-"""Tests to check conversion from prior FP format into netcdf."""
 
 output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta',
                'Fwd1_V10.1']

@@ -27,7 +27,8 @@ from collections import defaultdict
 import netCDF4 as nc
 import numpy as np
 
-from reflexible.conv2netcdf4 import Header, read_command, get_fpdirs
+from reflexible.conv2netcdf4 import (
+    Header, read_command, read_releases, get_fpdirs)
 
 UNITS = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
 """Used in combination with H.nested to determine the value of the
@@ -38,22 +39,6 @@ UNITS = ['conc', 'pptv', 'time', 'footprint', 'footprint_total']
 # The default values here are not relevant.
 COMPLEVEL = 9
 MIN_SIZE = False
-
-
-def read_releases(path):
-    """Read metadata from a RELEASES path and return it as a dict.
-
-    Only 'release_point_names' entry returned.
-    """
-    rpnames = []
-    with open(path) as f:
-        prev_line = None
-        for line in f:
-            if prev_line is not None and "comment" in line:
-                rpnames.append(prev_line.strip())
-            prev_line = line
-    # Return just the release point names for now
-    return {"release_point_names": np.array(rpnames, dtype="S45")}
 
 
 def read_species(options_dir, nspec):

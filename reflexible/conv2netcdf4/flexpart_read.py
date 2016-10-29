@@ -3,14 +3,176 @@
 from __future__ import print_function
 
 import os
-import re
 import datetime
-from math import pi, sqrt, cos
-
+import re
 import numpy as np
+import bcolz
+from math import pi, sqrt, cos
 
 import reflexible.conv2netcdf4
 from .helpers import closest
+
+
+def read_releases(pathname):
+    """
+    Parses release file in `pathname` and return its contents.
+
+    """
+    signature = open(pathname).read(1)
+    if signature == "&":
+        return read_releases_v10(pathname)
+    else:
+        # This is probably broken, but apparently we should worry only about v10
+        return read_releases_v9(pathname)
+
+
+def read_releases_v10(pathname):
+    """
+    Parses release file in `pathname` and return a ctable with its contents.
+
+    This is only suited for files in Fortran90 namelist format (FP v10).
+
+    Parameters
+    ----------
+    pathname : pathname
+      Release file name (in Fortran90 namelist format).
+
+    Returns
+    -------
+    A ctable object from bcolz package.
+    """
+    # Setup the container for the data
+    dtype = [('IDATE1', np.int32), ('ITIME1', np.int32),
+             ('IDATE2', np.int32), ('ITIME2', np.int32),
+             ('LON1', np.float32), ('LON2', np.float32),
+             ('LAT1', np.float32), ('LAT2', np.float32),
+             ('Z1', np.float32), ('Z2', np.float32),
+             ('ZKIND', np.int8), ('MASS', np.float32),
+             ('PARTS', np.int32), ('COMMENT', 'S32')]
+    cparams = bcolz.cparams(cname="lz4", clevel=6, shuffle=1)
+    ctable = bcolz.zeros(0, dtype=dtype, cparams=cparams)
+    nrecords = ctable['IDATE1'].chunklen
+    releases = np.zeros(nrecords, dtype=dtype)
+
+    # Prepare for reading the input
+    input_str = open(pathname, 'r').read()
+    marker = "&RELEASE\n"
+    len_marker = len(marker)
+    release_re = r'\S+=\s+[\"|\s](\S+)[,|\"|\w]'
+
+    # Loop over all the marker groups
+    i, n = 0, 0
+    while True:
+        i = input_str.find(marker, i)
+        j = input_str.find(marker, i + 1)
+        n += 1
+        group_block = input_str[i + len_marker: j]
+        i = j
+        values = tuple(re.findall(release_re, group_block))
+        try:
+            releases[(n - 1) % nrecords] = values
+        except ValueError:
+            print("Problem at: group: %d, %s" % (n, group_block))
+            print("values:", values)
+            raise
+        if (n % nrecords) == 0:
+            ctable.append(releases)
+        if (i == -1) or (j == -1):
+            break  # marker is not found anymore
+    # Remainder
+    ctable.append(releases[:n % nrecords])
+    ctable.flush()
+
+    return ctable
+
+
+def read_releases_v9(path, headerrows=11):
+    """
+    Reads a FLEXPART releases file.
+
+    .. note::
+        Assumes releases file has a header of 11 lines. Use
+        option "headerrows" to override this.
+
+    USAGE::
+
+        > A = read_releases_v9(path)
+
+    where filepath is either a file object or a path.
+
+
+    Returns
+      a record array with fields:
+
+      ============      ==========================
+      fields            description
+      ============      ==========================
+      start_time        datetime start
+      end_time          datetime end
+      lllon             lower left longitude
+      llat              lower left latitude
+      urlon             upper right longitude
+      urlat             upper right latitude
+      altunit           1=magl, 2=masl, 3=hPa
+      elv1              lower z level
+      elv2              upper z level
+      numpart           numparticles
+      mass              mass for each spec, so the
+                        array will actually have
+                        fields: mass0, mass1,..
+      id                ID for each release
+      ============      ==========================
+
+    """
+
+    def getfile_lines(infile):
+        """ returns all lines from a file or file string
+        reverts to beginning of file."""
+
+        if isinstance(infile, str):
+            return open(infile, 'r').readlines()
+        else:
+            infile.seek(0)
+            return infile.readlines()
+
+    lines = getfile_lines(path)
+    lines = [i.strip() for i in lines]  # clean line ends
+
+    # we know nspec is at line 11
+    nspec = int(lines[headerrows])
+    blocklength = headerrows + nspec
+    spec = []
+    for i in range(nspec):
+        spec.append(int(lines[headerrows + 1 + i]))
+    indx = headerrows + 1 + (i + 2)
+    blocks = []
+    for i in range(indx, len(lines), blocklength + 1):
+        blocks.append(lines[i:i + blocklength])
+    for b in blocks:
+        b[0] = datetime.datetime.strptime(b[0], '%Y%m%d %H%M%S')
+        b[1] = datetime.datetime.strptime(b[1], '%Y%m%d %H%M%S')
+        b[2:6] = [np.float(i) for i in b[2:6]]
+        b[6] = int(b[6])
+        b[7] = float(b[7])
+        b[8] = float(b[8])
+        b[9] = int(b[9])
+        for i in range(nspec):
+            b[10 + i] = float(b[10 + i])
+        b = tuple(b)
+
+    names = ['start_time', 'end_time', 'lllon', 'lllat', 'urlon', 'urlat',
+             'altunit', 'elv1', 'elv2', 'numpart']
+    # formats = [object, object, np.float, np.float, np.float, np.float,\
+    #                      int, np.float, np.float, int]
+    for i in range(nspec):
+        names.append('mass%s' % i)
+        # formats.append(np.float)
+    names.append('id')
+    # formats.append('S30')
+
+    # dtype = {'names':names, 'formats':formats}
+    # RELEASES = np.rec.array(blocks,dtype=dtype)
+    return np.rec.fromrecords(blocks, names=names)
 
 
 def read_command(path, headerrows=7):
@@ -227,95 +389,6 @@ def read_command_old(path, headerrows):
 
         COMMAND[key] = val
     return COMMAND
-
-
-def read_releases(path, headerrows=11):
-    """
-    Reads a FLEXPART releases file.
-
-    .. note::
-        Assumes releases file has a header of 11 lines. Use
-        option "headerrows" to override this.
-
-    USAGE::
-
-        > A = read_releases(filepath)
-
-    where filepath is either a file object or a path.
-
-
-    Returns
-      a record array with fields:
-
-      ============      ==========================
-      fields            description
-      ============      ==========================
-      start_time        datetime start
-      end_time          datetime end
-      lllon             lower left longitude
-      llat              lower left latitude
-      urlon             upper right longitude
-      urlat             upper right latitude
-      altunit           1=magl, 2=masl, 3=hPa
-      elv1              lower z level
-      elv2              upper z level
-      numpart           numparticles
-      mass              mass for each spec, so the
-                        array will actually have
-                        fields: mass0, mass1,..
-      id                ID for each release
-      ============      ==========================
-
-    """
-
-    def getfile_lines(infile):
-        """ returns all lines from a file or file string
-        reverts to beginning of file."""
-
-        if isinstance(infile, str):
-            return open(infile, 'r').readlines()
-        else:
-            infile.seek(0)
-            return infile.readlines()
-
-    lines = getfile_lines(path)
-    lines = [i.strip() for i in lines]  # clean line ends
-
-    # we know nspec is at line 11
-    nspec = int(lines[headerrows])
-    blocklength = headerrows + nspec
-    spec = []
-    for i in range(nspec):
-        spec.append(int(lines[headerrows + 1 + i]))
-    indx = headerrows + 1 + (i + 2)
-    blocks = []
-    for i in range(indx, len(lines), blocklength + 1):
-        blocks.append(lines[i:i + blocklength])
-    for b in blocks:
-        b[0] = datetime.datetime.strptime(b[0], '%Y%m%d %H%M%S')
-        b[1] = datetime.datetime.strptime(b[1], '%Y%m%d %H%M%S')
-        b[2:6] = [np.float(i) for i in b[2:6]]
-        b[6] = int(b[6])
-        b[7] = float(b[7])
-        b[8] = float(b[8])
-        b[9] = int(b[9])
-        for i in range(nspec):
-            b[10 + i] = float(b[10 + i])
-        b = tuple(b)
-
-    names = ['start_time', 'end_time', 'lllon', 'lllat', 'urlon', 'urlat',
-             'altunit', 'elv1', 'elv2', 'numpart']
-    # formats = [object, object, np.float, np.float, np.float, np.float,\
-    #                      int, np.float, np.float, int]
-    for i in range(nspec):
-        names.append('mass%s' % i)
-        # formats.append(np.float)
-    names.append('id')
-    # formats.append('S30')
-
-    # dtype = {'names':names, 'formats':formats}
-    # RELEASES = np.rec.array(blocks,dtype=dtype)
-    return np.rec.fromrecords(blocks, names=names)
 
 
 def read_trajectories(H, trajfile='trajectories.txt',

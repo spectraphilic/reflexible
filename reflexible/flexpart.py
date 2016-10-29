@@ -49,4 +49,6 @@ if __name__ == "__main__":
     fprun = Flexpart(sys.argv[1])
     print("Options dir:", fprun.fp_options)
     print("Output dir:", fprun.fp_output)
-    print("Header:", fprun.Header)
+    print("Releases:", repr(fprun.Releases))
+    print("Command:", fprun.Command)
+    print("Species:", fprun.Species)
