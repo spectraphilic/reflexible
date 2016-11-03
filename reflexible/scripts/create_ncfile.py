@@ -681,7 +681,7 @@ def main():
         )
     parser.add_argument(
         "--min-size", dest="min_size", action="store_true",
-        help=("Do not write redundant fields (orographry) so as to reduce "
+        help=("Do not write redundant fields (orography) so as to reduce "
               "netCDF4 file size.")
         )
     parser.add_argument(

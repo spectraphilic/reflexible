@@ -18,16 +18,20 @@ class Flexpart(object):
         ----------
         pathnames : pathname
             File that contains the paths for <options> and <output> dirs
-        nested : Bool
+        nested : bool
             Whether the nested version of the header would be read
         """
+        self.pathnames = pathnames
+        self.nested = nested
         self.fp_options, self.fp_output = conv.get_fpdirs(pathnames)
+        self.ncfile = None
 
         # First try to use the NetCDF4 files, if they are in the output dir
         ncfiles = glob.glob(self.fp_output + '/*.nc')
         if ncfiles:
             ncfile = [f for f in ncfiles if ("nest" in f) == nested][0]
             self.Header = Header(ncfile)
+            self.ncfile = ncfile
         else:
             # If not, fall back to the original Flexpart format
             warnings.warn(
@@ -41,6 +45,9 @@ class Flexpart(object):
         self.Command = read_conffiles("COMMAND", self.fp_options, None)
         self.Releases = read_conffiles("RELEASES", self.fp_options, None)
         self.Species = read_species(self.fp_options, self.Header.nspec)
+
+    def __str__(self):
+        return "Flexpart('%s', nested=%s)" % (self.pathnames, self.nested)
 
 
 if __name__ == "__main__":
