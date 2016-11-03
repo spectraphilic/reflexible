@@ -5,7 +5,7 @@ import glob
 import warnings
 
 from reflexible import Header
-from reflexible.scripts import create_ncfile, read_conffiles, read_species
+from reflexible.scripts import read_conffiles, read_species
 import reflexible.conv2netcdf4 as conv
 
 
