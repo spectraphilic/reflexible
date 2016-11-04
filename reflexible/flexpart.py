@@ -30,7 +30,7 @@ class Flexpart(object):
         ncfiles = glob.glob(self.fp_output + '/*.nc')
         if ncfiles:
             ncfile = [f for f in ncfiles if ("nest" in f) == nested][0]
-            self.Header = Header(ncfile)
+            self.Header = Header(ncfile, nested=nested, absolute_path=True)
             self.ncfile = ncfile
         else:
             # If not, fall back to the original Flexpart format

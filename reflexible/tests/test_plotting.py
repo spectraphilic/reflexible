@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import os
 import itertools
 import pytest
 
@@ -10,7 +11,9 @@ import reflexible.plotting as pf
 
 
 # tuples locating test data, nested(True) and global(False)
-test_datasets = [('Fwd1_V10.0', True), ('Fwd1_V10.0', False)]
+test_datasets = [('Fwd1_V9.02', True), ('Fwd1_V9.02', False)]
+# TODO: support the next use cases too
+#test_datasets = [('Fwd1_V10.1', True), ('Fwd1_V10.1', False)]
 
 
 # Small test on color maps
@@ -24,12 +27,11 @@ class Dataset:
         self.fp_name = fp_dataset[0]
         self.nested = fp_dataset[1]
         self.fp_path = rf.datasets[self.fp_name]
+        self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
 
     def setup(self):
-        self.H = rf.Header(self.fp_path, nested=self.nested,
-                           absolute_path=False)
-        self.nc_path = self.H.ncfile
-        return self.H, self.fp_path, self.nc_path
+        self.fprun = rf.Flexpart(self.fp_pathnames, nested=self.nested)
+        return self.fprun.Header
 
     def cleanup(self):
         pass
@@ -40,7 +42,7 @@ class TestPlotting:
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         dataset = Dataset(request.param)
-        self.H, self.fp_path, self.nc_path = dataset.setup()
+        self.H = dataset.setup()
         request.addfinalizer(dataset.cleanup)
 
     def test_quickplot(self, tmpdir):
