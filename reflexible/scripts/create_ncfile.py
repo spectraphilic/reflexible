@@ -615,8 +615,7 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
         ncfname = outfile
     else:
         if dirout is None:
-            path = os.path.dirname(output_dir)
-            fprefix = os.path.join(path, fprefix)
+            fprefix = os.path.join(output_dir, fprefix)
         else:
             fprefix = os.path.join(dirout, fprefix)
         if H.nested:

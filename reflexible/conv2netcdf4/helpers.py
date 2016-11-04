@@ -21,10 +21,15 @@ def get_fpdirs(pathnames):
             dir = os.path.join(parent_dir, os.path.basename(dir))
         else:
             dir = os.path.join(parent_dir, dir)
+        dir = os.path.normpath(dir)
         return dir
 
+    if os.path.isdir(pathnames):
+        # Add 'pathnames' at the end
+        pathnames = os.path.join(pathnames, "pathnames")
     if not os.path.isfile(pathnames):
         raise IOError("pathnames file is not found at '{}'".format(pathnames))
+    # Normalize the path
     # Get the <options> and <output> directories
     with open(pathnames) as f:
         options_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))

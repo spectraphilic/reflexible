@@ -83,7 +83,7 @@ possible way (i.e. passing to it the unique required argument)::
 
 note that the directory containing the FLEXPART output is the
 `create_ncfile` input. The output of this command is rather verbose,
-but if everything goes fine, we will see something like this at the
+but if everything goes fine, you will see something like this at the
 end::
 
   getting grid for:  ['20100531210000']
