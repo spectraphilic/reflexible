@@ -4,8 +4,10 @@ import os
 import reflexible as rf
 
 
-output_list = [('Fwd1_V10.0','grid_conc_20110101000000.nc'),
-               ('Fwd1_V10.0','grid_conc_20110101000000_nest.nc')]
+# output_list = [('Fwd1_V10.0','grid_conc_20110101000000.nc'),
+#                ('Fwd1_V10.0','grid_conc_20110101000000_nest.nc')]
+output_list = [('Fwd1_V9.02','grid_conc_2007012190000.nc'),
+               ('Fwd1_V9.02','grid_conc_2007012190000_nest.nc')]
 
 
 class Dataset:
@@ -13,17 +15,14 @@ class Dataset:
         self.fp_name = fp_name[0]
         self.fp_filename = fp_name[1]
         self.fp_path = rf.datasets[fp_name[0]]
+        self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
 
     def setup(self):
-        #self.H = rf.Header(self.fp_path, absolute_path=False)
-        ncfile = os.path.join(self.fp_path, self.fp_filename)
+        options_dir, output_dir = rf.conv2netcdf4.get_fpdirs(self.fp_pathnames)
+        ncfile = os.path.join(output_dir, self.fp_filename)
 
         self.ncid = nc.Dataset(ncfile, 'r')
         return self.ncid, self.fp_path, ncfile, None
-
-    def cleanup(self):
-        pass
-        #self.tmpdir.remove(self.nc_path)
 
 
 class TestStructure:
@@ -32,7 +31,6 @@ class TestStructure:
         dataset = Dataset(request.param)
         print(dataset.fp_path)
         self.ncid, self.fp_path, self.nc_path, self.H = dataset.setup()
-        request.addfinalizer(dataset.cleanup)
 
     # CF convention required attributes
     def test_CF_conventions(self):
