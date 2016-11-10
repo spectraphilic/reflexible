@@ -6,13 +6,16 @@ import pytest
 import reflexible as rf
 
 output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta',
-               'Fwd1_V10.1']
+               'Fwd1_V10.1', 'HelloWorld_V9.02', 'Only_Outputs_V9.02']
 
 class Dataset:
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
-        self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
+        if fp_name != 'Only_Outputs_V9.02':
+            self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
+        else:
+            self.fp_pathnames = self.fp_path
 
 
 class TestHeader:

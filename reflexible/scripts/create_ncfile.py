@@ -600,15 +600,15 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
 
     options_dir, output_dir = get_fpdirs(pathnames)
     H = Header(output_dir, nested=nested)
-
     if H.direction == "forward":
         fprefix = 'grid_conc_'
     else:
         fprefix = 'grid_time_'
 
-    command = read_conffiles("COMMAND", options_dir, command_path)
-    releases = read_conffiles("RELEASES", options_dir, releases_path)
-    species = read_species(options_dir, H.nspec)
+    if options_dir:
+        command = read_conffiles("COMMAND", options_dir, command_path)
+        releases = read_conffiles("RELEASES", options_dir, releases_path)
+        species = read_species(options_dir, H.nspec)
 
     if outfile:
         # outfile has priority over previous flags

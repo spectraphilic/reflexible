@@ -95,6 +95,8 @@ datasets = {
     'Fwd1_V9.02': os.path.join(this_dir, "uio_examples/Fwd1_V9.02"),
     'Fwd2_V9.02': os.path.join(this_dir, "uio_examples/Fwd2_V9.02"),
     'HelloWorld_V9.02': os.path.join(this_dir, "uio_examples/HelloWorld_V9.02"),
+    'Only_Outputs_V9.02': os.path.join(
+        this_dir, "uio_examples/HelloWorld_V9.02/outputs"),
 }
 
 

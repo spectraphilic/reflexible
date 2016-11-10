@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import warnings
 import os
 import datetime
 
@@ -24,11 +25,27 @@ def get_fpdirs(pathnames):
         dir = os.path.normpath(dir)
         return dir
 
+    if (os.path.isdir(pathnames) and
+            not os.path.isfile(os.path.join(pathnames, "pathnames"))):
+        warnings.warn("Assuming a FP output directory in: {}".format(pathnames))
+        output_dir = pathnames
+        if output_dir.endswith('/'):
+            # Remove the trailing '/'
+            output_dir = output_dir[:-1]
+        # Try with an "options" dir in the parent of the output
+        options_dir = os.path.join(os.path.dirname(output_dir), "options")
+        return options_dir, output_dir
+
     if os.path.isdir(pathnames):
-        # Add 'pathnames' at the end
-        pathnames = os.path.join(pathnames, "pathnames")
+        # First see if we have a pathnames file
+        if os.path.isfile(os.path.join(pathnames, "pathnames")):
+            # Add 'pathnames' at the end
+            pathnames = os.path.join(pathnames, "pathnames")
+
     if not os.path.isfile(pathnames):
-        raise IOError("pathnames file is not found at '{}'".format(pathnames))
+        raise OSError("pathnames file (or output dir) not found at "
+                      "'{}'".format(pathnames))
+
     # Normalize the path
     # Get the <options> and <output> directories
     with open(pathnames) as f:
