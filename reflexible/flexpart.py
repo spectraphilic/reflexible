@@ -1,3 +1,7 @@
+"""
+Class that can open a FLEXPART run and access to the configfiles and outputs.
+"""
+
 from __future__ import print_function
 from __future__ import absolute_import
 

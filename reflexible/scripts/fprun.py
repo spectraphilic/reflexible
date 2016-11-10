@@ -53,7 +53,9 @@ def main():
         )
     parser.add_argument(
         "pathnames", nargs="?",
-        help="The Flexpart pathnames file stating where options and output are."
+        help=("The Flexpart pathnames file stating where options and output "
+              "are.  If you pass a dir, a 'pathnames' file will be appended "
+              "automatically.  If not found yet, a FP output dir is assumed.")
         )
 
     args = parser.parse_args()
@@ -62,9 +64,6 @@ def main():
         # The FLEXPART pathnames file is mandatory
         parser.print_help()
         sys.exit(1)
-
-    if not os.path.isfile(args.pathnames):
-        raise IOError("PLEXPART pathnames not found in '%s'" % args.pathnames)
 
     fprun = rf.Flexpart(args.pathnames, nested=args.nested)
     print(fprun)
