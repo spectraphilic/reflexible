@@ -490,18 +490,12 @@ class C(object):
                 varname = "spec%03d_mr" % (nspec + 1)
             if self.iout in (2,):  # XXX what to do with the 3 case?
                 varname = "spec%03d_pptv" % (nspec + 1)
-            specvar = self.nc.variables[varname][0, pointspec, :, :, :, :]
-            if True:
-                # changed to use direct summation
-                c.data_cube = specvar
-                c.time_integrated = np.sum(c.data_cube, axis=0).T
-                c.total_column = np.sum(c.time_integrated, axis=2)
-                c.foot_print = c.time_integrated[:, :, 0]
 
-            else:
-                # Same than the above, but it comsumes more memory
-                # Just let it here for future reference
-                c.data_cube = specvar[:, :, :, :, pointspec, :].sum(axis=(-2, -1))
+            # Fill attributes
+            c.data_cube = self.nc.variables[varname][0, pointspec, :, :, :, :]
+            c.time_integrated = np.sum(c.data_cube, axis=0).T
+            c.total_column = np.sum(c.time_integrated, axis=2)
+            c.foot_print = c.time_integrated[:, :, 0]
             c.slabs = get_slabs(self.Heightnn, c.time_integrated)
         else:
             # forward direction
