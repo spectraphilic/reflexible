@@ -8,6 +8,7 @@ import re
 import numpy as np
 import bcolz
 from math import pi, sqrt, cos
+from collections import OrderedDict
 
 import reflexible.conv2netcdf4
 from .helpers import closest
@@ -194,14 +195,16 @@ def read_releases_old(path, headerrows=11):
 def read_command(path, headerrows=7):
     with open(path, 'r') as comfile:
         if "&COMMAND" in comfile.readline():
-            return read_command_v10(path, 1)
+            command = read_command_v10(path, 1)
+            return OrderedDict(sorted(command.items(), key=lambda t: t[0]))
         for i in range(headerrows - 1):
             comfile.readline()
         signature = comfile.readline().strip()
         if signature[:5] == "1. __":
-            return read_command_v9(path, headerrows)
+            command = read_command_v9(path, headerrows)
         else:
-            return read_command_old(path, headerrows)
+            command = read_command_old(path, headerrows)
+        return OrderedDict(sorted(command.items(), key=lambda t: t[0]))
 
 
 def read_command_v10(path, headerrows):
