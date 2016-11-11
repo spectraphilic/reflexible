@@ -375,23 +375,26 @@ instance, so the first step may be to explore some of the attibutes::
     In [12]: print(H.keys())
     ['C', 'FD', 'Heightnn', 'ORO', 'absolute_path', 'alt_unit', 'area', 'available_dates', 'available_dates_dt', 'direction', 'dxout', 'dyout', 'fill_grids', 'fp_path', 'ibdate', 'ibtime', 'iedate', 'ietime', 'ind_receptor', 'ind_source', 'iout', 'ireleaseend', 'ireleasestart', 'latitude', 'lconvection', 'ldirect', 'longitude', 'loutaver', 'loutsample', 'loutstep', 'lsubgrid', 'nageclass', 'nc', 'ncfile', 'nested', 'nspec', 'numageclasses', 'numpoint', 'numpointspec', 'numxgrid', 'numygrid', 'numzgrid', 'options', 'outheight', 'outlat0', 'outlon0', 'output_unit', 'pointspec', 'releaseend', 'releasestart', 'releasetimes', 'species', 'zpoint1', 'zpoint2']
 
-----
-
-:Note: From here on, this document needs to be updated for *reflexible*
-
-----
 
 Reasonably, you should now want to read in some of the data from your
 run. At this point you should now have a variable 'FD' which is again
-a dictionary of the FLEXPART grids. This 'FD' object is either
-available directly in your workspace, or alternatively, if you called
-`H.fill_backward()` it is an attribute of the header: `H.FD`. This is
-the preferred method.
+a dictionary of the FLEXPART grids::
+
+    In [13]: H.FD
+    Out[13]: <reflexible.data_structures.FD at 0x7f83bc4c5898>
+
+    In [15]: H.FD.keys()[:3]  # sor only the 3 first entries
+    Out[15]: [(0, '20150405160500'), (0, '20150405190500'), (0, '20150405220500')]
 
 Look at the keys of the dictionary to see what information is
 stored. The actual data is keyed by tuples: (nspec, datestr) where
 nspec is the species number and datestr is a YYYYMMDDHHMMSS string for
-the grid timestep.
+the grid timestep::
+
+    In [21]: fd = H.FD[(0, '20150405160500')]
+
+    In [22]: fd.data_cube.shape
+    Out[22]: (720, 360, 3, 31, 1)
 
 
 Working with rflexible in depth
@@ -400,47 +403,34 @@ Working with rflexible in depth
 Assuming the above steps worked out, then we can proceed to play with
 the tools in a bit more detail.
 
-Okay, let\'s take a look at the example code above line by line. The
-first line imports the module, giving it a namespace "pf" -- this is
-the preferred approach. The next few lines simply define the paths for
-"SOURCE_DIR" and "OUTPUT_DIR" (you probably already changed these).::
+Okay, let's take a look at the example code above line by line. The
+first line imports the module, giving it a namespace "rf" -- this is
+the preferred approach.
 
-    import reflexible as rf
-    SOURCE_DIR = '/path/to/flexpart/test_data'
-    OUTPUT_DIR = '/path/to/flexpart/output'
+The next line creates a "fprun" instance of :class:`Flexpart`,
+by passing the pathnames of a FLEXPART run.::
 
-The next line creates a :class:`Header` class "H", by passing the path
-of the directory (not header path) containing the FLEXPART run.::
+    In [24]: fprun = rf.Flexpart("/tmp/stads2_V10/pathnames")
 
-    H = rf.Header(SOURCE_DIR)
+and from there, we can easily have access to the `Header` container::
+
+    In [25]: H = fprun.Header
 
 The `Header` is central to `reflexible`. This contains much
 information about the FLEXPART run, and enable plotting, labeling of
 plots, looking up dates of runs, coordinates for mapping, etc. All
 this information is contained in the `Header`.  See for example::
 
-    dir(H)
+    In [27]: print(dir(H))
+    ['C', 'FD', 'Heightnn', 'ORO', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__gt__', '__hash__', '__init__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_gridarea', 'absolute_path', 'add_trajectory', 'alt_unit', 'area', 'available_dates', 'available_dates_dt', 'direction', 'dxout', 'dyout', 'fill_grids', 'fp_path', 'ibdate', 'ibtime', 'iedate', 'ietime', 'ind_receptor', 'ind_source', 'iout', 'ireleaseend', 'ireleasestart', 'keys', 'latitude', 'lconvection', 'ldirect', 'longitude', 'loutaver', 'loutsample', 'loutstep', 'lsubgrid', 'nageclass', 'nc', 'ncfile', 'nested', 'nspec', 'numageclasses', 'numpoint', 'numpointspec', 'numxgrid', 'numygrid', 'numzgrid', 'options', 'outheight', 'outlat0', 'outlon0', 'output_unit', 'pointspec', 'releaseend', 'releasestart', 'releasetimes', 'species', 'zpoint1', 'zpoint2']
 
 This will show you all the attributes associated with the `Header`.
-
-.. note::
-  This example uses the `methods` of the Header class,
-  :class:`plexpart.Header`.  You can also call most the methods
-  directly, passing "H" as the first argument as in: D =
-  rf.fill_backward(H). In some cases, for some of the functions, H can
-  be substituted. See the docstrings for more information.
 
 ----
 
 H is now an object in your workspace. Using Ipython you can explore
-the methods and attributes of H. As mentioned above, in this test case
-we call the `fill_backward` method to populate the "FD" attribute (a
-dictionary) with all the data from the run.::
-
-    H.fill_backward(nspec=(0,1))
-
-However, note that fill_backward also creates a second dictionary
-attribute "C".  This dictionary is similar to the "FD" dictionary, but
+the methods and attributes of H.  Let's start with the "C" attribute,
+which is similar to the "FD" dictionary described above, but
 contains the Cumulative sensitivity at each time step, so you can use
 it for plotting retroplumes.
 
@@ -448,42 +438,18 @@ It is important to understand the differences between `H.FD` and `H.C`
 while working with reflexible. If we look closely at the keys of
 `H.FD`::
 
-    In [13]: H.FD.keys()
-    Out[13]:
-    [(0, '20100527210000'),
-    (0, '20100513210000'),
-    (0, '20100528210000'),
-    (0, '20100526210000'),
-    (0, '20100521210000'),
-    'grid_dates',
-    (0, '20100512210000'),
-    (0, '20100514210000'),
-    (0, '20100519210000'),
-    (0, '20100520210000'),
-    'options',
-    (0, '20100523210000'),
-    (0, '20100525210000'),
-    (0, '20100530210000'),
-    (0, '20100515210000'),
-    (0, '20100531210000'),
-    (0, '20100517210000'),
-    (0, '20100529210000'),
-    (0, '20100524210000'),
-    (0, '20100516210000'),
-    (0, '20100522210000'),
-    (0, '20100518210000')]
+    In [29]: H.FD.keys()[:3]
+    Out[29]: [(0, '20150405160500'), (0, '20150405190500'), (0, '20150405220500')]
 
-You'll see that along with the keys, `grid_dates` and `options`, the
-dictionary is primary keyed by a set of tuples. These tuples represent
-(s, date), where s is the specied ID and date is the date of a grid
-file from flexpart (e.g.  something like:
-`grid_time_20100515210000_001`). However, if we look at the keys of
-the `H.C` dictionary::
+You'll see that the dictionary is primary keyed by a set of tuples.
+These tuples represent ``(s, date)``, where s is the specied ID and
+date is the date of a grid in FLEXPART. However, if we look at the keys
+of the `H.C` dictionary::
 
-    In [14]: H.C.keys()
-    Out[14]: [(0, 1), (0, 0), (0, 6), (0, 5), (0, 4), (0, 3), (0, 2)]
+    In [30]: H.C.keys()[:3]
+    Out[30]: [(0, 0), (0, 1), (0, 2)]
 
-We see only tuples, now keyed by (s,rel_id), where s is still the
+We see only tuples, now keyed by (s, rel_id), where s is still the
 species ID, but rel_id is the release ID. These release IDs correspond
 to the times in `H.releasetimes` which is a list of the release times.
 
@@ -496,68 +462,80 @@ So we know now `H.C` is keyed by (s,k) where s is an integer for the
 species #, and k is an integer for the release id. Let's look at the
 data stores returned in each of these two dictionaries::
 
-    In [30]: H.FD[(0, '20100527210000')].keys()
-    Out[30]:
-    ['dry',
-    'itime',
-    'min',
-    'max',
-    'gridfile',
-    'wet',
-    'rel_i',
-    'shape',
-    'spec_i',
-    'grid',
-    'timestamp',
-    'species']
+    In [32]: myfd = H.FD[(0, '20150405160500')]
 
-If we look at `H.FD[(0, '20100527210000')].grid` for example, we'll see that
+    In [33]: myfd.keys()
+    Out[33]:
+    ['data_cube',
+     'gridfile',
+     'itime',
+     'timestamp',
+     'species',
+     'rel_i',
+     'spec_i',
+     'dry',
+     'wet',
+     'slabs',
+     'shape',
+     'max',
+     'min']
+
+If we look at `myfd.data_cube` for example, we'll see that
 this returns a numpy array of shape::
 
-    In [31]: H.FD[(0, '20100527210000')].grid.shape
-    Out[31]: (720, 180, 3, 7)
+    In [35]: myfd.data_cube.shape
+    Out[35]: (720, 360, 3, 31, 1)
 
-which corresponds to (numx, numy, numz, numk) where numk is the number
-of releases. We can see this grid is from the `gridfile`::
-
-    In [32]: H.FD[(0, '20100527210000')].gridfile
-    Out[32]:
-    '/home/johnbur/Dev_fp/test_data/grid_time_20100527210000_001'
+which corresponds to (numx, numy, numz, days, numk) where numk is the number
+of releases.
 
 The other information is mainly metadata for that grid.
 
 In `H.C` the information is slightly different::
 
-    In [33]: H.C[(0,1)].keys()
-    Out[33]:
-    ['itime',
-    'min',
-    'timestamp',
-    'gridfile',
-    'rel_i',
-    'shape',
-    'spec_i',
-    'grid',
-    'max',
-    'species',
-    'slabs']
+    In [36]: myc = H.C[(0,1)]
+
+    In [37]: myc.keys()
+    Out[37]:
+    ['data_cube',
+     'gridfile',
+     'itime',
+     'timestamp',
+     'species',
+     'rel_i',
+     'spec_i',
+     'dry',
+     'wet',
+     'slabs',
+     'shape',
+     'max',
+     'min']
 
 In particular, note the shape of the grid is now::
 
-    In [35]: H.C[(0,1)].grid.shape
-    Out[35]: (720, 180, 3)
+    In [38]: myc.data_cube.shape
+    Out[28]: (168, 3, 360, 720)
 
-There is no longer a fourth dimension corresponding to the release
+There is no longer a fifth dimension corresponding to the release
 time.  Furthermore, there is a new key `slabs`. This is a dictionary
 where each numz level is packaged as a 2-d numpy array keyed by it's
-level index. This is redundant data to the grid, and will likely
-change in future versions of reflexible. However, the important point
-to note is that the 0th element is the Total Column.
+level index::
+
+    In [46]: myc.slabs.keys()
+    Out[46]: dict_keys([0, 1, 2, 3])
+
+    In [47]: myc.slabs[1].shape
+    Out[47]: (3, 360, 720)
+
+This is redundant data to the grid, and will likely change in future
+versions of reflexible. However, the important point to note is that
+the 0th element is the Total Column.
 
 Using the plotting tools of reflexible we can plot the total column easily::
 
-    rf.plot_totalcolumn (H, H.C[(0,1)], map_region='Europe')
+    In [61]: rf.plot_totalcolumn(H, myc.total_column, map_region='NorthAtlantic')
 
+.. TODO: The above line does not work yet for the stads2 dataset.  Why?
 
 This should return an image similar to:
 
@@ -602,10 +580,10 @@ some attributes that we can use later in conjunction with the
 :func:`plot_totalcolumn` function and for saving and naming the
 figures.  See for example the following lines::
 
-    for s,k in H.C:
-        data = H.C[(s,k)]
-        TC = rf.plot_totalcolumn(H,data,map_region='Europe',FIGURE=TC)
-        TC = rf.plot_trajectory(H,T,k,FIGURE=TC)
+    for s, k in H.C:
+        data = H.C[(s, k)]
+        TC = rf.plot_totalcolumn(H, data, map_region='Europe', FIGURE=TC)
+        TC = rf.plot_trajectory(H, T, k, FIGURE=TC)
         filename = '%s_tc_%s.png' % (data.species, data.timestamp)
         TC.fig.savefig(filename)
 
