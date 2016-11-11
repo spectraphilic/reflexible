@@ -51,7 +51,7 @@ retroplumes.
 
 I suggest using wget to grab the data::
 
-    wget http://folk.uio.no/johnbur/sharing/flexpart_V8data.tgz
+    $ wget http://folk.uio.no/johnbur/sharing/stads2_V10.tar
 
 ----
 
@@ -67,100 +67,160 @@ FLEXPART output to netCDF4 format. In order to do that the
 directory in your path when reflexible is installed, so you should not
 worry about copying it manually.
 
-Before processing the data in `flexpart_V8data.tgz` we have to
+Before processing the data in `stads2_V10.tar` we have to
 uncompress that file::
 
-  $ cp flexpart_V8data.tgz /tmp
-  $ cd /tmp
-  $ tar -zxvf flexpart_V8data.tgz
+    $ cp stads2_V10.tar /tmp
+    $ cd /tmp
+    $ tar xvf stads2_V10.tar
 
-After uncompressing, a directory named `test_data` is created. It
+After untarring, a directory named `stads2_V10` is created. It
 contains the result of processing a simple backward run case with
-FLEXPART. Next we execute the `create_ncfile` script in the simplest
-possible way (i.e. passing to it the unique required argument)::
+FLEXPART. Next we can execute the `fprun` script::
 
-  $ create_ncfile /tmp/test_data
+    $ fprun /tmp/stads2_V10/pathnames
+    Flexpart('/tmp/stads2_V10/pathnames', nested=False)
 
-note that the directory containing the FLEXPART output is the
-`create_ncfile` input. The output of this command is rather verbose,
-but if everything goes fine, you will see something like this at the
-end::
+note that you pass the pathnames of a FLEXPART run.  The `pathnames`
+file has a simple structure.  For example, in our case it goes like
+this::
 
-  getting grid for:  ['20100531210000']
-  Assumed V8 Flexpart
-  720 180 3 1 0 0 1 7
-  20100531210000
-  New netCDF4 file is available in: '/tmp/grid_time_20100601210000.nc'
+    $./options/
+    ./stads2_15_018.001/
+    /
+    /.../AVAILABLE_ECMWF_OPER_fields_global
+    ============================================
 
-As the output reports the FLEXPART output is now available in netCDF4
-format in the file `/tmp/grid_time_20100601210000.nc`.
+So, basically in the first line indicates the <options> directory for
+the FLEXPART run, whereas the second line specifies the <output>
+directory.  With this, you can easily mix and match different <options>
+and <output> directories for your analysis.
+
+If we want to select the `nested` data instead, just pass the `-n` flag::
+
+    $ fprun -n /tmp/stads2_V10/pathnames
+    Flexpart('/tmp/stads2_V10/pathnames', nested=True)
+
+And if you want to get some info on the COMMANDS file::
+
+    $ fprun -n -C /tmp/stads2_V10/pathnames
+    $ Flexpart('/tmp/stads2_V10/pathnames', nested=True)
+    $ Command: OrderedDict([('CBLFLAG', 0), ('CTL', -5), ('IBDATE', 20150405), ('IBTIME', 103500), ('IEDATE', 20150426), ('IETIME', 130500), ('IFINE', 4), ('IFLUX', 0), ('IND_RECEPTOR', 1), ('IND_SOURCE', 1), ('IOUT', 13), ('IOUTPUTFOREACHRELEASE', 1), ('IPIN', 0), ('IPOUT', 0), ('ITSPLIT', 9999999), ('LAGESPECTRA', 1), ('LCONVECTION', 1), ('LDIRECT', -1), ('LINIT_COND', 0), ('LOUTAVER', 10800), ('LOUTSAMPLE', 900), ('LOUTSTEP', 10800), ('LSUBGRID', 1), ('LSYNCTIME', 900), ('MDOMAINFILL', 0), ('MQUASILAG', 0), ('NESTED_OUTPUT', 1), ('SURF_ONLY', 0)])
+
+You can get more info on the supported flags by passing the `-h` flag to
+the `fprun` command line utility::
+
+    $ fprun -h
+    usage: fprun [-h] [-n] [-C] [-R] [-S] [-H HEADER_KEY] [-K] [pathnames]
+
+    positional arguments:
+      pathnames             The Flexpart pathnames file stating where options and
+                            output are. If you pass a dir, a 'pathnames' file will
+                            be appended automatically. If not found yet, a FP
+                            output dir is assumed.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -n, --nested          Use a nested output.
+      -C, --command         Print the COMMAND contents.
+      -R, --releases        Print the RELEASES contents.
+      -S, --species         Print the SPECIES contents.
+      -H HEADER_KEY, --header-key HEADER_KEY
+                            Print the contents of H[HEADER_KEY].
+      -K, --header-keys     Print all the HEADER keys.
+
 
 ----
 
 .. _reading-netcdf4:
 
+Reading data out of a FLEXPART run
+----------------------------------
 
-Reading data out of the netCDF4 file
-------------------------------------
+Newer versions of FLEXPART can generate convenient NetCDF4 files as output,
+so let's have a quick glimpse on how you can access the different data on it.
 
-The resulting netCDF4 file can be read by using the python-netcdf4
-package.  Let's have a quick glimpse on how you can access the
-different data on it.
+*Note* In case you have a FLEXPART output that is not in NetCDF4 format, you
+can always make use the `create_ncfile` command line utility.
 
 Open the file and print meta-information for the run::
 
     In [1]: from netCDF4 import Dataset
 
-    In [2]: rootgrp = Dataset('grid_time_20100601210000.nc')
+    In [2]: rootgrp = Dataset("/tmp/stads2_V10/stads2_15_018.001/grid_time_20150426130500.nc")
 
-    In [3]: print rootgrp
-    <type 'netCDF4.Dataset'>
-    root group (NETCDF4 data model, file format UNDEFINED):
+    In [3]: print(rootgrp)
+    <class 'netCDF4._netCDF4.Dataset'>
+    root group (NETCDF4 data model, file format HDF5):
         Conventions: CF-1.6
         title: FLEXPART model output
         institution: NILU
-        source: V8 model output
-        history: 2015-1-15 10:43 NA created by faltet on francesc-Latitude-E6430
+        source: Version 10.0beta (2015-05-01) model output
+        history: 2016-02-02 09:43 +0100  created by  on compute-8-16.local
         references: Stohl et al., Atmos. Chem. Phys., 2005, doi:10.5194/acp-5-2461-200
         outlon0: -179.0
-        outlat0: 0.0
+        outlat0: -90.0
         dxout: 0.5
         dyout: 0.5
         ldirect: -1
-        ibdate: 20100512
-        ibtime: 210000
-        iedate: 20100531
-        ietime: 210000
-        loutstep: -86400
-        loutaver: -86400
+        ibdate: 20150405
+        ibtime: 103500
+        iedate: 20150426
+        ietime: 130500
+        loutstep: -10800
+        loutaver: -10800
         loutsample: -900
+        itsplit: 9999999
+        lsynctime: -900
+        ctl: -0.2
+        ifine: 1
+        iout: 5
+        ipout: 0
         lsubgrid: 1
         lconvection: 1
+        lagespectra: 1
+        ipin: 0
+        ioutputforeachrelease: 1
+        iflux: 0
+        mdomainfill: 0
         ind_source: 1
         ind_receptor: 1
-        dimensions(sizes): time(20), longitude(720), latitude(180), height(3), numspec(2), pointspec(7), nageclass(1), nchar(45), numpoint(7)
-        variables(dimensions): int32 time(time), float32 longitude(longitude), float32 latitude(latitude), float32 height(height), |S1 RELCOM(nchar,numpoint), float32 RELLNG1(numpoint), float32 RELLNG2(numpoint), float32 RELLAT1(numpoint), float32 RELLAT2(numpoint), float32 RELZZ1(numpoint), float32 RELZZ2(numpoint), int32 RELKINDZ(numpoint), int32 RELSTART(numpoint), int32 RELEND(numpoint), int32 RELPART(numpoint), float32 RELXMASS(numpoint,numspec), int32 LAGE(nageclass), int32 ORO(longitude,latitude), float32 spec001_mr(longitude,latitude,height,time,pointspec,nageclass), float32 spec001_pptv(longitude,latitude,height,time,pointspec,nageclass), float32 spec002_mr(longitude,latitude,height,time,pointspec,nageclass), float32 spec002_pptv(longitude,latitude,height,time,pointspec,nageclass)
+        mquasilag: 0
+        nested_output: 1
+        surf_only: 0
+        linit_cond: 0
+        dimensions(sizes): time(168), longitude(720), latitude(360), height(3), numspec(1), pointspec(31), nageclass(1), nchar(45), numpoint(31)
+        variables(dimensions): int32 time(time), float32 longitude(longitude), float32 latitude(latitude), float32 height(height), |S1 RELCOM(numpoint,nchar), float32 RELLNG1(numpoint), float32 RELLNG2(numpoint), float32 RELLAT1(numpoint), float32 RELLAT2(numpoint), float32 RELZZ1(numpoint), float32 RELZZ2(numpoint), int32 RELKINDZ(numpoint), int32 RELSTART(numpoint), int32 RELEND(numpoint), int32 RELPART(numpoint), float32 RELXMASS(numspec,numpoint), int32 LAGE(nageclass), int32 ORO(latitude,longitude), float32 spec001_mr(nageclass,pointspec,time,height,latitude,longitude)
         groups:
 
 We can get the info for a specific attribute just by referencing it like this::
 
-    In [4]: print rootgrp.loutstep
-    -86400
+    In [4]: print(rootgrp.loutstep)
+    -10800
 
 We can have a look at the different dimensions and variables in the file::
 
-    In [5]: print rootgrp.dimensions
-    OrderedDict([(u'time', <netCDF4.Dimension object at 0x7f6404022550>), (u'longitude', <netCDF4.Dimension object at 0x7f64040225a0>), (u'latitude', <netCDF4.Dimension object at 0x7f64040225f0>), (u'height', <netCDF4.Dimension object at 0x7f6404022640>), (u'numspec', <netCDF4.Dimension object at 0x7f6404022690>), (u'pointspec', <netCDF4.Dimension object at 0x7f64040226e0>), (u'nageclass', <netCDF4.Dimension object at 0x7f6404022730>), (u'nchar', <netCDF4.Dimension object at 0x7f6404022780>), (u'numpoint', <netCDF4.Dimension object at 0x7f64040227d0>)])
+    In [5]: print(rootgrp.dimensions)
+    OrderedDict([('time', <class 'netCDF4._netCDF4.Dimension'> (unlimited): name = 'time', size = 168
+    ), ('longitude', <class 'netCDF4._netCDF4.Dimension'>: name = 'longitude', size = 720
+    ), ('latitude', <class 'netCDF4._netCDF4.Dimension'>: name = 'latitude', size = 360
+    ), ('height', <class 'netCDF4._netCDF4.Dimension'>: name = 'height', size = 3
+    ), ('numspec', <class 'netCDF4._netCDF4.Dimension'>: name = 'numspec', size = 1
+    ), ('pointspec', <class 'netCDF4._netCDF4.Dimension'>: name = 'pointspec', size = 31
+    ), ('nageclass', <class 'netCDF4._netCDF4.Dimension'>: name = 'nageclass', size = 1
+    ), ('nchar', <class 'netCDF4._netCDF4.Dimension'>: name = 'nchar', size = 45
+    ), ('numpoint', <class 'netCDF4._netCDF4.Dimension'>: name = 'numpoint', size = 31
+    )])
 
-    In [6]: print rootgrp.variables
-    OrderedDict([(u'time', <netCDF4.Variable object at 0x7f6404050a68>), (u'longitude', <netCDF4.Variable object at 0x7f6404050b00>), (u'latitude', <netCDF4.Variable object at 0x7f6404050b98>), (u'height', <netCDF4.Variable object at 0x7f6404050c30>), (u'RELCOM', <netCDF4.Variable object at 0x7f6404050cc8>), (u'RELLNG1', <netCDF4.Variable object at 0x7f6404050d60>), (u'RELLNG2', <netCDF4.Variable object at 0x7f6404050df8>), (u'RELLAT1', <netCDF4.Variable object at 0x7f6404050e90>), (u'RELLAT2', <netCDF4.Variable object at 0x7f6404050f28>), (u'RELZZ1', <netCDF4.Variable object at 0x7f640402c050>), (u'RELZZ2', <netCDF4.Variable object at 0x7f640402c0e8>), (u'RELKINDZ', <netCDF4.Variable object at 0x7f640402c180>), (u'RELSTART', <netCDF4.Variable object at 0x7f640402c218>), (u'RELEND', <netCDF4.Variable object at 0x7f640402c2b0>), (u'RELPART', <netCDF4.Variable object at 0x7f640402c348>), (u'RELXMASS', <netCDF4.Variable object at 0x7f640402c3e0>), (u'LAGE', <netCDF4.Variable object at 0x7f640402c478>), (u'ORO', <netCDF4.Variable object at 0x7f640402c510>), (u'spec001_mr', <netCDF4.Variable object at 0x7f640402c5a8>), (u'spec001_pptv', <netCDF4.Variable object at 0x7f640402c640>), (u'spec002_mr', <netCDF4.Variable object at 0x7f640402c6d8>), (u'spec002_pptv', <netCDF4.Variable object at 0x7f640402c770>)])
+    In [6]: rootgrp.variables.keys()
+    Out[11]: odict_keys(['time', 'longitude', 'latitude', 'height', 'RELCOM', 'RELLNG1', 'RELLNG2', 'RELLAT1', 'RELLAT2', 'RELZZ1', 'RELZZ2', 'RELKINDZ', 'RELSTART', 'RELEND', 'RELPART', 'RELXMASS', 'LAGE', 'ORO', 'spec001_mr'])
 
 The `netCDF4` Python wrappers allows to easily slice and dice variables::
 
     In [15]: longitude = rootgrp.variables['longitude']
 
-    In [16]: print longitude
-    <type 'netCDF4.Variable'>
+    In [16]: print(longitude)
+    <class 'netCDF4._netCDF4.Variable'>
     float32 longitude(longitude)
         long_name: longitude in degree east
         axis: Lon
@@ -169,7 +229,7 @@ The `netCDF4` Python wrappers allows to easily slice and dice variables::
         description: grid cell centers
     unlimited dimensions:
     current shape = (720,)
-    filling on, default _FillValue of 9.96920996839e+36 used
+    filling on, default _FillValue of 9.969209968386869e+36 used
 
 We see that 'longitude' is a unidimensional variable with shape (720,).
 Let's read just the 10 first elements::
@@ -179,9 +239,8 @@ Let's read just the 10 first elements::
     array([-178.75, -178.25, -177.75, -177.25, -176.75, -176.25, -175.75,
            -175.25, -174.75, -174.25], dtype=float32)
 
-As only the 10 first elements are brought into memory, that allows you
-to reduce your memory needs to what is required by your current
-analysis.
+As only the 10 first elements are brought into memory, that permits
+to reduce your memory needs for your analysis.
 
 Also, what you get from slicing netCDF4 variables are always NumPy arrays::
 
@@ -195,7 +254,7 @@ Also, each variable can have attached different attributes meant to
 add more information about what they are about::
 
     In [23]: longitude.ncattrs()
-    Out[23]: [u'long_name', u'axis', u'units', u'standard_name', u'description']
+    Out[23]: ['long_name', 'axis', 'units', 'standard_name', 'description']
 
     In [24]: longitude.long_name
     Out[24]: u'longitude in degree east'
@@ -205,7 +264,7 @@ add more information about what they are about::
 
 That's is basically all you need to know to access the on-disk data.
 Feel free to play a bit more with the netCDF4 interface, because you
-will need to use it quite extensively with reflexible.
+will find it very convenient when combined with reflexible.
 
 
 ----
@@ -217,11 +276,11 @@ Testing reflexible
 
 Once you have checked out the code and have a sufficient FLEXPART
 dataset to work with you can begin to use the module. The first step
-is to load the module. Depending on how you checked out the code, you
+is to load the package. Depending on how you checked out the code, you
 can accomplish this in a few different way, but the preferred is as
 follows::
 
-    import reflexible as rf
+    In [1]: import reflexible as rf
 
 .. sidebar:: header file
 
@@ -229,19 +288,92 @@ follows::
   directory name within which the header resides. If the header is not
   named `header`, you can use the optional headerfile argument.
 
-The next step is to read the FLEXPART header file from a dataset::
+The next step is to create the accessor to the FLEXPART run::
 
-    H = rf.Header('/path/to/flexpart/output')
+    In [2]: fprun = rf.Flexpart("/tmp/stads2_V10/pathnames")
 
+    In [3]: type(fprun)
+    Out[3]: reflexible.flexpart.Flexpart
 
-Now you have a variable 'H' which has all the information about the
-run that is available from the header file. This 'Header' is class
+So, `fprun` is an instance of the `Flexpart` class that allows you to
+easily access different parts of the FLEXPART run.  For example, we can
+access the COMMAND like this::
+
+    In [4]: fprun.Command
+    Out[4]:
+    OrderedDict([('CBLFLAG', 0),
+                 ('CTL', -5),
+                 ('IBDATE', 20150405),
+                 ('IBTIME', 103500),
+                 ('IEDATE', 20150426),
+                 ('IETIME', 130500),
+                 ('IFINE', 4),
+                 ('IFLUX', 0),
+                 ('IND_RECEPTOR', 1),
+                 ('IND_SOURCE', 1),
+                 ('IOUT', 13),
+                 ('IOUTPUTFOREACHRELEASE', 1),
+                 ('IPIN', 0),
+                 ('IPOUT', 0),
+                 ('ITSPLIT', 9999999),
+                 ('LAGESPECTRA', 1),
+                 ('LCONVECTION', 1),
+                 ('LDIRECT', -1),
+                 ('LINIT_COND', 0),
+                 ('LOUTAVER', 10800),
+                 ('LOUTSAMPLE', 900),
+                 ('LOUTSTEP', 10800),
+                 ('LSUBGRID', 1),
+                 ('LSYNCTIME', 900),
+                 ('MDOMAINFILL', 0),
+                 ('MQUASILAG', 0),
+                 ('NESTED_OUTPUT', 1),
+                 ('SURF_ONLY', 0)])
+
+the SPECIES::
+
+    In [5]: fprun.Species
+    Out[5]:
+    defaultdict(list,
+                {'decay': [-999.9],
+                 'dquer': [-9.9],
+                 'dryvel': [-9.99],
+                 'dsigma': [-9.9],
+                 'f0': [-9.9],
+                 'henry': [-9.9],
+                 'kao': [-99.99],
+                 'reldiff': [-9.9],
+                 'weightmolar': [350.0]})
+
+or the RELEASES::
+
+    In [7]: fprun.Releases[:10]  # print just the first 10 entries
+    Out[7]:
+    array([ (20150425, 103500, 20150425, 104000, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 61.854942321777344, 61.854942321777344, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 104000, 20150425, 104500, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 60.942100524902344, 60.942100524902344, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 104500, 20150425, 105000, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 60.92486572265625, 60.92486572265625, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 105000, 20150425, 105500, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 60.91283416748047, 60.91283416748047, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 105500, 20150425, 110000, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 199.36782836914062, 199.36782836914062, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 110000, 20150425, 110500, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 236.69912719726562, 236.69912719726562, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 110500, 20150425, 111000, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 355.3902282714844, 355.3902282714844, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 111000, 20150425, 111500, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 510.5713806152344, 510.5713806152344, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 111500, 20150425, 112000, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 665.5327758789062, 665.5327758789062, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631'),
+           (20150425, 112000, 20150425, 112500, 11.875, 11.875, 78.92790222167969, 78.92790222167969, 819.995361328125, 819.995361328125, 2, 1.0, 100000, b'stads2_15_018_2015115_78.9278631')],
+          dtype=[('IDATE1', '<i4'), ('ITIME1', '<i4'), ('IDATE2', '<i4'), ('ITIME2', '<i4'), ('LON1', '<f4'), ('LON2', '<f4'), ('LAT1', '<f4'), ('LAT2', '<f4'), ('Z1', '<f4'), ('Z2', '<f4'), ('ZKIND', 'i1'), ('MASS', '<f4'), ('PARTS', '<i4'), ('COMMENT', 'S32')])
+
+But perhaps the most important accessor is the `Header`::
+
+    In [8]: H = fprun.Header
+
+    In [9]: type(H)
+    Out[9]: reflexible.data_structures.Header
+
+Now we have a variable 'H' which has all the information about the
+run that is available from the header file. This 'Header' is a class
 instance, so the first step may be to explore some of the attibutes::
 
-    H.keys()
-
-This should produce some output that looks familiar to your from your
-FLEXPART run setup.
+    In [12]: print(H.keys())
+    ['C', 'FD', 'Heightnn', 'ORO', 'absolute_path', 'alt_unit', 'area', 'available_dates', 'available_dates_dt', 'direction', 'dxout', 'dyout', 'fill_grids', 'fp_path', 'ibdate', 'ibtime', 'iedate', 'ietime', 'ind_receptor', 'ind_source', 'iout', 'ireleaseend', 'ireleasestart', 'latitude', 'lconvection', 'ldirect', 'longitude', 'loutaver', 'loutsample', 'loutstep', 'lsubgrid', 'nageclass', 'nc', 'ncfile', 'nested', 'nspec', 'numageclasses', 'numpoint', 'numpointspec', 'numxgrid', 'numygrid', 'numzgrid', 'options', 'outheight', 'outlat0', 'outlon0', 'output_unit', 'pointspec', 'releaseend', 'releasestart', 'releasetimes', 'species', 'zpoint1', 'zpoint2']
 
 ----
 

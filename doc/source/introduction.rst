@@ -29,7 +29,6 @@ which explains some basics regarding the model.
 *Note* If you are interested in contributing functionality for other FLEXPART
 versions, please contact me at `jfburkhart@gmail.com`
 
-
 Purpose
 -------
 
