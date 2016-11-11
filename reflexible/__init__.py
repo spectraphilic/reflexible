@@ -21,6 +21,7 @@ AUTHOR
 ======
 
     JFB: John F Burkhart <jfburkhart@gmail.com>
+    FA: Francesc Alted <faltet@gmail.com>
 
 CONTRIBUTORS
 ============
@@ -107,7 +108,7 @@ from .scripts.create_ncfile import create_ncfile
 from .data_structures import (Header, Command, Release,
                               ReleasePoint, Ageclass)
 from .utils import Structure, CacheDict
-
 from .base_read import read_trajectories, read_partpositions
-
 from .flexpart import Flexpart
+from .plotting import (plot_sensitivity, plot_at_level, plot_totalcolumn,
+                       plot_trajectory)

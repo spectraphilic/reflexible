@@ -5,9 +5,9 @@ from __future__ import print_function
 import os
 import itertools
 import pytest
+import matplotlib.pyplot as plt
 
 import reflexible as rf
-import reflexible.plotting as pf
 
 
 # tuples locating test data, nested(True) and global(False)
@@ -19,7 +19,7 @@ test_datasets = [('Fwd1_V9.02', True), ('Fwd1_V9.02', False)]
 # Small test on color maps
 def test_flexpart_colormap():
     from matplotlib.colors import ListedColormap
-    assert isinstance(pf._gen_flexpart_colormap(), ListedColormap)
+    assert isinstance(rf.plotting._gen_flexpart_colormap(), ListedColormap)
 
 
 class Dataset:
@@ -53,18 +53,18 @@ class TestPlotting:
             tc = self.H.C[k].total_column
             dr = [tc.min(), tc.max()]
             if self.H.nested:
-                pf.plot_sensitivity(self.H, tc, data_range=dr,
+                rf.plot_sensitivity(self.H, tc, data_range=dr,
                                     map_region='svalbard')
                 # Create a temporary file for the PNG output
                 p = tmpdir.join('stads_{0}-{1}_nested.png'.format(*k))
                 png_file = str(p.realpath())
-                pf.plt.savefig(png_file)
+                plt.savefig(png_file)
                 assert p.size() > 0   # check that PNG file has some content
             else:
-                pf.plot_sensitivity(self.H, tc, data_range=dr,
+                rf.plot_sensitivity(self.H, tc, data_range=dr,
                                     map_region='north_atlantic')
                 # Create a temporary file for the PNG output
                 p = tmpdir.join('stads_{0}-{1}.png'.format(*k))
                 png_file = str(p.realpath())
-                pf.plt.savefig(png_file)
+                plt.savefig(png_file)
                 assert p.size() > 0  # check that PNG file has some content
