@@ -24,6 +24,14 @@ class TestHeader:
         self.dataset = dataset = Dataset(request.param)
         self.fprun = rf.Flexpart(dataset.fp_pathnames)
 
+    def test_Header(self):
+        # Only test a few FP runs here
+        if self.dataset.fp_name in ('Fwd1_V10.1', 'Fwd1_V9.02'):
+            H = self.fprun.Header
+            assert len(H.C.keys()) >= 1
+            assert len(H.FD.keys()) >= 1
+            assert len(H.C[0,0].data_cube.shape) == 5
+
     def test_releases(self):
         # Only test a few FP runs here
         if self.dataset.fp_name == 'Fwd1_V10.1':

@@ -398,7 +398,6 @@ class FD(object):
         self._keys = [(s, k) for s, k in itertools.product(
             range(nspec), available_dates)]
 
-    @property
     def keys(self):
         return self._keys
 
@@ -443,9 +442,8 @@ class C(object):
         self._keys = [(s, k) for s, k in itertools.product(
             range(self.nspec), range(self.pointspec))]
 
-    @property
     def keys(self):
-        return self._keys()
+        return self._keys
 
     def __dir__(self):
         """ necessary for Ipython tab-completion """
@@ -469,7 +467,7 @@ class C(object):
         Return
         ------
         FDC instance
-            An instance with grid, timestamp, species and other properties.
+            An instance with data_cube, timestamp, species and other properties.
 
         Each element in the dictionary is a 3D array (x,y,z) for each species,k
 
@@ -517,15 +515,15 @@ class C(object):
         return c
 
 # TODO: Following John, the get_slabs function should be deprecated
-def get_slabs(Heightnn, grid):
-    """Preps grid for plotting.
+def get_slabs(Heightnn, data_cube):
+    """Preps data_cube for plotting.
 
     Arguments
     ---------
     Heightnn : numpy array
       Height (outheight + topography).
-    grid : numpy array
-      A grid from the FLEXPARTDATA.
+    data_cube : numpy array
+      A data_cube from the FLEXPARTDATA.
 
     Returns
     -------
@@ -536,23 +534,23 @@ def get_slabs(Heightnn, grid):
     normAreaHeight = True
 
     slabs = {}
-    for i in range(grid.shape[2]):
+    for i in range(data_cube.shape[2]):
         if normAreaHeight:
-            data = grid[:, :, i] / Heightnn[:, :, i]
+            data = data_cube[:, :, i] / Heightnn[:, :, i]
         else:
-            data = grid[:, :, i]
+            data = data_cube[:, :, i]
         slabs[i + 1] = data.T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
 
-    slabs[0] = np.sum(grid, axis=2).T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
+    slabs[0] = np.sum(data_cube, axis=2).T  # XXX why?  something to do with http://en.wikipedia.org/wiki/ISO_6709 ?
     return slabs
 
 
 class FDC(object):
-    """Data container for FD and C grids."""
+    """Data container for FD and C data_cubes."""
 
     def __init__(self):
         self._keys = [
-            'grid', 'gridfile', 'itime', 'timestamp', 'species', 'rel_i',
+            'data_cube', 'gridfile', 'itime', 'timestamp', 'species', 'rel_i',
             'spec_i', 'dry', 'wet', 'slabs', 'shape', 'max', 'min']
         for key in self._keys:
             setattr(self, "_" + key, None)
@@ -561,12 +559,12 @@ class FDC(object):
         return self._keys
 
     @property
-    def grid(self):
-        return self._grid
+    def data_cube(self):
+        return self._data_cube
 
-    @grid.setter
-    def grid(self, value):
-        self._grid = value
+    @data_cube.setter
+    def data_cube(self, value):
+        self._data_cube = value
         self._shape = value.shape
         self._max = value.max()
         self._min = value.min()
@@ -937,7 +935,7 @@ class Release():
         for i in range(nspec):
             outf.write('    {:8.4f},'.format(d.mass))
 
-        outf.write('\n PARTS=   {0:d},\n'.format(int(d.parts)));
+        outf.write('\n PARTS=   {0:d},\n'.format(int(d.parts)))
         outf.write(' COMMENT= "{0}"\n /\n'.format(rel_ident))
 
 
