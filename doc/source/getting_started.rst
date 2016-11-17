@@ -282,13 +282,9 @@ follows::
 
     In [1]: import reflexible as rf
 
-.. sidebar:: header file
-
-  Don't include the actual header file name, but use *only* the
-  directory name within which the header resides. If the header is not
-  named `header`, you can use the optional headerfile argument.
-
-The next step is to create the accessor to the FLEXPART run::
+The next step is to create the accessor to the FLEXPART run.  You usually
+should pass the location of the 'pathnames' file to the `Flexpart`
+constructor::
 
     In [2]: fprun = rf.Flexpart("/tmp/stads2_V10/pathnames")
 
