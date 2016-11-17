@@ -45,13 +45,13 @@ Fetching example data
 ---------------------
 
 An example data set is available for testing. The data contains a
-simple backward run case, and thus is suitable for testing some of the
+backward run case from Svalbard, and is suitable for testing some of the
 unique functions of reflexible for analysis and creation of the
 retroplumes.
 
 I suggest using wget to grab the data::
 
-    $ wget http://folk.uio.no/johnbur/sharing/stads2_V10.tar
+    $ wget http://folk.uio.no/johnbur/sharing/stads2_15_018.tgz
 
 ----
 
