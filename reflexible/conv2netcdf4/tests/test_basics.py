@@ -14,12 +14,14 @@ class Dataset:
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
+        self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
+        self.fp_options, self.fp_output = conv.get_fpdirs(self.fp_pathnames)
 
     def setup(self, tmpdir):
         self.tmpdir = tmpdir  # bring the fixture to the Dataset instance
-        self.H = conv.Header(self.fp_path)
+        self.H = conv.Header(self.fp_output)
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
-        return self.H, self.fp_path, self.nc_path
+        return self.H, self.fp_pathnames, self.nc_path
 
     def cleanup(self):
         self.tmpdir.remove(self.nc_path)
@@ -29,11 +31,11 @@ class TestFwdAPI:
     @pytest.fixture(autouse=True, params=['Fwd1_V9.02', 'Fwd2_V9.02'])
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
-        self.H, self.fp_path, self.nc_path = dataset.setup(tmpdir)
+        self.H, self.fp_pathnames, self.nc_path = dataset.setup(tmpdir)
         request.addfinalizer(dataset.cleanup)
 
     def test_nc_create(self):
-        rf.create_ncfile(self.fp_path, nested=False, outfile=self.nc_path)
+        rf.create_ncfile(self.fp_pathnames, nested=False, outfile=self.nc_path)
         assert os.path.exists(self.nc_path)
 
     def test_read_grid(self):

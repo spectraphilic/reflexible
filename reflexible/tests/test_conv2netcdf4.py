@@ -1,25 +1,32 @@
+"""Tests to check conversion from prior FP format into netcdf."""
+
+import os
 import pytest
 import numpy as np
 
 import reflexible as rf
-from reflexible.conv2netcdf4 import Header as OldHeader
-
-"""Tests to check conversion from prior FP format into netcdf."""
+import reflexible.conv2netcdf4 as conv
 
 output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta',
-               'Fwd1_V10.1']
+               'Fwd1_V10.1', 'HelloWorld_V9.02', 'Only_Outputs_V9.02']
 
 
 class Dataset:
     def __init__(self, fp_name):
         self.fp_name = fp_name
         self.fp_path = rf.datasets[fp_name]
+        if fp_name != 'Only_Outputs_V9.02':
+            self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
+        else:
+            self.fp_pathnames = self.fp_path
+        self.fp_options, self.fp_output = conv.get_fpdirs(self.fp_pathnames)
 
     def setup(self, tmpdir, nested=False, wetdep=True, drydep=True):
         self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
-        rf.create_ncfile(self.fp_path, nested, wetdep, drydep, outfile=self.nc_path)
-        self.oldH = OldHeader(self.fp_path, nested=False)
+        nc_path, options_dir, output_dir = rf.create_ncfile(
+            self.fp_pathnames, nested, wetdep, drydep, outfile=self.nc_path)
+        self.oldH = conv.Header(output_dir, nested=False)
         self.oldH.fill_backward(nspec=(0,))
         self.wetdep = wetdep
         self.drydep = drydep

@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+import warnings
+import os
 import datetime
 
 import numpy as np
@@ -10,6 +12,46 @@ import matplotlib.image as image
 # Matplotlib
 from matplotlib.dates import date2num
 
+
+def get_fpdirs(pathnames):
+    """Return the <options> and <output> dirs from a `pathnames` file."""
+    def get_dir(dir, parent_dir):
+        if dir.startswith('/'):
+            # Absolute path.  Just keep the last level and append to parent.
+            dir = dir[:-1] if dir.endswith('/') else dir
+            dir = os.path.join(parent_dir, os.path.basename(dir))
+        else:
+            dir = os.path.join(parent_dir, dir)
+        dir = os.path.normpath(dir)
+        return dir
+
+    if (os.path.isdir(pathnames) and
+            not os.path.isfile(os.path.join(pathnames, "pathnames"))):
+        warnings.warn("Assuming a FP output directory in: {}".format(pathnames))
+        output_dir = pathnames
+        if output_dir.endswith('/'):
+            # Remove the trailing '/'
+            output_dir = output_dir[:-1]
+        # Try with an "options" dir in the parent of the output
+        options_dir = os.path.join(os.path.dirname(output_dir), "options")
+        return options_dir, output_dir
+
+    if os.path.isdir(pathnames):
+        # First see if we have a pathnames file
+        if os.path.isfile(os.path.join(pathnames, "pathnames")):
+            # Add 'pathnames' at the end
+            pathnames = os.path.join(pathnames, "pathnames")
+
+    if not os.path.isfile(pathnames):
+        raise OSError("pathnames file (or output dir) not found at "
+                      "'{}'".format(pathnames))
+
+    # Normalize the path
+    # Get the <options> and <output> directories
+    with open(pathnames) as f:
+        options_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
+        output_dir = get_dir(f.readline().strip(), os.path.dirname(pathnames))
+    return options_dir, output_dir
 
 
 def data_range(data, min='median'):

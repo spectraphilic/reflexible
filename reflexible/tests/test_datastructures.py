@@ -1,5 +1,4 @@
-import os.path
-
+import os
 import pytest
 import numpy as np
 
@@ -10,22 +9,24 @@ fd_keys = [
     'shape', 'slabs', 'spec_i', 'species', 'timestamp', 'wet']
 
 # tuples locating test data, nested(True) and global(False)
-test_datasets = [('Fwd1_V10.0', False), ('Fwd1_V10.0', True)]
+test_datasets = [('Fwd1_V10.1', False),
+                 ('Fwd1_V9.02', False), ('Fwd1_V9.02', True)]
+
 
 def monotonically_increasing(l):
     return all(x < y for x, y in zip(l, l[1:]))
+
 
 class Dataset:
     def __init__(self, fp_dataset):
         self.fp_name = fp_dataset[0]
         self.nested = fp_dataset[1]
         self.fp_path = rf.datasets[self.fp_name]
+        self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
 
     def setup(self):
-        self.H = rf.Header(self.fp_path, nested=self.nested,
-                           absolute_path=False)
-        self.nc_path = self.H.ncfile
-        return self.H, self.fp_path, self.nc_path
+        self.fprun = rf.Flexpart(self.fp_pathnames, nested=self.nested)
+        return self.fp_name, self.fprun
 
     def cleanup(self):
         pass
@@ -35,7 +36,8 @@ class TestHeader:
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         dataset = Dataset(request.param)
-        self.H, self.fp_path, self.nc_path = dataset.setup()
+        self.fp_name, self.fprun = dataset.setup()
+        self.H = self.fprun.Header
         request.addfinalizer(dataset.cleanup)
 
     def test_ncattrs(self):
@@ -55,7 +57,7 @@ class TestHeader:
 
     def test_species(self):
         """This test needs better consideration."""
-        assert self.H.species[0] in ['AIRTRACER', 'AEROTRACER']
+        assert self.H.species[0] in ['I-131', 'TRACER', 'AEROTRACER']
 
     def test_dimensions(self):
         header_dims = ('numpoint', 'pointspec', 'nageclass')
@@ -93,16 +95,22 @@ class TestHeader:
         assert isinstance(H.area, np.ndarray)
         assert H.area.shape == H.ORO.shape
 
+
 class TestTrajectory:
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
         dataset = Dataset(request.param)
-        self.H, self.fp_path, self.nc_path = dataset.setup()
+        self.fp_name, self.fprun = dataset.setup()
+        self.H = self.fprun.Header
         request.addfinalizer(dataset.cleanup)
 
     def test_read_trajectories(self):
+        if self.fp_name == 'Fwd1_V10.1':
+            # Fwd1_V10.1 does not have a trajectories file
+            return
         T = rf.read_trajectories(self.H)
         assert isinstance(T.Trajectories, np.ndarray)
+
 
 class TestCommand:
     @pytest.fixture(autouse=True, params=test_datasets)

@@ -126,7 +126,7 @@ def plot_totalcolumn(H, data=None,
     return figure
 
 
-def get_figure(fig=None, ax=None, m=None, map_region=None,
+def _get_figure(fig=None, ax=None, m=None, map_region=None,
                map_par=None, fig_par=None, image=None):
     """Returns a matplotlib figure based on the parameters.
 
@@ -135,13 +135,10 @@ def get_figure(fig=None, ax=None, m=None, map_region=None,
     This is so as to be able to reuse figures. This saves a huge amount of
     time, as creating then basemap instance can be time consuming.
 
-    .. note::
-        Generally you won't use this function directly.
-
     USAGE::
-        >>> fig = get_figure()
+        >>> fig = _get_figure()
         or
-        >>> fig = get_figure(map_region='polarcat')
+        >>> fig = _get_figure(map_region='polarcat')
 
     Returns
        This will return the "FIG" object, which has attributes: `fig`, `ax`,
@@ -280,7 +277,7 @@ def plot_sensitivity(H, data,
     try:
         figure = _figure_cache[figure_key]
     except KeyError:
-        figure = _figure_cache[figure_key] = get_figure(
+        figure = _figure_cache[figure_key] = _get_figure(
             map_region=map_region, map_par=map_par, fig_par=fig_par)
 
     if overlay is False:
@@ -559,7 +556,7 @@ def plot_trajectory(H, T, rel_i,
     try:
         figure = _figure_cache[figure_key]
     except KeyError:
-        figure = _figure_cache[figure_key] = get_figure(
+        figure = _figure_cache[figure_key] = _get_figure(
             map_region=map_region, map_par=map_par, fig_par=fig_par)
 
     # Get fig info and make active

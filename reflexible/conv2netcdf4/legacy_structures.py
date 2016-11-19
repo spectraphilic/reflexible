@@ -196,7 +196,6 @@ class Structure(dict, object):
 
 
 class Header(Structure):
-
     """This is the primary starting point for processing FLEXPART output.
     The Header class ( :class:`Structure` ) behaves like a dictionary.
     It contains all the metadata from the simulation run as read from the

@@ -1,8 +1,9 @@
+import os
 import pytest
 import netCDF4 as nc
 
 import reflexible as rf
-from reflexible.conv2netcdf4 import Header
+from reflexible.conv2netcdf4 import Header as OldHeader
 
 
 output_list = ['Fwd1_V9.02', 'Fwd2_V9.02', 'Bwd1_V9.02', 'Bwd2_V9.2beta']
@@ -16,9 +17,11 @@ class Dataset:
     def setup(self, tmpdir, nested=False, wetdep=True, drydep=True):
         self.tmpdir = tmpdir   # bring the fixture to the Dataset instance
         self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
-        rf.create_ncfile(self.fp_path, nested, wetdep, drydep, outfile=self.nc_path)
+        pathnames = os.path.join(self.fp_path, "pathnames")
+        nc_path, options_dir, output_dir = rf.create_ncfile(
+            pathnames, nested, wetdep, drydep, outfile=self.nc_path)
         self.ncid = nc.Dataset(self.nc_path, 'r')
-        self.H = Header(self.fp_path, nested=False)
+        self.H = OldHeader(output_dir, nested=False)
         self.wetdep = wetdep
         self.drydep = drydep
         return self.ncid, self.fp_path, self.nc_path, self.H

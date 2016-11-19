@@ -1,6 +1,3 @@
-.. _introduction:
-
-
 ************
 Introduction
 ************
@@ -18,70 +15,72 @@ Current development activities are focused on improved generality and
 handling of FLEXPART output in all possible run configurations, with
 and without deposition, forward, backward, or otherwise.
 
-.. _getting-reflexible:
+A brief description of the package
+=================================
+
+The reflexible package is developed to work with output from the Lagrangian
+Particle Dispersion Model, `FLEXPART <https://www.flexpart.eu/>`_ .
+
+The module relies extensively on the users knowledge of FLEXPART data in
+general, and thus one is strongly encouraged to read the
+`users guide <http://zardoz.nilu.no/~andreas/flexpart/flexpart8.pdf>`_
+which explains some basics regarding the model.
+
+*Note* If you are interested in contributing functionality for other FLEXPART
+versions, please contact me at `jfburkhart@gmail.com`
+
+Purpose
+-------
+
+The purpose of the module is to make the creation of some standard plotting
+products as easy as possible. However, due to the complex nature of FLEXPART
+output, this isn't so easy! Regardless, I hope you find some of the
+functionality helpful. The most critical functions are readheader and readgrid
+which will at least get the data into Python so you can play with it as you are
+most comfortable.
+
+.. warning::
+    You are entering the domain of a scientist trying to write code. Constructive
+    input is sought, but don't complain if something breaks!
+
 
 Getting reflexible
 =================
-Please contact: `John F. Burkhart <jfburkhart@gmail.com>`_
-
-First, make sure you also have the dependencies installed:
-  - numpy
-  - matplotlib
-  - basemap (matplotlib toolkit)
-  - f2py (to build FortFlex)
-  - netCDF4 (*not* python-netcdf)
-  - PIL
-
-Note the easiest way I've found to deal with the dependencies is to
-use one of 'complete distributions' such as `Enthought
-<http://www.enthought.com>`_ or the `python(xy)
-<http://www.pythonxy.com>`_ or ideally `Anaconda
-<http://www.continuum.io>`_.  For Ubuntu you can pretty easily just
-install the required packages. For the netcdf, we found it easiest to
-use the science-meteorology-dev meta package and use pip to install
-netcdf4-python.
-
-Once you've installed all the dependencies, you can get the code from either
-sources below.
-
-GitHub
-------
 
 The code is available to the public at `github
-<https://github.com/spectraphilic/reflexible>`_.
+<https://github.com/spectraphilic/reflexible>`_.  You can easily clone
+the git repository::
 
-PyPi
-----
+    $ git clone https://github.com/spectraphilic/reflexible.git
 
-The `reflexible <http://pypi.python.org/pypi/reflexible>`_ code is
-also posted to pypi, but this is more likely to fall out of date.
+Build and test
+==============
 
+It should simply be a matter of changing the repo directory and running
+setup.py::
 
-----
+    $ python setup.py build_ext --inplace
 
-.. _email-list:
+and then run the tests with::
 
-Mailing List
-============
+    $ pytest
 
-There is a mailing list for the project set up at with
-sourceforge. You can subscribe to the `reflexible
-<https://lists.sourceforge.net/lists/listinfo/reflexible-users>`_ list
-for user discussions.
-
-.. _installation:
+If the test suite pass, you can proceed with installation.
 
 Installation
 ============
 
-If all is working correctly, and you have all the required
-dependencies, then it should simply be a matter of running setup.py::
+It should simply be a matter of running::
 
-    python setup.py build
+    $ python setup.py install
 
-and then install it (you might need to be superuser here)::
+Quick install
+=============
 
-    python setup.py install
+You may also want to install the package in one single shot (no testing
+though!) with::
+
+    $ pip install git+https://github.com/spectraphilic/reflexible.git
 
 And *hopefully* everything works!.
 

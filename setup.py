@@ -48,7 +48,6 @@ setup(
         'reflexible.scripts',
         'reflexible.conv2netcdf4',
         'reflexible.tests',
-        'reflexible.legacy',
         ],
     data_files = [
         ('reflexible/conv2netcdf4', ['reflexible/conv2netcdf4/FortFlex.so'])] + \
@@ -58,6 +57,7 @@ setup(
         'console_scripts': [
             'create_ncfile = reflexible.scripts.create_ncfile:main',
             'readpartpositions = reflexible.scripts.readpartpositions:main',
+            'fprun = reflexible.scripts.fprun:main',
         ]
     },
 )
