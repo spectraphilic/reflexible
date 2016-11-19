@@ -51,7 +51,7 @@ retroplumes.
 
 I suggest using wget to grab the data::
 
-    $ wget http://folk.uio.no/johnbur/sharing/stads2_15_018.tgz
+    $ wget http://folk.uio.no/johnbur/sharing/stads2_V10.tar
 
 ----
 
