@@ -26,10 +26,9 @@ will have the option to save this converted output for later use.
 
 Initially we aim to provide:
 
-  a. an interface to read model output and provide general information about the simulation
-  b. tools for simple access to the data
-  c. simple visualization tools
-
+- an interface to read model output and provide general information about the simulation
+- tools for simple access to the data
+- simple visualization tools
 
 Some routines were initially created to work with FLEXPART model
 ouput. [FLEXPART](http://transport.nilu.no/flexpart) is a Lagrangian particle
@@ -49,7 +48,7 @@ As for Issues, please use the
 [tool](https://github.com/spectraphilic/reflexible/issues) at
 github.
 
-Direct inquiries may be sent to::
+Direct inquiries may be sent to:
 
 	John F Burkhart, University of Oslo
 	[john.burkhart](mailto://john.burkhart@geo.uio.no)
@@ -58,9 +57,9 @@ Direct inquiries may be sent to::
 
 ### GitHub ###
 
-Clone the github repository into a folder in your PYTHONPATH::
+Clone the github repository into a folder in your PYTHONPATH:
 
-  $ git clone https://github.com/spectraphilic/reflexible.git
+    $ git clone https://github.com/spectraphilic/reflexible.git
 
 ### Sphinx Documentation ###
 
@@ -78,9 +77,9 @@ an issue.
 An alternative 'BinaryFile' class has been created so one can work
 with pure Python. Alone, it is significantly slower than the FortFlex
 module, however, if you use the dumpgrid module, significant speedups
-can be achieved. For this run::
+can be achieved. For this run:
 
-  $ python setup.py build_ext --inplace
+    $ python setup.py build_ext --inplace
 
 This will compile the pflexcy.pyx file into a pflexcy.so module that
 can be imported and used by the pf.readgrid function. A series of
@@ -99,24 +98,24 @@ documentation.
 
 reflexible comes with a suite of test units that you can run in a
 series of ways after you compiled the extensions and before you
-install it::
+install it:
 
-  $ PYTHONPATH=. python -c "import reflexible; reflexible.test()"
+    $ PYTHONPATH=. python -c "import reflexible; reflexible.test()"
 
-or::
+or:
 
-  $ PYTHONPATH=. python reflexible/tests/all.py
+    $ PYTHONPATH=. python reflexible/tests/all.py
 
-or using the excellent py.test (recommended for developers)::
+or using the excellent py.test (recommended for developers):
 
-  $ PYTHONPATH=. py.test
+    $ PYTHONPATH=. py.test
 
 ## Installation
 
 If all is working correctly, then you can install it (you might need
-to be superuser here)::
+to be superuser here):
 
-  $ python setup.py install
+    $ python setup.py install
 
 And *hopefully* everything works!.
 
@@ -125,17 +124,17 @@ And *hopefully* everything works!.
 When you run into problems it is always nice that when you are filing
 a ticket you would add the information about the versions you are
 using.  You can do that via the `pf.print_versions()`.  Here it is an
-output example::
+output example:
 
-  $ python -c "import reflexible; reflexible.print_versions()"
-  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-  reflexible version: 0.10.0
-  NumPy version:     1.9.0
-  Python version:    2.7.8 |Anaconda 2.1.0 (64-bit)| (default, Aug 21 2014, 18:22:21)
-  [GCC 4.4.7 20120313 (Red Hat 4.4.7-1)]
-  Platform:          linux2-x86_64
-  Byte-ordering:     little
-  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    $ python -c "import reflexible; reflexible.print_versions()"
+    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    reflexible version: 0.10.0
+    NumPy version:     1.9.0
+    Python version:    2.7.8 |Anaconda 2.1.0 (64-bit)| (default, Aug 21 2014, 18:22:21)
+    [GCC 4.4.7 20120313 (Red Hat 4.4.7-1)]
+    Platform:          linux2-x86_64
+    Byte-ordering:     little
+    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ## Key Tools
 
