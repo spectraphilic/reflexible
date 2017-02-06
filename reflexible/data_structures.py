@@ -348,7 +348,7 @@ class Header(object):
 
     @property
     def options(self):
-        return {'readp': None,
+        return {'readp': self.readp,
                 'nested': self.nested,
                 'absolute_path': self.absolute_path}
 
@@ -362,15 +362,16 @@ class Header(object):
         return C(self.nc, self.releasetimes, self.species, self.available_dates,
                  self.direction, self.iout, self.Heightnn, self.FD)
 
-    def __init__(self, path=None, nested=False, absolute_path=True):
+    def __init__(self, path=None, nested=False, absolute_path=True, readp=None):
+        self.nested = nested
+        self.absolute_path = absolute_path
+        self.readp = readp
+
         if absolute_path:
             files = [path]
         else:
             # print("Warning assuming files have .nc extension")
             files = glob.glob(os.path.join(path, '*.nc'))
-
-        self.nested = nested
-        self.absolute_path = absolute_path
 
         # check for nested or not, assumes only two nc files in
         # output directory
