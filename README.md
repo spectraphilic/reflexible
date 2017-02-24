@@ -53,20 +53,32 @@ Direct inquiries may be sent to:
 	John F Burkhart, University of Oslo
 	[john.burkhart](mailto://john.burkhart@geo.uio.no)
 
-## Web Resources ##
-
-### GitHub ###
-
-Clone the github repository into a folder in your PYTHONPATH:
-
-    $ git clone https://github.com/spectraphilic/reflexible.git
-
-### Sphinx Documentation ###
+## Sphinx Documentation
 
 The documentation is hosted at
 [readthedocs](http://reflexible.readthedocs.org/en/latest/index.html).
 
 ## Working with reflexible
+
+Clone the github repository into a folder in your PYTHONPATH:
+
+    $ git clone https://github.com/spectraphilic/reflexible.git
+
+Install the requirements:
+
+    $ conda install --file requirements.txt -c conda-forge
+
+Now compile the library:
+
+    $ python setup.py build_ext --inplace
+
+This will compile the pflexcy.pyx file into a pflexcy.so module that
+can be imported and used by the pf.readgrid function. A series of
+tests are run to try and determine the best module to use -- somewhat
+transparently to the user. See the reflexible.readgridV8 function for
+more information.
+
+### Possible issues
 
 There are a few 'gotchas' when using the module. First, you will
 likely have to recompile (f2py) the FortFlex.f file and create a
@@ -77,15 +89,7 @@ an issue.
 An alternative 'BinaryFile' class has been created so one can work
 with pure Python. Alone, it is significantly slower than the FortFlex
 module, however, if you use the dumpgrid module, significant speedups
-can be achieved. For this run:
-
-    $ python setup.py build_ext --inplace
-
-This will compile the pflexcy.pyx file into a pflexcy.so module that
-can be imported and used by the pf.readgrid function. A series of
-tests are run to try and determine the best module to use -- somewhat
-transparently to the user. See the reflexible.readgridV8 function for
-more information.
+can be achieved.
 
 Primary functionality comes from the readheaderV8 function and the
 readgridV8 function. I have created a "Header" class that can be used
@@ -108,7 +112,7 @@ or:
 
 or using the excellent py.test (recommended for developers):
 
-    $ PYTHONPATH=. py.test
+    $ py.test
 
 ## Installation
 
@@ -128,13 +132,14 @@ output example:
 
     $ python -c "import reflexible; reflexible.print_versions()"
     -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    reflexible version: 0.10.0
-    NumPy version:     1.9.0
-    Python version:    2.7.8 |Anaconda 2.1.0 (64-bit)| (default, Aug 21 2014, 18:22:21)
-    [GCC 4.4.7 20120313 (Red Hat 4.4.7-1)]
-    Platform:          linux2-x86_64
+    reflexible version: 0.5.0
+    NumPy version:     1.12.0
+    Python version:    3.5.3 | packaged by conda-forge | (default, Feb  9 2017, 14:37:12)
+    [GCC 4.8.2 20140120 (Red Hat 4.8.2-15)]
+    Platform:          linux-x86_64
     Byte-ordering:     little
     -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 
 ## Key Tools
 
