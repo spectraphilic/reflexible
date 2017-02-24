@@ -53,6 +53,10 @@ the git repository::
 
     $ git clone https://github.com/spectraphilic/reflexible.git
 
+Install the requirements:
+
+    $ conda install --file requirements.txt -c conda-forge
+
 Build and test
 ==============
 

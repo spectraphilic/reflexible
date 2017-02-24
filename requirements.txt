@@ -2,8 +2,8 @@ matplotlib
 pillow
 netCDF4>=1.1.1
 xarray
-numpy
+numpy!=1.12
 pandas
-basemap
+basemap==1.0.7
 pyyaml
 bcolz
