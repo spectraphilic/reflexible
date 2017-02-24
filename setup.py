@@ -60,5 +60,4 @@ setup(
             'fprun = reflexible.scripts.fprun:main',
         ]
     },
-    install_requires=['bcolz', 'matplotlib', 'netCDF4', 'numpy'],
 )
