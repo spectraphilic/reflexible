@@ -529,7 +529,7 @@ the 0th element is the Total Column.
 
 Using the plotting tools of reflexible we can plot the total column easily::
 
-    In [61]: rf.plot_totalcolumn(H, myc.total_column, map_region='NorthAtlantic')
+    In [61]: rf.plot_totalcolumn(H, myc, map_region='NorthAtlantic')
 
 .. TODO: The above line does not work yet for the stads2 dataset.  Why?
 

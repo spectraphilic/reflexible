@@ -39,8 +39,8 @@ def plot_at_level(H, data, level=1,
         level_desc = H.outheight[level - 1]
 
     if data_range is None:
-        dmax = data.max()
-        dmin = data.min()
+        dmax = data.max
+        dmin = data.min
         data_range = [dmin, dmax]
     else:
         dmin, dmax, = data_range
@@ -66,7 +66,7 @@ def plot_at_level(H, data, level=1,
             plot_title = """ %s Sensitivity at %s %s: %s \n %s """ % (
                 ID, level_desc, H['alt_unit'], species, timestamp)
 
-    figure = plot_sensitivity(H, data,
+    figure = plot_sensitivity(H, data.total_column,
                               data_range=data_range,
                               rel_i=rel_i, log=log,
                               map_region=map_region,
@@ -91,12 +91,13 @@ def plot_totalcolumn(H, data=None,
         units = 'ns m kg-1'
 
     if data_range is None:
-        dmax = data.max()
-        dmin = data.min()
+        dmax = data.max
+        dmin = data.min
         data_range = [dmin, dmax]
     else:
         dmin, dmax, = data_range
 
+    rel_i = data.rel_i
     if H.direction == 'backward':
         zp1 = H['zpoint1'][rel_i]
         zp2 = H['zpoint2'][rel_i]
@@ -114,7 +115,7 @@ def plot_totalcolumn(H, data=None,
         plot_title = """
         %s Total Column Sensitivity: %s\n %s """ % (ID, species, timestamp)
 
-    figure = plot_sensitivity(H, data,
+    figure = plot_sensitivity(H, data.total_column,
                               data_range=data_range,
                               rel_i=rel_i, map_region=map_region,
                               units=units,
@@ -298,6 +299,7 @@ def plot_sensitivity(H, data,
     plt.axes(ax)
 
     # set up transformations for the data array
+    topodat = data
     if method == 'imshow':
         if m.projection not in ['cyl', 'merc', 'mill']:
             lats = np.arange(
@@ -316,12 +318,8 @@ def plot_sensitivity(H, data,
             dx = 2. * np.pi * m.rmajor / len(lons)
             nx = int((m.xmax - m.xmin) / dx) + 1
             ny = int((m.ymax - m.ymin) / dx) + 1
-            if nx is 1:
-                topodat = data
-            else:
+            if nx != 1:
                 topodat = m.transform_scalar(data, lons, lats, nx, ny)
-        else:
-            topodat = data
     else:
         # Check to see if a cyclic wraparound is required
         lons = np.arange(
@@ -339,8 +337,6 @@ def plot_sensitivity(H, data,
         if m.projection != 'merc':
             if lons[-1] - lons[0] < 360.:
                 topodat, lons = basemap.addcyclic(data, lons)
-            else:
-                topodat = data
 
     # get min/max range
     if data_range is not None:
