@@ -27,9 +27,8 @@ install:
   # Install dependencies in conda
   - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION libgfortran
   - source activate reflex_env
-  - conda install pyqt   # seems required when running matplotlib
   # Install the remaining requeriments
-  - cat requirements.txt | xargs conda install
+  - conda install --file requirements.txt -c conda-forge
 
   # Install dependencies in PyPI
   - pip install pytest-cov coveralls
