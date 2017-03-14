@@ -41,7 +41,7 @@ COMPLEVEL = 9
 MIN_SIZE = False
 
 
-def read_species(options_dir, nspec):
+def read_species(options_dir, nspec, spec_ids=None):
     """Read metadata from SPECIES dir and return it as a dict.
 
     TODO: maybe the current version is specific of FLEXPART 9.
@@ -72,7 +72,9 @@ def read_species(options_dir, nspec):
         }
 
     dspec = defaultdict(list)
-    for spec in range(1, nspec+1):
+    if spec_ids is None:
+        spec_ids = range(1, nspec+1)
+    for spec in spec_ids:
         path = os.path.join(species_dir, "SPECIES_%03d" % spec)
         with open(path) as fspec:
             for line in fspec:
@@ -387,7 +389,7 @@ def write_header(H, ncid, wetdep, drydep, write_releases, species):
 
     chunksizes = (H.numxgrid, H.numygrid, H.numzgrid, 1, 1, 1)[::-1]
     dep_chunksizes = (H.numxgrid, H.numygrid, 1, 1, 1)[::-1]
-    for i in range(0, H.nspec):
+    for i in range(H.nspec):
         anspec = "%3.3d" % (i + 1)
         # iout: 1 conc. output (ng/m3), 2 mixing ratio (pptv), 3 both,
         # 4 plume traject, 5=1+4
@@ -608,7 +610,7 @@ def create_ncfile(pathnames, nested, wetdep=False, drydep=False,
     if options_dir:
         command = read_conffiles("COMMAND", options_dir, command_path)
         releases = read_conffiles("RELEASES", options_dir, releases_path)
-        species = read_species(options_dir, H.nspec)
+        species = read_species(options_dir, H.nspec, spec_ids=releases['spec_ids'])
 
     if outfile:
         # outfile has priority over previous flags

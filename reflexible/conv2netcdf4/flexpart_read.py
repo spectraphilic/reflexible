@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import datetime
 import re
+import string
 import numpy as np
 import bcolz
 from math import pi, sqrt, cos
@@ -40,67 +41,121 @@ def read_releases_v10(pathname):
 
     Returns
     -------
-    A ctable object from bcolz package.
+    A dictionary with the release data
+
+    .. tabularcolumns::  |l|L|
+
+    ===================      ========================================
+    Keys                     Description
+    ===================      ========================================
+    releases                 release data object from bcolz package
+    spec_ids                 array of species id integers
+    ===================      ========================================
     """
-    # Setup the container for the data
-    dtype = [('IDATE1', np.int32), ('ITIME1', np.int32),
-             ('IDATE2', np.int32), ('ITIME2', np.int32),
-             ('LON1', np.float32), ('LON2', np.float32),
-             ('LAT1', np.float32), ('LAT2', np.float32),
-             ('Z1', np.float32), ('Z2', np.float32),
-             ('ZKIND', np.int8), ('MASS', np.float32),
-             ('PARTS', np.int32), ('COMMENT', 'S32')]
-    cparams = bcolz.cparams(cname="lz4", clevel=6, shuffle=1)
-    ctable = bcolz.zeros(0, dtype=dtype, cparams=cparams)
-    nrecords = ctable['IDATE1'].chunklen
-    releases = np.zeros(nrecords, dtype=dtype)
-
-    # Prepare for reading the input
+    # Read the input
     input_str = open(pathname, 'r').read()
-    marker = "&RELEASE\n"
-    len_marker = len(marker)
-    release_re = r'\S+=\s+[\"|\s](\S+)[,|\"|\w]'
+    group_names = ['&RELEASES_CTRL\n', '&RELEASE\n']
+    end_group = '/\n'
+    dtypes = [[('NSPEC', np.int32), ('SPECNUM_REL', object)],
+              [('IDATE1', np.int32), ('ITIME1', np.int32),
+               ('IDATE2', np.int32), ('ITIME2', np.int32),
+               ('LON1', np.float32), ('LON2', np.float32),
+               ('LAT1', np.float32), ('LAT2', np.float32),
+               ('Z1', np.float32), ('Z2', np.float32),
+               ('ZKIND', np.int8), ('MASS', np.float32),
+               ('PARTS', np.int32), ('COMMENT', 'S32')]]
+    
+    # Matches a key = value pair to obtain the value
+    namelist_group_re = r'[^\s,\=]+?\s*=\s*((?:[^=]+)|(?:(?:\"|\').+))(?=[\s,][^\s,\=]+\s*\=|$)'
+    
+    cparams = bcolz.cparams(cname="lz4", clevel=6, shuffle=1)
+    
+    for k, group_name in enumerate(group_names):
+        len_marker = len(group_name)
+        ctable = bcolz.zeros(0, dtype=dtypes[k], cparams=cparams)
+        nrecords = ctable[ctable.names[0]].chunklen
+        values = np.zeros(nrecords, dtype=dtypes[k])
+        if k == 0:
+            releases_species = ctable
+        elif k == 1:
+            releases = ctable
+        # Loop over all the marker groups
+        i, n = 0, 0
+        while True:
+            i = input_str.find(group_name, i)
+            if i == -1:
+                break  # group marker is not found anymore
+            j = input_str.find(end_group, i + 1)
+            n += 1
+            group_block = input_str[i + len_marker: j]
+            i = j
+            values_tuple = tuple([s.strip(',"\''+string.whitespace) for s in re.findall(namelist_group_re, group_block)])
 
-    # Loop over all the marker groups
-    i, n = 0, 0
-    while True:
-        i = input_str.find(marker, i)
-        j = input_str.find(marker, i + 1)
-        n += 1
-        group_block = input_str[i + len_marker: j]
-        i = j
-        values = tuple(re.findall(release_re, group_block))
-        try:
-            releases[(n - 1) % nrecords] = values
-        except ValueError:
-            print("Problem at: group: %d, %s" % (n, group_block))
-            print("values:", values)
-            raise
-        if (n % nrecords) == 0:
-            ctable.append(releases)
-        if (i == -1) or (j == -1):
-            break  # marker is not found anymore
-    # Remainder
-    ctable.append(releases[:n % nrecords])
-    ctable.flush()
+            try:
+                values[(n - 1) % nrecords] = values_tuple
+            except ValueError:
+                print("Problem at: group: %d, %s" % (n, group_block))
+                print("values:", values_tuple)
+                raise
+            if n % nrecords == 0:
+                ctable.append(values)
 
-    return ctable
+        # Remainder
+        ctable.append(values[:n % nrecords])
+        ctable.flush()
+    
+    return {'releases': releases,
+            'spec_ids': np.array(releases_species['SPECNUM_REL'][0].split(','), dtype=int)}
 
 
-def read_releases_v9(path):
+def read_releases_v9(path, headerrows=11):
     """Read metadata from a RELEASES path and return it as a dict.
 
-    Only 'release_point_names' entry returned.
+    Parameters
+    ----------
+    path : pathname
+      Release file name
+
+    Returns
+    -------
+    A dictionary with the release metadata
+
+    .. tabularcolumns::  |l|L|
+
+    ===================      ========================================
+    Keys                     Description
+    ===================      ========================================
+    release_point_names      array of release point name strings
+    spec_ids                 array of species id integers
+    ===================      ========================================
     """
+    spec_start_line = headerrows+1
+    old_format = False
     rpnames = []
     with open(path) as f:
         prev_line = None
+        lnum = 0
+        nspec = 0
+        spec_ids = list()
         for line in f:
-            if prev_line is not None and "comment" in line:
-                rpnames.append(prev_line.strip())
-            prev_line = line
-    # Return just the release point names for now
-    return {"release_point_names": np.array(rpnames, dtype="S45")}
+            lnum += 1
+            if lnum == spec_start_line:
+                nspec = int(line.split()[0])
+            elif lnum == spec_start_line+1 and 'Total' in line:
+                old_format = True
+                skip_lines = 2
+            if not old_format:
+                if lnum > spec_start_line and lnum <= spec_start_line + nspec:
+                    spec_ids.append(int(line.split()[0]))
+            else:
+                if prev_line is not None and "comment" in line:
+                    rpnames.append(prev_line.strip())
+                shift_lnum = lnum - spec_start_line - skip_lines
+                if shift_lnum > 0 and shift_lnum <= nspec*(skip_lines+1) and shift_lnum % (skip_lines+1) == 1:
+                    spec_ids.append(int(line.split()[0]))
+                prev_line = line
+    return {'release_point_names': np.array(rpnames, dtype='S45'),
+            'spec_ids': np.array(spec_ids, dtype=int)}
 
 
 def read_releases_old(path, headerrows=11):

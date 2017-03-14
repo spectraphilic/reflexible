@@ -613,7 +613,7 @@ def readgridV8(H, **kwargs):
 
     # What species to return?
     nspec_ret = OPS.nspec_ret
-    if isinstance(nspec_ret, int):
+    if isinstance(nspec_ret, (int, np.int64)):
         nspec_ret = [nspec_ret]
     assert iter(nspec_ret), "nspec_ret must be iterable."
 
@@ -622,7 +622,7 @@ def readgridV8(H, **kwargs):
     if OPS.time_ret is not None:
         get_dates = []
         time_ret = OPS.time_ret
-        if isinstance(time_ret, int) == True:
+        if isinstance(time_ret, (int, np.int64)):
             time_ret = [time_ret]
 
         if time_ret[0] < 0:
@@ -861,7 +861,7 @@ def readgridV6(H, **kwargs):
 
     # What species to return?
     nspec_ret = OPS.nspec_ret
-    if isinstance(nspec_ret, int):
+    if isinstance(nspec_ret, (int, np.int64)):
         nspec_ret = [nspec_ret]
     assert iter(nspec_ret), "nspec_ret must be iterable."
 
@@ -870,7 +870,7 @@ def readgridV6(H, **kwargs):
     if OPS.time_ret is not None:
         get_dates = []
         time_ret = OPS.time_ret
-        if isinstance(time_ret, int) == True:
+        if isinstance(time_ret, (int, np.int64)):
             time_ret = [time_ret]
 
         if time_ret[0] < 0:
@@ -1097,7 +1097,7 @@ def fill_grids(H, nspec=0, FD=None):
 
     #    assert H.direction == 'backward', "fill_backward is only valid for backward runs"
     # make sure npsec is iterable
-    if isinstance(nspec, int):
+    if isinstance(nspec, (int, np.int64)):
         species = [nspec]
     else:
         species = nspec

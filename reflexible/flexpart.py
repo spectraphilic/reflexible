@@ -48,7 +48,7 @@ class Flexpart(object):
         # Other config files
         self.Command = read_conffiles("COMMAND", self.fp_options, None)
         self.Releases = read_conffiles("RELEASES", self.fp_options, None)
-        self.Species = read_species(self.fp_options, self.Header.nspec)
+        self.Species = read_species(self.fp_options, self.Header.nspec, spec_ids=self.Releases['spec_ids'])
 
     def __str__(self):
         return "Flexpart('%s', nested=%s)" % (self.pathnames, self.nested)
