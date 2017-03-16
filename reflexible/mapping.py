@@ -16,7 +16,6 @@ import numpy as np
 from PIL import Image
 
 import matplotlib as mpl
-import matplotlib.image
 import matplotlib.pyplot as plt
 from mpl_toolkits import basemap
 
@@ -297,7 +296,7 @@ def get_base_image(imagefile, **kwargs):
     """
     # Get Keyword Arguments
     reg = kwargs.get('map_region', 'default')
-    figname = kwargs.get('figname', None)
+    #figname = kwargs.get('figname', None)
     fig = kwargs.get('figure', None)
 
     # shows how to warp an image from one map projection to another.
@@ -310,7 +309,7 @@ def get_base_image(imagefile, **kwargs):
 
     # define lat/lon grid that image spans (projection='cyl').
     nlons = rgba.shape[1]
-    nlats = rgba.shape[0]
+    #nlats = rgba.shape[0]
     delta = 360. / float(nlons)
     lons = np.arange(-180. + 0.5 * delta, 180., delta)
     lats = np.arange(-90. + 0.5 * delta, 90., delta)
@@ -319,7 +318,6 @@ def get_base_image(imagefile, **kwargs):
     fig = plt.figure(1, figsize=(8, 6))
 
     # define Lambert Conformal basemap for North America.
-    mr = {'map_region': reg}
     mp, fig_par = map_regions(map_region=reg)
 
     m = basemap.Basemap(**mp)
@@ -342,7 +340,7 @@ def get_base_image(imagefile, **kwargs):
         rgba_warped = rgba
         print('problem with transform_scalar')
     # plot warped rgba image.
-    im = m.imshow(rgba_warped)
+    m.imshow(rgba_warped)
     # draw coastlines.
     m.drawcoastlines(linewidth=0.5, color='0.5')
     # draw parallels and meridians.
