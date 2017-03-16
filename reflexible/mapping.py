@@ -230,7 +230,7 @@ def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
     return m_p, m_m
 
 
-def get_base1(map_region=1,
+def get_base1(map_region='default',
               figname=None,
               fig=None,
               drawlsmask=False,
@@ -248,11 +248,7 @@ def get_base1(map_region=1,
 
     # Use map_regions function to define
     # input parameters for Basemap
-    map_par_sd, fig_par_sd = map_regions(map_region=map_region, map_par=map_par)
-    if map_par:
-        map_par_sd.set_with_dict(map_par)
-    if fig_par:
-        fig_par_sd.set_with_dict(fig_par)
+    map_par_sd, fig_par_sd = map_regions(map_region, map_par, fig_par)
 
     # create the figure
     if fig is None:
@@ -282,7 +278,8 @@ def get_base1(map_region=1,
     return fig, m
 
 
-def get_base_image(imagefile, **kwargs):
+def get_base_image(imagefile, map_region='default', map_par=None, fig_par=None,
+                   **kwargs):
     """Warps NASA Blue Marble Image version.
 
     Create basemap figure for plotting on top of
@@ -292,10 +289,8 @@ def get_base_image(imagefile, **kwargs):
 
         >fig,m=get_base1(map_region="myregion")
 
-
     """
     # Get Keyword Arguments
-    reg = kwargs.get('map_region', 'default')
     #figname = kwargs.get('figname', None)
     fig = kwargs.get('figure', None)
 
@@ -318,7 +313,7 @@ def get_base_image(imagefile, **kwargs):
     fig = plt.figure(1, figsize=(8, 6))
 
     # define Lambert Conformal basemap for North America.
-    mp, fig_par = map_regions(map_region=reg)
+    mp, fig_par = map_regions(map_region, map_par, fig_par)
 
     m = basemap.Basemap(**mp)
     ax = fig.add_axes(

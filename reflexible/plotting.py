@@ -20,7 +20,7 @@ _figure_cache = CacheDict(10)
 def plot_at_level(H, data, level=1,
                   ID=' ', rel_i=None, species=None,
                   timestamp=None,
-                  map_region=5,
+                  map_region=None,
                   overlay=False,
                   datainfo_str=None, log=True,
                   data_range=None,
@@ -81,7 +81,7 @@ def plot_at_level(H, data, level=1,
 def plot_totalcolumn(H, data=None,
                      ID=' ', rel_i=None, species=None,
                      timestamp=None,
-                     map_region=5,
+                     map_region=None,
                      data_range=None,
                      overlay=False,
                      datainfo_str=None, **kwargs):
@@ -127,7 +127,7 @@ def plot_totalcolumn(H, data=None,
     return figure
 
 
-def _get_figure(fig=None, ax=None, m=None, map_region=None,
+def _get_figure(fig=None, ax=None, m=None, map_region='default',
                map_par=None, fig_par=None, image=None):
     """Returns a matplotlib figure based on the parameters.
 
@@ -167,11 +167,10 @@ def _get_figure(fig=None, ax=None, m=None, map_region=None,
 
     if m is None:
         if image:
-            fig, m = mp.get_base_image(image, map_region=map_region,
-                                       map_par=map_par, fig_par=fig_par)
+            fig, m = mp.get_base_image(image, map_region, map_par, fig_par)
         else:
-            fig, m = mp.get_base1(map_region=map_region, map_par=map_par,
-                                  fig_par=fig_par, fig=fig)
+            fig, m = mp.get_base1(map_region, map_par=map_par, fig_par=fig_par,
+                                  fig=fig)
             figure.fig = fig
             figure.m = m
             figure.ax = fig.gca()
@@ -196,6 +195,25 @@ def _get_figure(fig=None, ax=None, m=None, map_region=None,
     return figure
 
 
+def _get_figure_cache(map_region, map_par, fig_par):
+    """
+    Returns the figure from the cache if it is there. Otherwise calls to
+    _get_figure.
+    """
+
+    if map_region is None:
+        map_region = 'default'
+
+    figure_key = map_region + str(map_par) + str(fig_par)
+    try:
+        figure = _figure_cache[figure_key]
+    except KeyError:
+        figure = _figure_cache[figure_key] = _get_figure(
+            map_region=map_region, map_par=map_par, fig_par=fig_par)
+
+    return figure
+
+
 def plot_sensitivity(H, data,
                      data_range=None,
                      units='ns m^2 / kg',
@@ -214,7 +232,7 @@ def plot_sensitivity(H, data,
     """ plot_sensitivity: core function for plotting FLEXPART output.
 
     Usage::
-        FIG = plot_sensitivity(H,data,*kwargs)
+        FIG = plot_sensitivity(H, data, **kwargs)
 
     This returns the figure object, and plots the sensitivity from the data
     contained in the "D" array.
@@ -273,14 +291,7 @@ def plot_sensitivity(H, data,
     """
     data = data.T
 
-    # Look if the figure is in cache already, and if not, cache it
-    figure_key = map_region + str(map_par) + str(fig_par)
-    try:
-        figure = _figure_cache[figure_key]
-    except KeyError:
-        figure = _figure_cache[figure_key] = _get_figure(
-            map_region=map_region, map_par=map_par, fig_par=fig_par)
-
+    figure = _get_figure_cache(map_region, map_par, fig_par)
     if overlay is False:
         del figure.ax.images[figure.indices.images:]
         del figure.ax.collections[figure.indices.collections:]
@@ -548,12 +559,7 @@ def plot_trajectory(H, T, rel_i,
         pass
 
     # Set up the figure
-    figure_key = map_region + str(map_par) + str(fig_par)
-    try:
-        figure = _figure_cache[figure_key]
-    except KeyError:
-        figure = _figure_cache[figure_key] = _get_figure(
-            map_region=map_region, map_par=map_par, fig_par=fig_par)
+    figure = _get_figure_cache(map_region, map_par, fig_par)
 
     # Get fig info and make active
     fig = figure.fig
