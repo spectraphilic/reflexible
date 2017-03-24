@@ -13,16 +13,9 @@ Test Data:
 
 from argparse import ArgumentParser
 import os
-import sys
-
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import numpy as np
-from mpl_toolkits.basemap import addcyclic
 
 import reflexible as rf
-import reflexible.mapping as mp
-from reflexible.plotting import plot_sensitivity, plot_totalcolumn, plot_at_level
+from reflexible.plotting import plot_totalcolumn, plot_at_level
 
 
 def plot_backward(SOURCE_FILE, OUTPUT_DIR, region, nested=False, label=''):
