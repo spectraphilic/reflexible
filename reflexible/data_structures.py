@@ -3,6 +3,7 @@
 """
 Definition of the different data structures in reflexible.
 """
+
 import os
 import datetime as dt
 import itertools
@@ -14,6 +15,7 @@ import numpy as np
 import xarray as xr
 
 import reflexible
+from reflexible.utils import closest
 
 
 class Header(object):
@@ -346,6 +348,25 @@ class Header(object):
         """ see :func:`read_trajectories` """
         self.trajectory = reflexible.read_trajectories(self)
 
+    def closest_date(self, dateval, fmt=None):
+        """
+        given a datestring or datetime, tries to find the closest date.
+        if passed a list, assumes it is a list of datetimes
+        """
+
+        if isinstance(dateval, str):
+            if not fmt:
+                if len(dateval) == 8:
+                    fmt = '%Y%m%d'
+                if len(dateval) == 14:
+                    fmt = '%Y%m%d%H%M%S'
+                else:
+                    raise IOError("no format provided for datestring")
+            print("Assuming date format: {0}".format(fmt))
+            dateval = dt.datetime.strptime(dateval, fmt)
+
+        return closest(dateval, self['available_dates_dt'])
+
     @property
     def options(self):
         return {'readp': self.readp,
@@ -508,6 +529,7 @@ class C(object):
             c.foot_print = c.data_cube[:,:,0]
 
         return c
+
 
 # TODO: Following John, the get_slabs function should be deprecated
 def get_slabs(Heightnn, data_cube):

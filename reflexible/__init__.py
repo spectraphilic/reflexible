@@ -110,5 +110,6 @@ from .data_structures import (Header, Command, Release,
 from .utils import Structure, CacheDict
 from .base_read import read_trajectories, read_partpositions
 from .flexpart import Flexpart
-from .plotting import (plot_sensitivity, plot_at_level, plot_totalcolumn,
-                       plot_trajectory)
+from .plotting import (
+    plot_sensitivity, plot_at_level, plot_totalcolumn, plot_trajectory,
+    plot_markers, plot_curtain, curtain_for_line)

@@ -1,7 +1,9 @@
 # General utilities live here
 
-from __future__ import print_function
-from __future__ import absolute_import
+from datetime import datetime
+
+from matplotlib.dates import date2num
+import numpy as np
 
 
 class Structure(dict):
@@ -35,3 +37,15 @@ class CacheDict(dict):
             for k in self.keys()[:entries_to_remove]:
                 super(CacheDict, self).__delitem__(k)
         super(CacheDict, self).__setitem__(key, value)
+
+
+def closest(num, numlist):
+    """ returns the index of the *closest* value in a list """
+    # check if we're using datetimes
+    if isinstance(num, datetime):
+        num = date2num(num)
+        assert isinstance(numlist[0], datetime), \
+               "num is date, numlist must be a list of dates"
+        numlist = date2num(numlist)
+
+    return (np.abs(numlist - num)).argmin()
