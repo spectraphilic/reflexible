@@ -576,56 +576,6 @@ def read_trajectories(H, trajfile='trajectories.txt',
     return RelTraj
 
 
-def groundlevel_for_line(H, X, Y, coords, index=0):
-    """
-    extracts ground level from H.heightnn along a track of lon, lat
-
-    input:  H or H.heightnn (takes the lowest level)
-
-            X, Y ,= H.longitude, H.latitude
-
-            coords = zip(x, y)
-
-    output: groundlevel (a 1-d array with shape (len(flighttrack)
-
-    """
-    try:
-        hgt = H.Heightnn[:, :, 0]
-    except:
-        hgt = H
-
-    # fix for hgt offset
-    hgt = hgt - hgt.min()
-
-    grndlvl = np.zeros(len(coords))
-
-    for i, (x, y) in enumerate(coords):
-
-        I = closest(x, X)
-        J = closest(y, Y)
-        grndlvl[i] = hgt[I, J]
-        grndlvl = np.nan_to_num(grndlvl)
-
-    return grndlvl - grndlvl.min()
-
-
-def curtain_agltoasl(H, curtain_agl, coords, below_gl=0.0):
-    """ converts the agl curtain to asl
-
-        adds .asl_axis attribute to H
-    """
-
-    gl = groundlevel_for_line(H, H.longitude, H.latitude, coords)
-    H.asl_axis = np.linspace(0, H.outheight[-1])
-    xp = H.outheight - H.outheight[0]
-    casl = np.zeros((len(H.asl_axis), len(coords)))
-
-    for i in range(len(coords)):
-        casl[:, i] = np.interp(H.asl_axis, xp + gl[i],
-                               curtain_agl[:, i], left=below_gl)
-    return casl
-
-
 def read_agespectrum(filename, part=False, ndays=20):
     """
     Reads the spectrum.txt files generated from the "make_webpages" scripts.
