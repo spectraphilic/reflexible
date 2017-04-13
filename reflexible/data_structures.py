@@ -1071,7 +1071,7 @@ class Releases(object):
             outf.close()
 
 
-class Trajectory(dict, object):
+class Trajectory(dict):
     """ a dictionary-like container for the trajectories.
     This should become a pandas dataframe in the future. """
 

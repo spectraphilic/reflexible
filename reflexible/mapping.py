@@ -101,11 +101,11 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
           dicts through the optional `map_par` and `fig_par` parameters.
     """
     # Set some default values
-    map_par_ = Structure()
-    fig_par_ = Structure()
-    map_par_.anchor = 'C'
-    fig_par_.figsize = [8, 7]   # w,h tuple
-    fig_par_.axlocs = [0.05, 0.01, .8, .9]   # rect = l,b,w,h
+    map_par_ = Structure(anchor='C')
+    fig_par_ = Structure(
+        figsize=[8, 7],                 # w,h tuple
+        axlocs = [0.05, 0.01, .8, .9],  # rect = l,b,w,h
+    )
 
     # Get the database out of the system YAML file
     mapdb_file = os.path.join(os.path.dirname(__file__), 'mapping_db.yml')
@@ -132,25 +132,17 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
         else:
             raise KeyError("region {} not found".format(map_region))
 
-    # Get the mapping params (should be always there)
-    map_region_par = region['map_par']
-    map_par_.set_with_dict(map_region_par)
-
-    # Get the figure params (not always present)
-    if 'fig_par' in region:
-        fig_par_.set_with_dict(region['fig_par'])
+    # Get the params
+    map_par_.update(region['map_par'])         # map_par should be always there
+    fig_par_.update(region.get('fig_par', {})) # fig_par not always present
 
     # Override params if `map_par` or `fig_par` are passed
-    if map_par is not None:
-        map_par_.set_with_dict(map_par)
-    if fig_par is not None:
-        fig_par_.set_with_dict(fig_par)
+    map_par_.update(map_par or {})
+    fig_par_.update(fig_par or {})
 
-    # print(map_region, map_par_, fig_par_)
-    try:
-        del map_par_['m']  # in case
-    except:
-        pass
+    # Just in case
+    map_par_.pop('m', None)
+
     return map_par_, fig_par_
 
 
@@ -230,12 +222,8 @@ def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
     return m_p, m_m
 
 
-def get_base1(map_region='default',
-              figname=None,
-              fig=None,
-              drawlsmask=False,
-              map_par=None,
-              fig_par=None):
+def get_base1(map_region='default', map_par=None, fig_par=None,
+              figname=None, fig=None, drawlsmask=False):
     """
     Primarily an internally used function, creates a
     basemap for plotting. Returns a fig object and
@@ -243,11 +231,10 @@ def get_base1(map_region='default',
 
     Usage::
 
-      >fig, m=get_base1(map_region="region_name")
+      > fig, m = get_base1(map_region="region_name")
     """
 
-    # Use map_regions function to define
-    # input parameters for Basemap
+    # Use map_regions function to define input parameters for Basemap
     map_par_sd, fig_par_sd = map_regions(map_region, map_par, fig_par)
 
     # create the figure
@@ -279,7 +266,7 @@ def get_base1(map_region='default',
 
 
 def get_base_image(imagefile, map_region='default', map_par=None, fig_par=None,
-                   **kwargs):
+                   fig=None):
     """Warps NASA Blue Marble Image version.
 
     Create basemap figure for plotting on top of
@@ -287,12 +274,12 @@ def get_base_image(imagefile, map_region='default', map_par=None, fig_par=None,
 
     Usage::
 
-        >fig,m=get_base1(map_region="myregion")
+        > fig, m = get_base_image(imagefile, map_region="myregion")
 
     """
-    # Get Keyword Arguments
-    #figname = kwargs.get('figname', None)
-    fig = kwargs.get('figure', None)
+
+    # define Lambert Conformal basemap for North America.
+    mp, fig_par = map_regions(map_region, map_par, fig_par)
 
     # shows how to warp an image from one map projection to another.
     # image from http://visibleearth.nasa.gov/
@@ -310,15 +297,13 @@ def get_base_image(imagefile, map_region='default', map_par=None, fig_par=None,
     lats = np.arange(-90. + 0.5 * delta, 90., delta)
 
     # create new figure
-    fig = plt.figure(1, figsize=(8, 6))
-
-    # define Lambert Conformal basemap for North America.
-    mp, fig_par = map_regions(map_region, map_par, fig_par)
+    fig = plt.figure(1, **fig_par)
 
     m = basemap.Basemap(**mp)
     ax = fig.add_axes(
         [0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
     plt.axes(ax)  # make the original axes current again
+
     # transform to nx x ny regularly spaced native projection grid
     # nx and ny chosen to have roughly the same horizontal res as original
     # image.
