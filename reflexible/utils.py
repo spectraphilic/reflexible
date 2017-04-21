@@ -97,7 +97,7 @@ def __groundlevel_for_line(H, X, Y, coords, index=0):
 
     """
     try:
-        hgt = H.Heightnn[:, :, 0]
+        hgt = H.Heightnn[0, :, :]
     except Exception:
         hgt = H
 
@@ -121,7 +121,7 @@ def curtain_agltoasl(H, curtain_agl, coords, below_gl=0.0):
     """
 
     gl = __groundlevel_for_line(H, H.longitude, H.latitude, coords)
-    H.asl_axis = np.linspace(0, H.outheight[-1])
+    H.asl_axis = np.linspace(0, H.outheight.values[-1])
     xp = H.outheight - H.outheight[0]
     casl = np.zeros((len(H.asl_axis), len(coords)))
 
