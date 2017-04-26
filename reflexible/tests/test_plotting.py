@@ -41,6 +41,7 @@ class TestPlotting:
 
     @pytest.fixture(autouse=True, params=test_datasets)
     def setup(self, request):
+        plt.interactive(False)
         dataset = Dataset(request.param)
         self.H = dataset.setup()
         request.addfinalizer(dataset.cleanup)
