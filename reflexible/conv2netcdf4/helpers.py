@@ -54,29 +54,6 @@ def get_fpdirs(pathnames):
     return options_dir, output_dir
 
 
-def data_range(data, min='median'):
-    """
-    return a data range for flexpart data
-
-    optional keyword min = ['median', 'mean', 'min']
-    """
-    dmax = np.nanmax(data)
-    if np.isnan(dmax):
-        dmax = 1e5
-
-    if min == 'mean':
-        dmin = np.mean(data[data.nonzero()])
-    elif min == 'median':
-        dmin = np.median(data[data.nonzero()])
-    else:
-        dmin = np.nanmin(data[data.nonzero()])
-
-    if np.isnan(dmin):
-        dmin = 1e-5
-
-    return [dmin, dmax]
-
-
 def _normdatetime(Y, M, D, h, m, s):
     return datetime.datetime(
         Y, M, D) + datetime.timedelta(hours=h, minutes=m, seconds=s)

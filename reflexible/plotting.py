@@ -4,32 +4,40 @@ from __future__ import print_function
 
 import numpy as np
 import matplotlib as mpl
-from matplotlib import font_manager, colors
 import matplotlib.pyplot as plt
 from mpl_toolkits import basemap
 
 # local imports
 import reflexible.mapping as mp
 from reflexible import Structure, CacheDict
+from reflexible.utils import closest
 
 # Dictionary for caching the figures
 _figure_cache = CacheDict(10)
 
 
 
-def plot_at_level(H, data, level=1,
+def plot_at_level(H, data, data_range=None,
                   ID=' ', rel_i=None, species=None,
                   timestamp=None,
-                  map_region=5,
+                  map_region=None,
                   overlay=False,
-                  datainfo_str=None, log=True,
-                  data_range=None,
-                  plot_title=None,
+                  datainfo_str=None,
                   units=None,
-                  **kwargs):
-    """
-    TODO: make units a function of H['species']
-    """
+                  plot_title=None,
+                  level=1, **kwargs):
+
+    if data_range is None:
+        dmax = data.max
+        dmin = data.min
+        data_range = [dmin, dmax]
+    else:
+        dmin, dmax = data_range
+
+    if rel_i is None:
+        rel_i = data.rel_i
+
+    # TODO: make units a function of H['species']
     if units is None:
         units = H.output_unit
 
@@ -38,39 +46,32 @@ def plot_at_level(H, data, level=1,
     else:
         level_desc = H.outheight[level - 1]
 
-    if data_range is None:
-        dmax = data.max
-        dmin = data.min
-        data_range = [dmin, dmax]
-    else:
-        dmin, dmax, = data_range
-
     if H.direction == 'backward' and H.options['readp']:
         zp1 = H['zpoint1'][rel_i]
         zp2 = H['zpoint2'][rel_i]
         if datainfo_str is None:
             # need to find a way to set m.a.s.l. or hPa here
             datainfo_str = (
-                " Max Value: %.2g %s\n Release Z1: %.2f, Z2: %.2f (%s)\n" % (
+                "Max Value: %.2g %s\n Release Z1: %.2f, Z2: %.2f (%s)\n" % (
                     dmax, units, zp1, zp2, H.alt_unit))
         if plot_title is None:
             plot_title = """
-        %s Sensitivity at %s %s: %s\n
-        Release Start: %s, Release End: %s""" % (
+            %s Sensitivity at %s %s: %s\n
+            Release Start: %s, Release End: %s""" % (
                 ID, level_desc, H['alt_unit'], species,
                 H['releasestart'][rel_i], H['releaseend'][rel_i])
     else:
         if datainfo_str is None:
-            datainfo_str = """ Max Value: %.2g %s """ % (dmax, units)
+            datainfo_str = "Max Value: %.2g %s" % (dmax, units)
         if plot_title is None:
-            plot_title = """ %s Sensitivity at %s %s: %s \n %s """ % (
-                ID, level_desc, H['alt_unit'], species, timestamp)
+            plot_title = "%s Sensitivity at %s %s: %s \n %s" \
+                         % (ID, level_desc, H['alt_unit'], species, timestamp)
 
-    figure = plot_sensitivity(H, data.total_column,
-                              data_range=data_range,
-                              rel_i=rel_i, log=log,
+    figure = plot_sensitivity(H, data.total_column, data_range=data_range,
+                              rel_i=rel_i,
                               map_region=map_region,
-                              units=units, datainfo_str=datainfo_str,
+                              units=units,
+                              datainfo_str=datainfo_str,
                               overlay=overlay,
                               **kwargs)
 
@@ -78,57 +79,60 @@ def plot_at_level(H, data, level=1,
     return figure
 
 
-def plot_totalcolumn(H, data=None,
+def plot_totalcolumn(H, data, data_range=None,
                      ID=' ', rel_i=None, species=None,
                      timestamp=None,
-                     map_region=5,
-                     data_range=None,
+                     map_region=None,
                      overlay=False,
-                     datainfo_str=None, **kwargs):
-    if 'units' in kwargs:
-        units = kwargs.pop('units')
-    else:
-        units = 'ns m kg-1'
+                     datainfo_str=None,
+                     units='ns m kg-1',
+                     plot_title=None,
+                     **kwargs):
 
     if data_range is None:
         dmax = data.max
         dmin = data.min
         data_range = [dmin, dmax]
     else:
-        dmin, dmax, = data_range
+        dmin, dmax = data_range
 
-    rel_i = data.rel_i
+    if rel_i is None:
+        rel_i = data.rel_i
+
     if H.direction == 'backward':
         zp1 = H['zpoint1'][rel_i]
         zp2 = H['zpoint2'][rel_i]
         if datainfo_str is None:
+
             datainfo_str = (
                 " Max Value: %.2g %s\n Release Z1: %.2f, Z2: %.2f (%s)\n" % (
                     dmax, units, zp1, zp2, H.alt_unit))
-        plot_title = """
-        %s Total Column Sensitivity: %s\n
-        Release Start: %s, Release End: %s""" % (
-            ID, species, H['releasestart'][rel_i], H['releaseend'][rel_i])
+        if plot_title is None:
+            plot_title = """
+            %s Total Column Sensitivity: %s\n
+            Release Start: %s, Release End: %s""" % (
+                ID, species, H['releasestart'][rel_i], H['releaseend'][rel_i])
     else:
         if datainfo_str is None:
-            datainfo_str = """ Max Value: %.2g %s""" % (dmax, units)
-        plot_title = """
-        %s Total Column Sensitivity: %s\n %s """ % (ID, species, timestamp)
+            datainfo_str = "Max Value: %.2g %s" % (dmax, units)
+        if plot_title is None:
+            plot_title = "%s Total Column Sensitivity: %s\n %s" \
+                         % (ID, species, timestamp)
 
-    figure = plot_sensitivity(H, data.total_column,
-                              data_range=data_range,
-                              rel_i=rel_i, map_region=map_region,
+    figure = plot_sensitivity(H, data.total_column, data_range=data_range,
+                              rel_i=rel_i,
+                              map_region=map_region,
                               units=units,
                               datainfo_str=datainfo_str,
-                              overlay=overlay, **kwargs)
+                              overlay=overlay,
+                              **kwargs)
 
     figure.ax.set_title(plot_title, fontsize=10)
-
     return figure
 
 
-def _get_figure(fig=None, ax=None, m=None, map_region=None,
-               map_par=None, fig_par=None, image=None):
+def _get_figure(map_region='default', map_par=None, fig_par=None,
+                fig=None, ax=None, m=None, image=None):
     """Returns a matplotlib figure based on the parameters.
 
     The idea is that I create a :class:`Structure` that contains the figure,
@@ -163,41 +167,54 @@ def _get_figure(fig=None, ax=None, m=None, map_region=None,
          ============      ======================================
 
     """
+    fig_par = fig_par or {}
+
     figure = Structure()
 
     if m is None:
         if image:
-            fig, m = mp.get_base_image(image, map_region=map_region,
-                                       map_par=map_par, fig_par=fig_par)
+            fig, m = mp.get_base_image(image, map_region, map_par, fig_par)
         else:
-            fig, m = mp.get_base1(map_region=map_region, map_par=map_par,
-                                  fig_par=fig_par, fig=fig)
-            figure.fig = fig
-            figure.m = m
-            figure.ax = fig.gca()
-    else:
-        figure.m = m
+            fig, m = mp.get_base1(map_region, map_par, fig_par, fig=fig)
 
     if fig is None:
-        figure.fig = plt.figure()
-        fig = figure.fig
-    else:
-        figure.fig = fig
+        map_par, fig_par = mp.map_regions(map_region, map_par, fig_par)
+        fig = plt.figure(**fig_par)
 
+    figure.fig = fig
+    figure.m = m
     figure.ax = ax if ax is not None else fig.gca()
 
-    figure.indices = Structure()
-    figure.indices.texts = len(figure.ax.texts)
-    figure.indices.images = len(figure.ax.images)
-    figure.indices.collections = len(figure.ax.collections)
-    figure.indices.lines = len(figure.ax.lines)
+    figure.indices = Structure(
+        texts=len(figure.ax.texts),
+        images=len(figure.ax.images),
+        collections=len(figure.ax.collections),
+        lines=len(figure.ax.lines),
+    )
 
     print("Using figure: %s" % figure.fig.number)
     return figure
 
 
-def plot_sensitivity(H, data,
-                     data_range=None,
+def _get_figure_cache(map_region, map_par, fig_par):
+    """
+    Returns the figure from the cache if it is there. Otherwise calls to
+    _get_figure.
+    """
+
+    if map_region is None:
+        map_region = 'default'
+
+    key = map_region + str(map_par) + str(fig_par)
+    try:
+        figure = _figure_cache[key]
+    except KeyError:
+        figure = _figure_cache[key] = _get_figure(map_region, map_par, fig_par)
+
+    return figure
+
+
+def plot_sensitivity(H, data, data_range=None,
                      units='ns m^2 / kg',
                      datainfo_str=None,
                      plottitle=None,
@@ -214,7 +231,7 @@ def plot_sensitivity(H, data,
     """ plot_sensitivity: core function for plotting FLEXPART output.
 
     Usage::
-        FIG = plot_sensitivity(H,data,*kwargs)
+        FIG = plot_sensitivity(H, data, **kwargs)
 
     This returns the figure object, and plots the sensitivity from the data
     contained in the "D" array.
@@ -273,14 +290,7 @@ def plot_sensitivity(H, data,
     """
     data = data.T
 
-    # Look if the figure is in cache already, and if not, cache it
-    figure_key = map_region + str(map_par) + str(fig_par)
-    try:
-        figure = _figure_cache[figure_key]
-    except KeyError:
-        figure = _figure_cache[figure_key] = _get_figure(
-            map_region=map_region, map_par=map_par, fig_par=fig_par)
-
+    figure = _get_figure_cache(map_region, map_par, fig_par)
     if overlay is False:
         del figure.ax.images[figure.indices.images:]
         del figure.ax.collections[figure.indices.collections:]
@@ -348,8 +358,7 @@ def plot_sensitivity(H, data,
     if log:
         clevs = _gen_log_clevs(dat_min, dat_max)
     else:
-        clevs = [i for i in
-                 np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
+        clevs = list(np.arange(dat_min, dat_max, (dat_max - dat_min) / 100))
 
     # draw land sea mask
     # m.fillcontinents(zorder=0)
@@ -488,6 +497,151 @@ def plot_sensitivity(H, data,
     return figure
 
 
+def plot_markers(H, lon, lat, zsize=None, zlevel=None,
+                    map_region=None, projection=None, coords=None,
+                    overlay=True,
+                    draw_circles=True,
+                    draw_labels=False,
+                    cbar2=True,
+                    cbar2_title=None,
+                    map_par=None,
+                    fig_par=None,
+                    color='blue', edgecolor='none',
+                    zorder=10, alpha=0.85):
+
+    """Plot a group of x,y pairs, with optional size and color information.
+
+    Usage::
+
+        > FIG = plot_trajectory(H,RT,rel_id,*kwargs)
+
+    .. note::
+        You can substitude "None" for the :class:`Header` instance if you haven't
+        created one
+
+
+    Returns
+      A :mod:`mapping` "FIGURE" object.
+
+    Arguments
+
+      .. tabularcolumns::  |l|L|
+
+      =============         =============================================
+      keyword               Description [default]
+      =============         =============================================
+      rel_i                 **required** release index
+      FIGURE                A "FIGURE" object[None] (see mapping.py)
+      projection            A projection pre-defined in :mod:`mapping`
+      coords                A set of lon,lat coords for autosetting
+                            map map_region (not really working).
+      overlay               [True] will overlay the trajectory
+                            on top of another map instance.
+      draw_circles          [True] will mark the trajectory with
+                            circles. If [False] nothing is drawn.
+      draw_labels           [False] unimplemented
+      cbar2                 [True] draws the scale bar as a second axis.
+      cbar2_title            Optional argument to overide the cbar title.
+      MapPar                A Structure of mapping parameters to pass
+                            to the basemap instance if desired.
+      =============         =============================================
+
+    .. todo::
+        Who knows?! Could probably handle the overlaying better.
+
+    .. note::
+        Just set H to "None" if you haven't already created a "Header" instance.
+
+
+    """
+    figure = _get_figure_cache(map_region, map_par, fig_par)
+
+    # Get fig info and make active
+    fig = figure.fig
+    m = figure.m
+    ax = figure.fig.axes[0]
+    plt.figure(fig.number)
+    plt.axes(ax)
+
+    # # prepare the data
+    cx, cy = m(lon, lat)
+    if zlevel is None:
+        zlevel = np.ones(len(lon)) * 10.
+    if zsize is None:
+        zsize = np.ones(len(lon)) * 1
+    marker = 'o'
+
+
+    # # clear the previous track
+    if 'circles' in figure.keys():
+        del figure['circles']
+    if overlay is False:
+        del ax.collections[figure.indices.collections:]
+        del ax.texts[figure.indices.texts:]
+
+    # # plot the track
+    if draw_circles:
+        cmap = plt.get_cmap('jet')
+        circles = m.scatter(cx, cy, zsize, zlevel, cmap=cmap,
+                          marker=marker, edgecolor=edgecolor,
+                          zorder=zorder, alpha=alpha)
+
+        try:
+            figure.circles = circles
+        except:
+            pass
+        # # make the figure active again
+        plt.figure(fig.number)
+        # # draw the legend and title
+        # # CREATE COLORBAR
+        # # does a colorbar already exist?
+        # # Get the current axes, and properties for use later
+        ax0 = fig.axes[0]
+        pos = ax0.get_position()
+        l, b, w, h = pos.bounds
+        if cbar2:
+            try:
+                cb2 = figure.cb2
+                cax2 = figure.cax2
+                cb2.update_normal(circles)
+            except:
+                cax2 = plt.axes([l + w + 0.08, b, 0.02, h])
+        # # using im2, not im (hack to prevent colors from being
+        # # too compressed at the low end on the colorbar - results
+        # # from highly nonuniform colormap)
+                cb2 = fig.colorbar(circles, cax=cax2)  # , format='%3.2g') # draw colorbar
+                figure.cax2 = cax2
+                figure.cb2 = cb2
+        # # check if a colorbar legend exists (this will cause
+        # # problems for subplot routines!)
+            p_leg = mpl.font_manager.FontProperties(size='6')
+            if cbar2_title:
+                cax2.set_title(cbar2_title, fontproperties=p_leg)
+            else:
+                cax2.set_title('altitude\n(m)', fontproperties=p_leg)
+        else:
+            pass
+        # cax2 = plt.axes([l+w+0.03, b, 0.025, h-0.2])
+        #    cb2 = fig.colorbar(jnkmap,cax=cax2) # draw colorbar
+
+        # # delete the ghost instance
+        # plt.close(jnkfig.number)
+        # del jnkax, jnkfig, jnkmap
+
+    plt.axes(ax)
+    plt.setp(ax, xticks=[], yticks=[])
+
+    figure.fig = fig
+    figure.m = m
+    figure.ax = ax
+    try:
+        figure.cax2 = cax2
+        figure.cb2 = cb2
+    except:
+        pass
+
+    return figure
+
 def plot_trajectory(H, T, rel_i,
                     map_region=None,
                     overlay=True,
@@ -544,16 +698,8 @@ def plot_trajectory(H, T, rel_i,
 
     """
 
-    if H:
-        pass
-
     # Set up the figure
-    figure_key = map_region + str(map_par) + str(fig_par)
-    try:
-        figure = _figure_cache[figure_key]
-    except KeyError:
-        figure = _figure_cache[figure_key] = _get_figure(
-            map_region=map_region, map_par=map_par, fig_par=fig_par)
+    figure = _get_figure_cache(map_region, map_par, fig_par)
 
     # Get fig info and make active
     fig = figure.fig
@@ -601,7 +747,7 @@ def plot_trajectory(H, T, rel_i,
         # CREATE COLORBAR
         # does a colorbar already exist?
         # Get the current axes, and properties for use later
-        ax0 = fig.axes[1]
+        ax0 = fig.axes[0] # XXX Was 1, but it fails with 1
         pos = ax0.get_position()
         l, b, w, h = pos.bounds
         if cbar2:
@@ -776,3 +922,275 @@ def _gen_flexpart_colormap(ctbfile=None, colors=None):
         name = 'flexpart_cmap'
     cmap = ListedColormap(colors, name)
     return cmap
+
+
+def curtain_for_line(data, X, Y, coords, day=0, numk=0):
+    """
+    extracts curtain data from a grid given pairs of lon, lat
+
+    input:  H (a pf.Header with a FD data object from H.read_grid)
+            if the read_grid method has not been called, we'll call
+            it below.
+
+            flighttrack
+            (a numpy array with datetime, lon, lat, elv values)
+
+            nspec: is optional for reference to the FD dict.
+
+            index: is optional in case numpointspec > 1
+
+            get_track: if True extracts the points along the flight
+            track rather than the curtain.
+
+    output: curtain (a 2-d array with shape (len(flighttrack), len(H.outheight)
+
+    TODO::
+        add interpolation, extract a track, not curtain (e.g. z points)
+
+    """
+    grid = data.data_cube
+    grid = grid[:, :, :, day, numk]
+
+    curtain = np.zeros((len(coords), grid.shape[2]))
+    for i, (x, y) in enumerate(coords):
+        I = closest(x, X)
+        J = closest(y, Y)
+        curtain[i] = grid[I, J, :]
+        curtain = np.nan_to_num(curtain)
+        # curtain = np.ma.fix_invalid(np.array(curtain,dtype=float))
+
+    return curtain.T
+
+def _log_clevs(dat_min, dat_max):
+    """
+    ## create logorithmic color scale
+    ## method uses strings to get the magnitude of variable
+    #ss = "%1.2e" % (dat_max)
+    #dmx = int('%s%s' % (ss[-3],int(ss[-2:])))
+    #dmx=float(len(str(int(np.ceil(dat_max)))))
+    #if data_range is None:
+    #     dmn = int(np.round(np.log((1e-10*(dat_max-dat_min)))))
+    #    ss = "%1.2e" % (1e-10*(dat_max-dat_min))
+    #else:
+    #    ss = "%1.2e" % (dat_min)
+    #dmn = int('%s%s' % (ss[-3],int(ss[-2:])))
+    """
+
+    if dat_max > 0:
+        dmx = int(np.round(np.log10(dat_max))) + 1
+    else:
+        # print 'dat_max not positive'
+        # print dat_max
+        dmx = 1
+
+    if dat_min > 0:
+        dmn = int(np.round(np.log10(dat_min)))
+    elif dat_min == 0. or np.isnan(dat_min):
+        # print 'dat_min not positive'
+        # print dat_min
+        dmn = dmx - 3
+
+
+    # # create equally spaced range
+    if dmx == dmn:
+        dmx = dmn + 1
+    clevs = np.logspace(dmn, dmx, 100)
+
+    return clevs
+
+
+def plot_curtain(H, data,
+                 nx=None,
+                 ny=None,
+                 data_range=None,
+                 units='ppbv',
+                 datainfo_str=None,
+                 asl=True,
+                 plottitle=None,
+                 log=True,
+                 figure=None,
+                 cax_title=None,
+                 method='contourf',
+                 fig_par=None):
+    """ plot_sensitivity: core function for plotting FLEXPART output.
+
+    Usage::
+
+        > FIG = plot_sensitivity(H,data,*kwargs)
+
+    This returns the FIGURE object, and plots the sensitivity from the data contained in the "D"
+    array.
+
+    Inputs
+      H = a :class:`Header` instance for a FLEXPART run.
+      data = a 2d data array containing the sensitivity values to plot, this can be extracted from a
+      grid instance (see :func:`readgridV8` and :func:`get_slabs`)
+
+    Returns
+      A "mapping.py" ``FIGURE`` object.
+
+    Arguments
+
+      .. tabularcolumns::  |l|L|
+
+      =============         ================================================
+      keyword               Description [default]
+      =============         ================================================
+      data_range            range of data for scale bars, if None will
+                            be taken from min/max of data
+      asl                   [True] plot the units in m.a.s.l
+      cax_title             string to be passed as colorbar title (units will
+                            be passed to the format argument)
+      units                 units for the scale bar
+      datainfo_str          A string for labeling the scale bar.
+      plottitle             Title for the plot.
+      rel_i                 Release index to plot from the data array
+      map_region                A map_region specified in mapping.py
+      projection            [deprecated] use pre-defined map_regions.
+      dropm                 Force creation of a new basemap instance
+      coords                Used with autofit option. An array of lat,lon
+                            values for the mapping module to autofit a
+                            basemap instance to.
+      autofit               Try to generate map_region automagically (flakey)
+      overlay               Force removal of previous figure elements.
+      transform             For use with imshow method, if your data is not
+                            in same coordinates as projection, try to transform
+                            the data to the basemap projection.
+      log                   Create a logarithmic color scale.
+      figure                A FIGURE instance from mapping module get_FIGURE
+      MapPar                A Structure of paramters to be passed to the
+                            basemap class when creating an instance.
+      method                The method to use for plotting array data. May be
+                            one of: [pcolormesh], imshow, or contourf
+      lsmask                set to True to draw a grey landseamask [False]
+      =============         ================================================
+
+    .. todo::
+        A lot!! There are some problems here and it is sensitive to options.
+        lsmask = True seems to only work with certain projections (POLARCAT)
+
+    .. note::
+        This is the primary main function for creating plots of flexpart output.
+        Most the other routines are simply wrappers to this function, passing
+        arguments in with some predefined settings. For more information on the
+        mechanics of this function, see the mapping.py module and the matplotlib
+        basemap toolkit.
+
+
+    """
+
+    methods = ['imshow', 'pcolormesh', 'contourf', 'contour', 'None']
+    assert method in methods, "method keyword must be one of: %s" % methods
+
+    if figure is None:
+        fig_par = fig_par or {}
+        fig = plt.figure(**fig_par)
+        ax = fig.add_subplot(111)
+        figure = Structure(fig=fig, ax=ax)
+    else:
+        fig = figure.fig
+        ax = figure.ax
+
+    # Make the figure current
+    plt.figure(fig.number)
+    plt.axes(ax)
+
+    # Get min/max range
+    #data = data.slabs[0]
+    if data_range is not None:
+        dat_min = data_range[0]
+        dat_max = data_range[1]
+    else:
+        dat_min, dat_max = [data.min(), data.max()]
+
+    if log:
+        clevs = _log_clevs(dat_min, dat_max)
+    else:
+        clevs = [i for i in np.arange(dat_min, dat_max, (dat_max - dat_min) / 100)]
+
+    # # Set up the IMAGE
+    # # cmapnames = ['jet', 'hsv', 'gist_ncar', 'gist_rainbow', 'cool', 'spectral']
+    colmap = _gen_flexpart_colormap()
+    colmap.set_over(color='k', alpha=0.8)
+    topodat = data
+
+
+    if method == 'imshow':
+        im = plt.imshow(np.flipud(topodat), cmap=colmap, zorder=-1,
+                      norm=mpl.colors.LogNorm(vmin=clevs[0],
+                                              vmax=clevs[-1]))
+
+    if method == 'pcolormesh':
+        im = plt.pcolormesh(nx, ny, topodat, cmap=colmap,
+                          norm=mpl.colors.LogNorm(vmin=clevs[0],
+                                                  vmax=clevs[-1]))
+    if method == 'contourf':
+        print('*******')
+        print(nx)
+        print(ny)
+        print('*******')
+        print(topodat)
+        print('*******')
+        im = plt.contourf(topodat)
+#       im = plt.contourf(nx, ny, topodat, cmap=colmap, levels=clevs,
+#                       norm=mpl.colors.LogNorm(vmin=clevs[0],
+#                                               vmax=clevs[-1]))
+
+    if method == 'contour':
+        im = plt.contour(nx, ny, topodat, cmap=colmap,
+                        norm=mpl.colors.LogNorm(vmin=clevs[0],
+                                                vmax=clevs[-1]))
+
+    # # Get the current axes, and properties for use later
+    pos = ax.get_position()
+    l, b, w, h = pos.bounds
+
+    # # CREATE COLORBAR
+    # # Note, with upgrades to matplotlib and basemap had to make some
+    # # changes here... no more 'ghost' axes
+    # # does a colorbar already exist?
+    try:
+        cb = figure.cb
+        cax = figure.cax
+        cb.update_normal(im)
+    except:
+    # # make a copy of the image object, change
+    # # colormap to linear version of the precip colormap.
+    # # create new axis for colorbar.
+        h = 0.8 * h
+        l = l + w + .02
+        b = 0.5 - (h / 2)
+        w = 0.025
+        cax = plt.axes([l, b, w, h])
+    # # using im2, not im (hack to prevent colors from being
+    # # too compressed at the low end on the colorbar - results
+    # # from highly nonuniform colormap)
+        cb = fig.colorbar(im, cax=cax)  # , format='%3.2g') # draw colorbar
+        figure.cax = cax
+        figure.cb = cb
+
+    # # set colorbar label and ticks
+    p_cax = mpl.font_manager.FontProperties(size='6')
+    clabels = list(clevs[::10])  # #clevs, by 10 steps
+    clabels.append(clevs[-1])  # # add the last label
+    # cax.set_yticks(np.linspace(clabels[0],clabels[-1],len(clabels)))
+    cax.set_yticks(np.linspace(0, 1, len(clabels)))
+    cax.set_yticklabels(['%3.2g' % cl for cl in clabels])
+                        # fontproperties=p_cax)
+
+    if cax_title:
+        cax.set_title(cax_title.format(units), fontproperties=p_cax)
+    else:
+        cax.set_title('sensitivity\n({0})'.format(units),
+                          fontproperties=p_cax)
+
+    # # make the original axes current again
+    plt.axes(ax)
+    plt.grid(True)
+    figure.ax = ax
+    figure.fig = fig
+
+    if plottitle != None:
+        figure.ax.set_title(plottitle, fontsize=10)
+
+    return figure

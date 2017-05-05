@@ -102,13 +102,18 @@ datasets = {
 
 
 # Import the public functions here
-from .tests.all import test
 from . import conv2netcdf4
-from .scripts.create_ncfile import create_ncfile
-from .data_structures import (Header, Command, Release,
-                              ReleasePoint, Ageclass)
-from .utils import Structure, CacheDict
 from .base_read import read_trajectories, read_partpositions
+from .data_structures import Header, Command, Release, ReleasePoint, Ageclass
 from .flexpart import Flexpart
-from .plotting import (plot_sensitivity, plot_at_level, plot_totalcolumn,
-                       plot_trajectory)
+from .scripts.create_ncfile import create_ncfile
+from .tests.all import test
+from .utils import Structure, CacheDict, curtain_agltoasl, data_range
+
+from .plotting import (
+    plot_sensitivity, plot_at_level, plot_totalcolumn, plot_trajectory,
+    plot_markers, plot_curtain, curtain_for_line)
+
+# XXX Keep this as plot_footprint is referenced in the docs. But maybe remove
+# it in the future, as plot_footprint = plot_at_level
+plot_footprint = plot_at_level
