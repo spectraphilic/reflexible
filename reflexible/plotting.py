@@ -1000,10 +1000,9 @@ def _log_clevs(dat_min, dat_max):
     return clevs
 
 
-def plot_curtain(H, data,
+def plot_curtain(H, data, data_range=None,
                  nx=None,
                  ny=None,
-                 data_range=None,
                  units='ppbv',
                  datainfo_str=None,
                  asl=True,
@@ -1126,12 +1125,6 @@ def plot_curtain(H, data,
                           norm=mpl.colors.LogNorm(vmin=clevs[0],
                                                   vmax=clevs[-1]))
     if method == 'contourf':
-        print('*******')
-        print(nx)
-        print(ny)
-        print('*******')
-        print(topodat)
-        print('*******')
         im = plt.contourf(topodat)
 #       im = plt.contourf(nx, ny, topodat, cmap=colmap, levels=clevs,
 #                       norm=mpl.colors.LogNorm(vmin=clevs[0],
