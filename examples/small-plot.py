@@ -14,6 +14,8 @@ Test Data:
 from argparse import ArgumentParser
 import os
 
+import matplotlib as mpl
+mpl.use('Agg')
 import reflexible as rf
 from reflexible.plotting import plot_totalcolumn, plot_at_level
 
