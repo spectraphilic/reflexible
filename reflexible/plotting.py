@@ -11,6 +11,7 @@ from mpl_toolkits import basemap
 import reflexible.mapping as mp
 from reflexible import Structure, CacheDict
 from reflexible.utils import closest
+from reflexible.utils import data_range as _data_range
 
 # Dictionary for caching the figures
 _figure_cache = CacheDict(10)
@@ -353,7 +354,7 @@ def plot_sensitivity(H, data, data_range=None,
         dat_min = data_range[0]
         dat_max = data_range[1]
     else:
-        dat_min, dat_max = data_range(data)
+        dat_min, dat_max = _data_range(data)
 
     if log:
         clevs = _gen_log_clevs(dat_min, dat_max)
