@@ -109,7 +109,6 @@ from .flexpart import Flexpart
 from .scripts.create_ncfile import create_ncfile
 from .tests.all import test
 from .utils import Structure, CacheDict, curtain_agltoasl, data_range
-from .part_positions import read_part_positions
 
 from .plotting import (
     plot_sensitivity, plot_at_level, plot_totalcolumn, plot_trajectory,
