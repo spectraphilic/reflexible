@@ -10,6 +10,8 @@ The reflexible API
 .. automodule:: reflexible
    :members:
 
+.. autofunction:: reflexible.read_part_positions
+
 .. autofunction:: reflexible.scripts.create_ncfile.create_ncfile
 
 .. autofunction:: reflexible.scripts.fprun.main
