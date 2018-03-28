@@ -207,10 +207,10 @@ def _get_figure_cache(map_region, map_par, fig_par):
         map_region = 'default'
 
     key = map_region + str(map_par) + str(fig_par)
-    try:
-        figure = _figure_cache[key]
-    except KeyError:
-        figure = _figure_cache[key] = _get_figure(map_region, map_par, fig_par)
+    #try:
+    #    figure = _figure_cache[key]
+    #except KeyError:
+    figure = _figure_cache[key] = _get_figure(map_region, map_par, fig_par)
 
     return figure
 

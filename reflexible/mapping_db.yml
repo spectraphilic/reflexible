@@ -118,7 +118,7 @@ obuoy:
         urcrnrlat: 80.
         urcrnrlon: -119.
         area_thresh: 1000.
-        resolution: i
+        resolution: l
         projection: merc
         lat_0: 70.
         lon_0: -150.
@@ -234,7 +234,7 @@ eyj:
         urcrnrlat: 40.
         urcrnrlon: -117.
         area_thresh: 100.
-        resolution: h
+        resolution: i
         projection: lcc
         lat_1: 5.
         lon_0: -120.
@@ -296,7 +296,7 @@ vauuav_modis:
         urcrnrlat: 79.2
         urcrnrlon: 12.6
         area_thresh: 10.
-        resolution: h
+        resolution: i
         projection: laea
         lat_ts: 79.
         lon_0: 12.
@@ -311,7 +311,7 @@ vauuav09:
         urcrnrlat: 78.98
         urcrnrlon: 12.5
         area_thresh: 10.
-        resolution: h
+        resolution: i
         projection: lcc
         lat_1: 75.
         lon_0: 20.
@@ -356,7 +356,7 @@ cicci:
         urcrnrlat: 79.8
         urcrnrlon: 14.5
         area_thresh: 10.
-        resolution: h
+        resolution: i
         projection: lcc
         lat_1: 75.
         lon_0: 20.
@@ -423,7 +423,7 @@ geo_summit:
         urcrnrlat: 73.
         urcrnrlon: -37.
         area_thresh: 1.
-        resolution: h
+        resolution: i
         projection: lcc
         lat_1: 70.
         lon_0: -40.
@@ -437,7 +437,7 @@ geo_summit_zoom:
         urcrnrlat: 72.6
         urcrnrlon: -38.4
         area_thresh: 10.
-        resolution: h
+        resolution: i
         projection: lcc
         lat_1: 70.
         lon_0: -38.
@@ -597,7 +597,7 @@ svalbard:
         lat_0: 80.0
         lon_0: 20.0
         projection: lcc
-        resolution: h
+        resolution: l
         rsphere: [6378137.0, 6356752.3142]
 
 npolar_70:

@@ -78,6 +78,8 @@ It should simply be a matter of running::
 
     $ python setup.py install
 
+**NOTE** It is only planned to support Python 3.
+
 Quick install
 =============
 

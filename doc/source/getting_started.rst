@@ -41,17 +41,17 @@ contact me: `John F. Burkhart <mailto:jfburkhart@gmail.com>`_
 
 .. _fetching-example-data:
 
-Fetching example data
+Example data
 ---------------------
 
-An example data set is available for testing. The data contains a
-backward run case from Svalbard, and is suitable for testing some of the
+Several example simulations are available for testing. The simulations contain a
+simple backward run case and a forward case, and are suitable for testing some of the
 unique functions of reflexible for analysis and creation of the
 retroplumes.
 
-I suggest using wget to grab the data::
+The data is distributed with the repository::
 
-    $ wget http://folk.uio.no/johnbur/sharing/stads2_V10.tar
+    $ ls reflexible/reflexible/uio_examples
 
 ----
 
@@ -61,51 +61,57 @@ Converting FLEXPART output to netCDF4 format
 ============================================
 
 Reflexible is using a netCDF4 internally for doing its analysis and
-plotting duties.  This section demonstrates how to convert the
+plotting duties.  Not all the example data sets contain netcdf output,
+and several FLEXPART users are not yet using this functionality.
+This section demonstrates how to convert the
 FLEXPART output to netCDF4 format. In order to do that the
 `create_ncfile` script will be invoked. This script is copied into a
 directory in your path when reflexible is installed, so you should not
 worry about copying it manually.
 
-Before processing the data in `stads2_V10.tar` we have to
-uncompress that file::
-
-    $ cp stads2_V10.tar /tmp
-    $ cd /tmp
-    $ tar xvf stads2_V10.tar
-
-After untarring, a directory named `stads2_V10` is created. It
+The example data we will use is in a directory named `uio_examples\Bwd1_V9.02`. It
 contains the result of processing a simple backward run case with
 FLEXPART. Next we can execute the `fprun` script::
 
-    $ fprun /tmp/stads2_V10/pathnames
-    Flexpart('/tmp/stads2_V10/pathnames', nested=False)
+    $ fprun Bwd1_V9.02/pathnames
+    UserWarning: NetCDF4 files not found in output directory 'Bwd1_V9.02/outputs'.
+    You can always generate them from data there with the `create_ncfile` command line utility.
+    Read b'FLEXPART V9.0' Header: Bwd1_V9.02/outputs/header
+    Flexpart('Bwd1_V9.02/pathnames', nested=False)
 
 note that you pass the pathnames of a FLEXPART run.  The `pathnames`
 file has a simple structure.  For example, in our case it goes like
 this::
 
-    $./options/
-    ./stads2_15_018.001/
-    /
-    /.../AVAILABLE_ECMWF_OPER_fields_global
+    /site/opt/flexpart/9.02/examples/Bwd1/options/
+    ./outputs/
+
+    /site/opt/flexpart/WIND_FIELDS/AVAILABLE_ECMWF_EI_fields_global
     ============================================
+
 
 So, basically in the first line indicates the <options> directory for
 the FLEXPART run, whereas the second line specifies the <output>
 directory.  With this, you can easily mix and match different <options>
 and <output> directories for your analysis.
 
-If we want to select the `nested` data instead, just pass the `-n` flag::
+If we want to select the `nested` data instead, we can look instead at the
+`Fwd1_V9.02/pathnames` simulation with the `-n` flag::
 
-    $ fprun -n /tmp/stads2_V10/pathnames
-    Flexpart('/tmp/stads2_V10/pathnames', nested=True)
+    $ fprun -n Fwd2_V9.02/pathnames
+    UserWarning: NetCDF4 files not found in output directory 'Fwd2_V9.02/outputs'.
+    You can always generate them from data there with the `create_ncfile` command line utility.
+    Read b'FLEXPART V8.2' Header: Fwd2_V9.02/outputs/header_nest
+    Flexpart('Fwd2_V9.02/', nested=True)
+
 
 And if you want to get some info on the COMMANDS file::
 
-    $ fprun -n -C /tmp/stads2_V10/pathnames
-    $ Flexpart('/tmp/stads2_V10/pathnames', nested=True)
-    $ Command: OrderedDict([('CBLFLAG', 0), ('CTL', -5), ('IBDATE', 20150405), ('IBTIME', 103500), ('IEDATE', 20150426), ('IETIME', 130500), ('IFINE', 4), ('IFLUX', 0), ('IND_RECEPTOR', 1), ('IND_SOURCE', 1), ('IOUT', 13), ('IOUTPUTFOREACHRELEASE', 1), ('IPIN', 0), ('IPOUT', 0), ('ITSPLIT', 9999999), ('LAGESPECTRA', 1), ('LCONVECTION', 1), ('LDIRECT', -1), ('LINIT_COND', 0), ('LOUTAVER', 10800), ('LOUTSAMPLE', 900), ('LOUTSTEP', 10800), ('LSUBGRID', 1), ('LSYNCTIME', 900), ('MDOMAINFILL', 0), ('MQUASILAG', 0), ('NESTED_OUTPUT', 1), ('SURF_ONLY', 0)])
+    $ fprun -n -C Fwd2_V9.02/pathnames
+    Read b'FLEXPART V8.2' Header: Fwd2_V9.02/outputs/header_nest
+    Flexpart('Fwd2_V9.02/pathnames', nested=True)
+    Command: OrderedDict([('AVG_CNC_INT', 3600), ('AVG_CNC_TAVG', 3600), ('CNC_SAMP_TIME', 300), ('CTL', 3.0), ('IFINE', 4), ('IFLUX', 0), ('IND_RECEPTOR', 1), ('IND_SOURCE', 1), ('IOUT', 5), ('IPIN', 0), ('IPOUT', 0),  ('LAGESPECTRA', 0), ('LCONVECTION', 0), ('LINIT_COND', 2), ('LSUBGRID', 1), ('MDOMAINFILL', 0), ('MQUASILAG', 0), ('NESTED_OUTPUT', 1), ('OUTPUTFOREACHRELEASE', 0), ('SIM_DIR', 1), ('SIM_END', ['20070122', '180000']), ('SIM_START', ['20070121', '090000']), ('SYNC', 300), ('T_PARTSPLIT', 999999999)])
+
 
 You can get more info on the supported flags by passing the `-h` flag to
 the `fprun` command line utility::
@@ -147,7 +153,7 @@ Open the file and print meta-information for the run::
 
     In [1]: from netCDF4 import Dataset
 
-    In [2]: rootgrp = Dataset("/tmp/stads2_V10/stads2_15_018.001/grid_time_20150426130500.nc")
+    In [2]: rootgrp = Dataset('./Fwd1_V9.02/outputs/grid_conc_2007012190000_nest.nc', 'r')
 
     In [3]: print(rootgrp)
     <class 'netCDF4._netCDF4.Dataset'>
@@ -155,62 +161,64 @@ Open the file and print meta-information for the run::
         Conventions: CF-1.6
         title: FLEXPART model output
         institution: NILU
-        source: Version 10.0beta (2015-05-01) model output
-        history: 2016-02-02 09:43 +0100  created by  on compute-8-16.local
+        source: V8 model output
+        history: 2016-10-28 16:43 NA created by faltet on faltet-Latitude-E6430
         references: Stohl et al., Atmos. Chem. Phys., 2005, doi:10.5194/acp-5-2461-200
-        outlon0: -179.0
-        outlat0: -90.0
-        dxout: 0.5
-        dyout: 0.5
-        ldirect: -1
-        ibdate: 20150405
-        ibtime: 103500
-        iedate: 20150426
-        ietime: 130500
-        loutstep: -10800
-        loutaver: -10800
-        loutsample: -900
-        itsplit: 9999999
-        lsynctime: -900
-        ctl: -0.2
-        ifine: 1
-        iout: 5
-        ipout: 0
+        outlon0: 1.0
+        outlat0: 39.5
+        dxout: 0.019999999553
+        dyout: 0.019999999553
+        ldirect: 1
+        ibdate: 20070121
+        ibtime: 100000
+        iedate: 20070122
+        ietime: 180000
+        loutstep: 3600
+        loutaver: 3600
+        loutsample: 300
         lsubgrid: 1
-        lconvection: 1
-        lagespectra: 1
-        ipin: 0
-        ioutputforeachrelease: 1
-        iflux: 0
-        mdomainfill: 0
+        lconvection: 0
         ind_source: 1
         ind_receptor: 1
+        itsplit: 999999999
+        linit_cond: 2
+        lsynctime: 300
+        ctl: 3.0
+        ifine: 4
+        iout: 5
+        ipout: 0
+        lagespectra: 0
+        ipin: 0
+        ioutputforeachrelease: 0
+        iflux: 0
+        mdomainfill: 0
         mquasilag: 0
         nested_output: 1
         surf_only: 0
-        linit_cond: 0
-        dimensions(sizes): time(168), longitude(720), latitude(360), height(3), numspec(1), pointspec(31), nageclass(1), nchar(45), numpoint(31)
-        variables(dimensions): int32 time(time), float32 longitude(longitude), float32 latitude(latitude), float32 height(height), |S1 RELCOM(numpoint,nchar), float32 RELLNG1(numpoint), float32 RELLNG2(numpoint), float32 RELLAT1(numpoint), float32 RELLAT2(numpoint), float32 RELZZ1(numpoint), float32 RELZZ2(numpoint), int32 RELKINDZ(numpoint), int32 RELSTART(numpoint), int32 RELEND(numpoint), int32 RELPART(numpoint), float32 RELXMASS(numspec,numpoint), int32 LAGE(nageclass), int32 ORO(latitude,longitude), float32 spec001_mr(nageclass,pointspec,time,height,latitude,longitude)
+        dimensions(sizes): time(33), longitude(220), latitude(220), height(1), numspec(1), pointspec(1), nageclass(1), nchar(45), numpoint(1)
+        variables(dimensions): int32 time(time), float32 longitude(longitude), float32 latitude(latitude), float32 height(height), <class 'str'> RELCOM(numpoint), float32 RELLNG1(numpoint), float32 RELLNG2(numpoint), float32 RELLAT1(numpoint), float32 RELLAT2(numpoint), float32 RELZZ1(numpoint), float32 RELZZ2(numpoint), int32 RELKINDZ(numpoint), int32 RELSTART(numpoint), int32 RELEND(numpoint), int32 RELPART(numpoint), float32 RELXMASS(numspec,numpoint), int32 LAGE(nageclass), int32 ORO(latitude,longitude), float32 spec001_mr(nageclass,pointspec,time,height,latitude,longitude), float32 WD_spec001(nageclass,pointspec,time,latitude,longitude), float32 DD_spec001(nageclass,pointspec,time,latitude,longitude)
         groups:
+
 
 We can get the info for a specific attribute just by referencing it like this::
 
     In [4]: print(rootgrp.loutstep)
-    -10800
+    3600
 
 We can have a look at the different dimensions and variables in the file::
 
     In [5]: print(rootgrp.dimensions)
-    OrderedDict([('time', <class 'netCDF4._netCDF4.Dimension'> (unlimited): name = 'time', size = 168
-    ), ('longitude', <class 'netCDF4._netCDF4.Dimension'>: name = 'longitude', size = 720
-    ), ('latitude', <class 'netCDF4._netCDF4.Dimension'>: name = 'latitude', size = 360
-    ), ('height', <class 'netCDF4._netCDF4.Dimension'>: name = 'height', size = 3
+    OrderedDict([('time', <class 'netCDF4._netCDF4.Dimension'> (unlimited): name = 'time', size = 33
+    ), ('longitude', <class 'netCDF4._netCDF4.Dimension'>: name = 'longitude', size = 220
+    ), ('latitude', <class 'netCDF4._netCDF4.Dimension'>: name = 'latitude', size = 220
+    ), ('height', <class 'netCDF4._netCDF4.Dimension'>: name = 'height', size = 1
     ), ('numspec', <class 'netCDF4._netCDF4.Dimension'>: name = 'numspec', size = 1
-    ), ('pointspec', <class 'netCDF4._netCDF4.Dimension'>: name = 'pointspec', size = 31
+    ), ('pointspec', <class 'netCDF4._netCDF4.Dimension'>: name = 'pointspec', size = 1
     ), ('nageclass', <class 'netCDF4._netCDF4.Dimension'>: name = 'nageclass', size = 1
     ), ('nchar', <class 'netCDF4._netCDF4.Dimension'>: name = 'nchar', size = 45
-    ), ('numpoint', <class 'netCDF4._netCDF4.Dimension'>: name = 'numpoint', size = 31
+    ), ('numpoint', <class 'netCDF4._netCDF4.Dimension'>: name = 'numpoint', size = 1
     )])
+
 
     In [6]: rootgrp.variables.keys()
     Out[11]: odict_keys(['time', 'longitude', 'latitude', 'height', 'RELCOM', 'RELLNG1', 'RELLNG2', 'RELLAT1', 'RELLAT2', 'RELZZ1', 'RELZZ2', 'RELKINDZ', 'RELSTART', 'RELEND', 'RELPART', 'RELXMASS', 'LAGE', 'ORO', 'spec001_mr'])
@@ -228,16 +236,18 @@ The `netCDF4` Python wrappers allows to easily slice and dice variables::
         standard_name: grid_longitude
         description: grid cell centers
     unlimited dimensions:
-    current shape = (720,)
+    current shape = (220,)
     filling on, default _FillValue of 9.969209968386869e+36 used
 
-We see that 'longitude' is a unidimensional variable with shape (720,).
+
+We see that 'longitude' is a unidimensional variable with shape (220,).
 Let's read just the 10 first elements::
 
     In [20]: longitude[:10]
     Out[20]:
-    array([-178.75, -178.25, -177.75, -177.25, -176.75, -176.25, -175.75,
-           -175.25, -174.75, -174.25], dtype=float32)
+    array([ 1.00999999,  1.02999997,  1.04999995,  1.07000005,  1.09000003,
+        1.11000001,  1.13      ,  1.14999998,  1.16999996,  1.18999994], dtype=float32)
+
 
 As only the 10 first elements are brought into memory, that permits
 to reduce your memory needs for your analysis.
@@ -269,10 +279,10 @@ will find it very convenient when combined with reflexible.
 
 ----
 
-.. _testing-reflexible:
+.. _basic-reflexible:
 
-Testing reflexible
-==================
+Basic reflexible functionality
+================================
 
 Once you have checked out the code and have a sufficient FLEXPART
 dataset to work with you can begin to use the module. The first step
@@ -282,11 +292,12 @@ follows::
 
     In [1]: import reflexible as rf
 
-The next step is to create the accessor to the FLEXPART run.  You usually
-should pass the location of the 'pathnames' file to the `Flexpart`
+The next step is to create the accessor to the FLEXPART run. In this first
+example we'll work with a *Forward* simulation. This is easier, conceptually
+and a common FLEXPART use case. You pass the location of the 'pathnames' file to the `Flexpart`
 constructor::
 
-    In [2]: fprun = rf.Flexpart("/tmp/stads2_V10/pathnames")
+    In [2]: fprun = rf.Flexpart("Fwd2_V9.02/pathnames")
 
     In [3]: type(fprun)
     Out[3]: reflexible.flexpart.Flexpart
@@ -297,34 +308,30 @@ access the COMMAND like this::
 
     In [4]: fprun.Command
     Out[4]:
-    OrderedDict([('CBLFLAG', 0),
-                 ('CTL', -5),
-                 ('IBDATE', 20150405),
-                 ('IBTIME', 103500),
-                 ('IEDATE', 20150426),
-                 ('IETIME', 130500),
+    OrderedDict([('AVG_CNC_INT', 3600),
+                 ('AVG_CNC_TAVG', 3600),
+                 ('CNC_SAMP_TIME', 300),
+                 ('CTL', 3.0),
                  ('IFINE', 4),
                  ('IFLUX', 0),
                  ('IND_RECEPTOR', 1),
                  ('IND_SOURCE', 1),
-                 ('IOUT', 13),
-                 ('IOUTPUTFOREACHRELEASE', 1),
+                 ('IOUT', 5),
                  ('IPIN', 0),
                  ('IPOUT', 0),
-                 ('ITSPLIT', 9999999),
-                 ('LAGESPECTRA', 1),
-                 ('LCONVECTION', 1),
-                 ('LDIRECT', -1),
-                 ('LINIT_COND', 0),
-                 ('LOUTAVER', 10800),
-                 ('LOUTSAMPLE', 900),
-                 ('LOUTSTEP', 10800),
+                 ('LAGESPECTRA', 0),
+                 ('LCONVECTION', 0),
+                 ('LINIT_COND', 2),
                  ('LSUBGRID', 1),
-                 ('LSYNCTIME', 900),
                  ('MDOMAINFILL', 0),
                  ('MQUASILAG', 0),
                  ('NESTED_OUTPUT', 1),
-                 ('SURF_ONLY', 0)])
+                 ('OUTPUTFOREACHRELEASE', 0),
+                 ('SIM_DIR', 1),
+                 ('SIM_END', ['20070122', '180000']),
+                 ('SIM_START', ['20070121', '090000']),
+                 ('SYNC', 300),
+                 ('T_PARTSPLIT', 999999999)])
 
 the SPECIES::
 
@@ -338,10 +345,15 @@ the SPECIES::
                  'f0': [-9.9],
                  'henry': [-9.9],
                  'kao': [-99.99],
+                 'ohreact': [-9.9e-09],
                  'reldiff': [-9.9],
-                 'weightmolar': [350.0]})
+                 'spec_ass': [-9],
+                 'weightmolar': [350.0],
+                 'weta': [-9.9e-09],
+                 'wetb': [-9.9e-09]})
 
-or the RELEASES::
+..
+  or the RELEASES::
 
     In [7]: fprun.Releases[:10]  # print just the first 10 entries
     Out[7]:
@@ -366,37 +378,18 @@ But perhaps the most important accessor is the `Header`::
 
 Now we have a variable 'H' which has all the information about the
 run that is available from the header file. This 'Header' is a class
-instance, so the first step may be to explore some of the attibutes::
+instance, so the first step may be to explore some of the attributes::
 
     In [12]: print(H.keys())
     ['C', 'FD', 'Heightnn', 'ORO', 'absolute_path', 'alt_unit', 'area', 'available_dates', 'available_dates_dt', 'direction', 'dxout', 'dyout', 'fill_grids', 'fp_path', 'ibdate', 'ibtime', 'iedate', 'ietime', 'ind_receptor', 'ind_source', 'iout', 'ireleaseend', 'ireleasestart', 'latitude', 'lconvection', 'ldirect', 'longitude', 'loutaver', 'loutsample', 'loutstep', 'lsubgrid', 'nageclass', 'nc', 'ncfile', 'nested', 'nspec', 'numageclasses', 'numpoint', 'numpointspec', 'numxgrid', 'numygrid', 'numzgrid', 'options', 'outheight', 'outlat0', 'outlon0', 'output_unit', 'pointspec', 'releaseend', 'releasestart', 'releasetimes', 'species', 'zpoint1', 'zpoint2']
 
 
-Reasonably, you should now want to read in some of the data from your
-run. At this point you should now have a variable 'FD' which is again
-a dictionary of the FLEXPART grids::
-
-    In [13]: H.FD
-    Out[13]: <reflexible.data_structures.FD at 0x7f83bc4c5898>
-
-    In [15]: H.FD.keys()[:3]  # sor only the 3 first entries
-    Out[15]: [(0, '20150405160500'), (0, '20150405190500'), (0, '20150405220500')]
-
-Look at the keys of the dictionary to see what information is
-stored. The actual data is keyed by tuples: (nspec, datestr) where
-nspec is the species number and datestr is a YYYYMMDDHHMMSS string for
-the grid timestep::
-
-    In [21]: fd = H.FD[(0, '20150405160500')]
-
-    In [22]: fd.data_cube.shape
-    Out[22]: (720, 360, 3, 31, 1)
-
+.. _reflexible-in-depth:
 
 Working with rflexible in depth
 ===============================
 
-Assuming the above steps worked out, then we can proceed to play with
+Assuming the above steps worked out, then we can proceed to understand
 the tools in a bit more detail.
 
 Okay, let's take a look at the example code above line by line. The
@@ -406,7 +399,7 @@ the preferred approach.
 The next line creates a "fprun" instance of :class:`Flexpart`,
 by passing the pathnames of a FLEXPART run.::
 
-    In [24]: fprun = rf.Flexpart("/tmp/stads2_V10/pathnames")
+    In [24]: fprun = rf.Flexpart("Fwd2_V9.02/pathnames")
 
 and from there, we can easily have access to the `Header` container::
 
@@ -425,42 +418,44 @@ This will show you all the attributes associated with the `Header`.
 ----
 
 H is now an object in your workspace. Using Ipython you can explore
-the methods and attributes of H.  Let's start with the "C" attribute,
-which is similar to the "FD" dictionary described above, but
-contains the Cumulative sensitivity at each time step, so you can use
-it for plotting retroplumes.
+the methods and attributes of H.
 
-It is important to understand the differences between `H.FD` and `H.C`
-while working with reflexible. If we look closely at the keys of
-`H.FD`::
+.. _data-containers:
 
-    In [29]: H.FD.keys()[:3]
-    Out[29]: [(0, '20150405160500'), (0, '20150405190500'), (0, '20150405220500')]
+Data Containers: `H.FD` and `H.C`
+----------------------------------
 
-You'll see that the dictionary is primary keyed by a set of tuples.
-These tuples represent ``(s, date)``, where s is the specied ID and
-date is the date of a grid in FLEXPART. However, if we look at the keys
-of the `H.C` dictionary::
+There are a couple attributes of the Header that contain data. These are important
+to understand in order to work with reflexible.
 
-    In [30]: H.C.keys()[:3]
-    Out[30]: [(0, 0), (0, 1), (0, 2)]
+Reasonably, you should now want to read in some of the data from your
+run. At this point, the Header or, `H` variable, should now have an attribute
+'FD' which is again a dictionary of the FLEXPART grids (think 'Flexpart Data')::
 
-We see only tuples, now keyed by (s, rel_id), where s is still the
-species ID, but rel_id is the release ID. These release IDs correspond
-to the times in `H.releasetimes` which is a list of the release times.
+    In [13]: H.FD
+    Out[13]: <reflexible.data_structures.FD at 0x7f83bc4c5898>
 
-Each tuple is a key to another dictionary, that contains the
-data. Currently there are differences between the way the data is
-stored in `H.FD` and in `H.C`, but future versions are working to make
-these two data stores common.
+    In [15]: H.FD.keys()[:3]  # for only the 3 first entries
+    Out[15]: [(0, '20070121100000'), (0, '20070121110000'), (0, '20070121120000')]
 
-So we know now `H.C` is keyed by (s,k) where s is an integer for the
-species #, and k is an integer for the release id. Let's look at the
-data stores returned in each of these two dictionaries::
+Look at the keys of the dictionary to see what information is
+stored. The actual data is keyed by tuples: (nspec, datestr) where
+nspec is the species number and datestr is a YYYYMMDDHHMMSS string for
+the grid timestep::
 
-    In [32]: myfd = H.FD[(0, '20150405160500')]
+    In [16]: fd = H.FD[(0, '20070121100000')]
 
-    In [33]: myfd.keys()
+    In [17]: fd.data_cube.shape
+    Out[18]: (60, 40, 1, 1, 1)
+
+And we can see what the dimensions are as they relate to the shape::
+
+    In [19]: fd.data_cube.dims
+    Out[20]: ('longitude', 'latitude', 'height', 'pointspec', 'nageclass')
+
+Some information about the individual data for the timestep is provided::
+
+    In [33]: fd.keys()
     Out[33]:
     ['data_cube',
      'gridfile',
@@ -476,66 +471,150 @@ data stores returned in each of these two dictionaries::
      'max',
      'min']
 
-If we look at `myfd.data_cube` for example, we'll see that
-this returns a numpy array of shape::
+These are available as attributes of the flexpart data class::
 
-    In [35]: myfd.data_cube.shape
-    Out[35]: (720, 360, 3, 31, 1)
+    In [97]: fd.timestamp
+    Out[97]: datetime.datetime(2007, 1, 21, 10, 0)
 
-which corresponds to (numx, numy, numz, days, numk) where numk is the number
-of releases.
+    In [102]: fd.species
+    Out[102]: ['TRACER']
 
-The other information is mainly metadata for that grid.
+There is a second attribute, `H.C`, that is meant to provide 'Cumulative` sensitivity at
+each time step, as well as some cumulative values such as a `total_column` attribute.
 
-In `H.C` the information is slightly different::
+`H.C` is similar to the `H.FD` object described above, but
+contains the Cumulative sensitivity at each time step, so you can use
+it for plotting retroplumes.
 
-    In [36]: myc = H.C[(0,1)]
+It is important to understand the differences between `H.FD` and `H.C`
+while working with reflexible. If we look closely at the keys of
+`H.FD`::
 
-    In [37]: myc.keys()
-    Out[37]:
-    ['data_cube',
-     'gridfile',
-     'itime',
-     'timestamp',
-     'species',
-     'rel_i',
-     'spec_i',
-     'dry',
-     'wet',
-     'slabs',
-     'shape',
-     'max',
-     'min']
+    In [29]: H.FD.keys()[:3]
+    Out[29]: [(0, '20070121100000'), (0, '20070121110000'), (0, '20070121120000')]
 
-In particular, note the shape of the grid is now::
+You'll see that the dictionary is primary keyed by a set of tuples.
+These tuples represent ``(s, date)``, where s is the specied ID and
+date is the date of a grid in FLEXPART.
 
-    In [38]: myc.data_cube.shape
-    Out[28]: (168, 3, 360, 720)
+However, if we look at the keys
+of the `H.C` dictionary::
 
-There is no longer a fifth dimension corresponding to the release
-time.  Furthermore, there is a new key `slabs`. This is a dictionary
-where each numz level is packaged as a 2-d numpy array keyed by it's
-level index::
+    In [30]: H.C.keys()[:3]
+    Out[30]: [(0, 0)]
 
-    In [46]: myc.slabs.keys()
-    Out[46]: dict_keys([0, 1, 2, 3])
+We see only tuples, now keyed by (s, rel_id), where s is still the
+species ID, but rel_id is the release ID. These release IDs correspond
+to the times in `H.releasetimes` which is a list of the release times.
+In a forward run, this will be the same. However, in a backward run, there
+will be differences.
 
-    In [47]: myc.slabs[1].shape
-    Out[47]: (3, 360, 720)
+Each tuple is a key to another dictionary, that contains the
+data. Currently there are differences between the way the data is
+stored in `H.FD` and in `H.C`, but future versions are working to make
+these two data stores common.
 
-This is redundant data to the grid, and will likely change in future
-versions of reflexible. However, the important point to note is that
-the 0th element is the Total Column.
+So we know now `H.C` is keyed by (s,k) where s is an integer for the
+species #, and k is an integer for the release id.
 
-Using the plotting tools of reflexible we can plot the total column easily::
+Working with Backward Simulations
+-----------------------------------
+The biggest difference for the `H.C` object is when you have a backward
+simulation. First, for a backward simulation, the attribute will not exist
+unless you explicitly call for it::
 
-    In [61]: rf.plot_totalcolumn(H, myc, map_region='NorthAtlantic')
+    In [135]: bwrun = rf.Flexpart('Bwd1_V9.02/pathnames')
+    /Data/johnbur/.conda/envs/shyft/lib/python3.6/site-packages/reflexible-0.5.0-py3.6.egg/reflexible/flexpart.py:45: UserWarning: NetCDF4 files not found in output directory 'Bwd1_V9.02/outputs'.  You can always generate them from data there with the `create_ncfile` command line utility.
+      self.fp_output))
+    Read b'FLEXPART V9.0' Header: Bwd1_V9.02/outputs/header
+
+    In [136]: bwH = bwrun.Header
+
+    In [137]: bwH.C
+    ---------------------------------------------------------------------------
+    KeyError                                  Traceback (most recent call last)
+    <ipython-input-137-71db37c7653c> in <module>()
+    ----> 1 bwH.C
+
+    ~/.conda/envs/shyft/lib/python3.6/site-packages/reflexible-0.5.0-py3.6.egg/reflexible/conv2netcdf4/legacy_structures.py in __getattr__(self, attr)
+        178         if attr == "__getstate__":
+        179             return lambda: None
+    --> 180         return self[attr]
+        181
+        182     def __setattr__(self, attr, value):
+
+    KeyError: 'C'
+
+Because reading all the data for a backward run is time and memory intensive, it
+will not be done automatically. Instead, you need to explicitly ask for it::
+
+    In [138]: bwH.fill_backward()
+    getting grid for:  ['20070121090000', '20070121100000', '20070121110000', '20070121120000', '20070121130000', '20070121140000', '20070121150000', '20070121160000', '20070121170000', '20070121180000', '20070121190000', '20070121200000', '20070121210000', '20070121220000', '20070121230000', '20070122000000', '20070122010000', '20070122020000', '20070122030000', '20070122040000', '20070122050000', '20070122060000', '20070122070000', '20070122080000', '20070122090000', '20070122100000', '20070122110000', '20070122120000', '20070122130000', '20070122140000', '20070122150000', '20070122160000', '20070122170000']
+    Assumed V8 Flexpart
+    Using readgrid from FortFlex
+    60 40 1 [0] 0 0 33 1
+    20070121090000
+    20070121100000
+    20070121110000
+    20070121120000
+    20070121130000
+    20070121140000
+    20070121150000
+    20070121160000
+    20070121170000
+    20070121180000
+    20070121190000
+    20070121200000
+    20070121210000
+    20070121220000
+    20070121230000
+    20070122000000
+    20070122010000
+    20070122020000
+    20070122030000
+    20070122040000
+    20070122050000
+    20070122060000
+    20070122070000
+    20070122080000
+    20070122090000
+    20070122100000
+    20070122110000
+    20070122120000
+    20070122130000
+    20070122140000
+    20070122150000
+    20070122160000
+    20070122170000
+    [0]
+
+At which point, reflexible will run through all the releasetimes and
+calculate the cumulative sensitivity so that retroplumes may be calculated.
+
+Note the shapes of the data returned when running backward simulations
+different::
+
+    In [154]: bw_fd = bwH.FD[(0, '20070121090000')]
+
+    In [155]: c = bwH.C[(0,0)]
+
+    In [156]: bw_fd.shape
+    Out[156]: (60, 40, 1, 1, 1)
+
+    In [157]: c.shape
+    Out[157]: (60, 40, 1)
+
 
 .. TODO: The above line does not work yet for the stads2 dataset.  Why?
 
-This should return an image similar to:
+  Using the plotting tools of reflexible we can plot the total column easily::
 
-.. image:: _static/sample_totalcolumn2.png
+    In [61]: rf.plot_totalcolumn(H, c, map_region='NorthAtlantic')
+
+
+  This should return an image similar to:
+
+  .. image:: _static/sample_totalcolumn2.png
 
 Adding Trajectories
 ====================
