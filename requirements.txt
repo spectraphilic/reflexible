@@ -7,3 +7,4 @@ pandas
 basemap>=1.0.7
 pyyaml
 bcolz
+pytest

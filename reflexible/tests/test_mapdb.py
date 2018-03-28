@@ -1,6 +1,6 @@
 import pytest
 import os
-from ..mapping import map_regions
+from reflexible.mapping import map_regions
 
 region_list = ['default', 'polarcat']
 
