@@ -7,7 +7,7 @@ import reflexible as rf
 
 
 output_list = [('Fwd1_V9.02', False),
-               ('Fwd1_V9.02', True)]
+               ('Fwd2_V9.02', True)]
 
 
 class Dataset:
@@ -17,16 +17,24 @@ class Dataset:
         self.fp_path = rf.datasets[fp_name[0]]
         self.fp_pathnames = os.path.join(self.fp_path, "pathnames")
 
-    def setup(self):
+    def setup(self, tmpdir):
+        self.tmpdir = tmpdir  # bring the fixture to the Dataset instance
         options_dir, output_dir = rf.conv2netcdf4.get_fpdirs(self.fp_pathnames)
         ncfiles = glob.glob(output_dir + '/*.nc')
         if ncfiles:
-            ncfile = [f for f in ncfiles if ("nest" in f) == self.fp_nested][0]
+            self.nc_path = [f for f in ncfiles if ("nest" in f) == self.fp_nested][0]
         else:
-            raise IOError("This test module is only valid for NetCDF4 files.")
+            self.tmpdir = tmpdir  # bring the fixture to the Dataset instance
+            self.nc_path = tmpdir.join("%s.nc" % self.fp_name).strpath
+            ncfile, options_dir, output_dir = rf.create_ncfile(
+                self.fp_pathnames, self.fp_nested, True, True, outfile=self.nc_path)
+            # raise IOError("This test module is only valid for NetCDF4 files.")
 
-        self.ncid = nc.Dataset(ncfile, 'r')
-        return self.ncid, self.fp_path, ncfile, None
+        self.ncid = nc.Dataset(self.nc_path, 'r')
+        return self.ncid, self.fp_path, self.nc_path, None
+
+    def cleanup(self):
+        self.tmpdir.remove(self.nc_path)
 
 
 class TestStructure:
@@ -34,7 +42,8 @@ class TestStructure:
     def setup(self, request, tmpdir):
         dataset = Dataset(request.param)
         print(dataset.fp_path)
-        self.ncid, self.fp_path, self.nc_path, self.H = dataset.setup()
+        self.ncid, self.fp_path, self.nc_path, self.H = dataset.setup(tmpdir)
+        request.addfinalizer(dataset.cleanup)
 
     # CF convention required attributes
     def test_CF_conventions(self):

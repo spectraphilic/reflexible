@@ -447,7 +447,7 @@ class FD(object):
 
 
 class C(object):
-    """Class that contains C data indexed with (spec, date)."""
+    """Class that contains C data indexed with (spec, release_id)."""
 
     def __init__(self, nc, releasetimes, species, available_dates,
                  direction, iout, Heightnn, FD):
