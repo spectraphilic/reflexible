@@ -11,8 +11,9 @@ doc/build/*
 .project
 .pydev*
 f2py_build/f90/*
-FortFlex.so
+FortFlex*.so
 .idea/*
 
 /.cache/
 .*.swp
+

@@ -35,15 +35,15 @@ class TestHeader:
     def test_releases(self):
         # Only test a few FP runs here
         if self.dataset.fp_name == 'Fwd1_V10.1':
-            releases = self.fprun.Releases[:]
+            releases = self.fprun.Releases['releases']
             assert len(releases) == 1
             assert tuple(releases[0]) == (
                 20050501, 0, 20050502, 0, 10.5, 11.0, 59.75, 60.25, 0.0,
                 100.0, 1, 1.0, 10000, b'OsloRelease')
         elif self.dataset.fp_name == 'Fwd1_V9.02':
-            releases = self.fprun.Releases
+            releases = self.fprun.Releases['release_point_names']
             assert len(releases) == 1
-            assert releases['release_point_names'][0] == b'RELEASE_TEST1'
+            assert releases[0] == b'RELEASE_TEST1'
 
     def test_command(self):
         command = self.fprun.Command
@@ -73,4 +73,56 @@ class TestHeader:
 
     def test_species(self):
         species = self.fprun.Species
-        assert species['dryvel'] == [-9.99]
+        if self.dataset.fp_name == 'Fwd1_V10.1':
+            # species id = 15
+            assert species == {
+                'decay': [691200.0],
+                # TODO: Search string in reflexible.scripts.create_ncfile.read_species
+                # needs to be updated to handle below/in-cloud scavenging in V10
+                #'weta': [1.0E-04],
+                #'wetb': [0.80],
+                'reldiff': [-9.9],
+                'henry': [-9.9],
+                'f0': [-9.9],
+                'dquer': [6.0E-7],
+                'dsigma': [3.0E-1],
+                'dryvel': [-9.99],
+                'weightmolar': [-9.99],
+                'ohreact': [-9.9E-09],
+                'spec_ass': [-9],
+                'kao': [-99.99]
+            }
+        elif self.dataset.fp_name == 'Fwd1_V9.02':
+            # species id = 1
+            assert species == {
+                'decay': [-999.9],
+                'weta': [-9.9E-09],
+                'wetb': [-9.9E-09],
+                'reldiff': [-9.9],
+                'henry': [-9.9],
+                'f0': [-9.9],
+                'dquer': [-9.9],
+                'dsigma': [-9.9],
+                'dryvel': [-9.99],
+                'weightmolar': [350.00],
+                'ohreact': [-9.9E-09],
+                'spec_ass': [-9],
+                'kao': [-99.99]
+            }
+        elif self.dataset.fp_name == 'Fwd2_V9.02':
+            # species id = 12
+            assert species == {
+                'decay': [-999.9],
+                'weta': [5.0E-06],
+                'wetb': [0.62],
+                'reldiff': [-9.9],
+                'henry': [1.0E-09],
+                'f0': [1.0E-09],
+                'dquer': [4.0E-7],
+                'dsigma': [3.0E-1],
+                'dryvel': [-9.99],
+                'weightmolar': [-9.99],
+                'ohreact': [-9.9E-09],
+                'spec_ass': [-9],
+                'kao': [-99.99]
+            }

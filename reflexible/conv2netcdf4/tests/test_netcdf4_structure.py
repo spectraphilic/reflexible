@@ -179,7 +179,7 @@ class TestStructure:
     def test_species_mr(self):
         attr_names = ('units', 'long_name', 'decay', 'weightmolar',
                       'ohreact', 'kao', 'vsetaver', 'spec_ass')
-        for i in range(0, self.H.nspec):
+        for i in range(self.H.nspec):
             anspec = "%3.3d" % (i + 1)
             if self.ncid.iout in (1, 3, 5):
                 var_name = "spec" + anspec + "_mr"
@@ -194,7 +194,7 @@ class TestStructure:
     def test_species_pptv(self):
         attr_names = ('units', 'long_name', 'decay', 'weightmolar',
                       'ohreact', 'kao', 'vsetaver', 'spec_ass')
-        for i in range(0, self.H.nspec):
+        for i in range(self.H.nspec):
             anspec = "%3.3d" % (i + 1)
             if self.ncid.iout in (2, 3):
                 var_name = "spec" + anspec + "_pptv"
@@ -217,7 +217,7 @@ class TestWetDryDeps:
     def test_WDspecies(self):
         attr_names = ('units', 'weta', 'wetb', 'weta_in', 'wetb_in',
                       'wetc_in', 'wetd_in', 'dquer', 'henry')
-        for i in range(0, self.H.nspec):
+        for i in range(self.H.nspec):
             anspec = "%3.3d" % (i + 1)
             if self.dataset.wetdep:
                 var_name = "WD_spec" + anspec
@@ -232,7 +232,7 @@ class TestWetDryDeps:
     def test_DDspecies(self):
         attr_names = ('units', 'dryvel', 'reldiff', 'henry', 'f0',
                       'dquer', 'density', 'dsigma')
-        for i in range(0, self.H.nspec):
+        for i in range(self.H.nspec):
             anspec = "%3.3d" % (i + 1)
             if self.dataset.drydep:
                 var_name = "DD_spec" + anspec
