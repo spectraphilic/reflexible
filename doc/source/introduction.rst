@@ -4,7 +4,7 @@ Introduction
 
 reflexible is an open source Python package to work with Lagrangian
 Particle Dispersion Model output. Currently it is built for `FLEXPART
-<http://transport.nilu.no/flexpart>`_ but future versions will include
+<https://www.flexpart.eu>`_ but future versions will include
 greater generality.
 
 Contributions and collaboration are welcome. The code is hosted at
