@@ -37,6 +37,11 @@ def find_package_data(pdir):
             for d,folders,files in os.walk(pdir)]
 
 
+data_files = [
+    ('reflexible/conv2netcdf4', [fortflex_so]),
+    ('reflexible', ['reflexible/mapping_db.yml']),
+] + find_package_data('reflexible/uio_examples')
+
 setuptools.setup(
     name = 'reflexible',
     version = VERSION,
@@ -51,8 +56,7 @@ setuptools.setup(
         'reflexible.conv2netcdf4',
         'reflexible.tests',
         ],
-    data_files = [('reflexible/conv2netcdf4', [fortflex_so])] + \
-        find_package_data('reflexible/uio_examples'),
+    data_files = data_files,
     zip_safe=False,
     entry_points={
         'console_scripts': [
