@@ -4,7 +4,7 @@ netCDF4>=1.1.1
 xarray
 numpy!=1.12
 pandas
-basemap>=1.0.7
+basemap==1.0.7
 pyyaml
 bcolz
 pytest

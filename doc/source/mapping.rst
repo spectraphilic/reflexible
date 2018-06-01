@@ -14,7 +14,7 @@ A brief description of the module
 The mapping module is a helper function to the :mod:`reflexible`
 module.  Primarily it is designed to perform a few tasks relating to
 using the matplotlib `Basemap
-<http://matplotlib.sourceforge.net/basemap/doc/html/api/basemap_api.html#module-mpl_toolkits.basemap>`_
+<http://matplotlib.sourceforge.net/basemap/api/basemap_api.html#module-mpl_toolkits.basemap>`_
 module. I haven't confirmed whether how I pass the figures around or
 not is a good idea, and would welcome suggestions.
 
@@ -59,7 +59,7 @@ Another commonly used paradigm is the passing of a 'map_region' keyword to the
 functions. Regions are defined manually at present. You'll have to edit the
 :file:`mapping.py` and specifically, the :func:`map_regions`. Following the
 instructions for the `Basemap
-<http://matplotlib.sourceforge.net/basemap/doc/html/api/basemap_api.html#module-mpl_toolkits.basemap>`_
+<http://matplotlib.sourceforge.net/basemap/api/basemap_api.html#module-mpl_toolkits.basemap>`_
 toolkit you can define your own unique region. See other regions as examples.
 
 

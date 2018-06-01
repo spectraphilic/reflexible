@@ -3,16 +3,19 @@
 *.o
 *.prefs
 MANIFEST
-dist
 build
+dist
+doc/build/*
 *.egg-info
 .coverage
-doc/build/*
 .project
 .pydev*
-f2py_build/f90/*
-FortFlex.so
 .idea/*
+f2py_build/f90/*
+
+FortFlex.pyf
+FortFlex.*.so
 
 /.cache/
+/.pytest_cache/
 .*.swp

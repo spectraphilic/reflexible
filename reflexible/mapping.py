@@ -246,8 +246,6 @@ def get_base1(map_region='default', map_par=None, fig_par=None,
         ax = fig.gca()
 
     m = basemap.Basemap(**map_par_sd)
-    print('getting base1')
-    print(m)
     plt.axes(ax)   # make sure axes ax are current
     # draw coastlines and political boundaries.
     m.drawcoastlines(linewidth=0.8)
