@@ -4,8 +4,9 @@ from __future__ import print_function
 
 from distutils.dep_util import newer
 import os, os.path
-from setuptools import setup
+import setuptools
 import subprocess
+import sysconfig
 
 
 # reflexible version
@@ -14,9 +15,10 @@ VERSION = open('VERSION').read().strip()
 open('reflexible/version.py', 'w').write('__version__ = "%s"\n' % VERSION)
 
 # Build the FortFlex extension if necessary
-if (not os.path.exists("reflexible/conv2netcdf4/FortFlex.so") or
-    newer("reflexible/conv2netcdf4/fortflex/FortFlex.f",
-          "reflexible/conv2netcdf4/FortFlex.so")):
+ext_suffix = sysconfig.get_config_var('EXT_SUFFIX') or '.so'
+fortflex_f = os.path.join('reflexible', 'conv2netcdf4', 'fortflex', 'FortFlex.f')
+fortflex_so = os.path.join('reflexible', 'conv2netcdf4', 'FortFlex' + ext_suffix)
+if not os.path.exists(fortflex_so) or newer(fortflex_f, fortflex_so):
     try:
         print(subprocess.check_output(
             "cd reflexible/conv2netcdf4/fortflex; "
@@ -26,7 +28,7 @@ if (not os.path.exists("reflexible/conv2netcdf4/FortFlex.so") or
         print("Problems compiling the FortFlex module.  "
               "Will continue using a slower fallback...")
     else:
-        print("FortFlex.so extension has been created in reflexible/conv2netcdf4/!")
+        print("FortFlex extension has been created in {}".format(fortflex_so))
 
 
 def find_package_data(pdir):
@@ -35,7 +37,7 @@ def find_package_data(pdir):
             for d,folders,files in os.walk(pdir)]
 
 
-setup(
+setuptools.setup(
     name = 'reflexible',
     version = VERSION,
     author = 'John F. Burkhart, Francesc Alted',
@@ -49,8 +51,7 @@ setup(
         'reflexible.conv2netcdf4',
         'reflexible.tests',
         ],
-    data_files = [
-        ('reflexible/conv2netcdf4', ['reflexible/conv2netcdf4/FortFlex.so'])] + \
+    data_files = [('reflexible/conv2netcdf4', [fortflex_so])] + \
         find_package_data('reflexible/uio_examples'),
     zip_safe=False,
     entry_points={
