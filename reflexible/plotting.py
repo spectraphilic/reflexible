@@ -344,7 +344,7 @@ def plot_sensitivity(H, data, data_range=None,
 
         if m.projection != 'merc':
             if lons[-1] - lons[0] < 360.:
-                topodat, lons = basemap.addcyclic(data, lons)
+                topodat, lons = basemap.addcyclic(data.values, lons)
 
     # get min/max range
     if data_range is not None:

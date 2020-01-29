@@ -64,6 +64,11 @@ Clone the github repository into a folder in your PYTHONPATH:
 
     $ git clone https://github.com/spectraphilic/reflexible.git
 
+Optionally create a conda environment:
+
+    $ conda create --name reflexible
+    $ conda activate reflexible
+
 Install the requirements:
 
     $ conda install --file requirements.txt -c conda-forge

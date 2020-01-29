@@ -110,13 +110,13 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
     # Get the database out of the system YAML file
     mapdb_file = os.path.join(os.path.dirname(__file__), 'mapping_db.yml')
     with open(mapdb_file) as mapdb:
-        mapping_db = yaml.load(mapdb)
+        mapping_db = yaml.safe_load(mapdb)
 
     # and merge it with a possible one pointed by REFLEXIBLE_MAPDB env var
     if 'REFLEXIBLE_MAPDB' in os.environ:
         user_mapdb_file = os.environ['REFLEXIBLE_MAPDB']
         with open(user_mapdb_file) as mapdb:
-            mapping_db.update(yaml.load(mapdb))
+            mapping_db.update(yaml.safe_load(mapdb))
 
     # Lookup the region and its aliases
     try:
@@ -126,7 +126,7 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
         for key in mapping_db:
             if 'alias' in mapping_db[key]:
                 alias = mapping_db[key]['alias']
-                if map_region in re.split(',\s*', alias):
+                if map_region in re.split(r',\s*', alias):
                     region = mapping_db[key]
                     break
         else:

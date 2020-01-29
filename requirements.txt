@@ -1,10 +1,10 @@
 matplotlib
 pillow
-netCDF4>=1.1.1
-xarray
-numpy!=1.12
+netCDF4>=1.1.1,<1.5
+xarray>=0.14.1
+numpy>=1.14.6
 pandas
-basemap==1.0.7
+basemap==1.2.1
 pyyaml
 bcolz
 pytest
