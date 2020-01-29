@@ -35,7 +35,6 @@ import os
 import datetime as dt
 
 import numpy as np
-import bcolz
 
 
 from .data_structures import Trajectory
@@ -212,7 +211,10 @@ CHUNKSIZE = 10 * 1000
 
 
 def get_quantized_ctable(dtype, cparams, quantize=None, expectedlen=None):
-    """Return a ctable with the quantize filter enabled for floating point cols."""
+    """Return a ctable with the quantize filter enabled for floating point cols.
+    """
+    import bcolz
+
     columns, names = [], []
     for fname, ftype in dtype.descr:
         names.append(fname)
@@ -265,6 +267,7 @@ def read_partpositions(filename, nspec, ctable=True, clevel=5, cname="lz4", quan
     Note: Passing a `quantize` param > 0 can increase the compression ratio of the ctable
     container, but it may also slow down the reading speed significantly.
     """
+    import bcolz
 
     xmass_dtype = [('xmass_%d' % (i + 1), 'f4') for i in range(nspec)]
     # note age is calculated from itramem by adding itimein

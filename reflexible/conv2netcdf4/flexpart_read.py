@@ -6,12 +6,10 @@ import os
 import datetime
 import re
 import numpy as np
-import bcolz
 from math import pi, sqrt, cos
 from collections import OrderedDict
 
 import reflexible.conv2netcdf4
-from .helpers import closest
 
 
 def read_releases(pathname):
@@ -42,6 +40,8 @@ def read_releases_v10(pathname):
     -------
     A ctable object from bcolz package.
     """
+    import bcolz
+
     # Setup the container for the data
     dtype = [('IDATE1', np.int32), ('ITIME1', np.int32),
              ('IDATE2', np.int32), ('ITIME2', np.int32),
