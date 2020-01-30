@@ -110,13 +110,13 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
     # Get the database out of the system YAML file
     mapdb_file = os.path.join(os.path.dirname(__file__), 'mapping_db.yml')
     with open(mapdb_file) as mapdb:
-        mapping_db = yaml.load(mapdb)
+        mapping_db = yaml.safe_load(mapdb)
 
     # and merge it with a possible one pointed by REFLEXIBLE_MAPDB env var
     if 'REFLEXIBLE_MAPDB' in os.environ:
         user_mapdb_file = os.environ['REFLEXIBLE_MAPDB']
         with open(user_mapdb_file) as mapdb:
-            mapping_db.update(yaml.load(mapdb))
+            mapping_db.update(yaml.safe_load(mapdb))
 
     # Lookup the region and its aliases
     try:
@@ -126,7 +126,7 @@ def map_regions(map_region='default', map_par=None, fig_par=None):
         for key in mapping_db:
             if 'alias' in mapping_db[key]:
                 alias = mapping_db[key]['alias']
-                if map_region in re.split(',\s*', alias):
+                if map_region in re.split(r',\s*', alias):
                     region = mapping_db[key]
                     break
         else:
@@ -222,108 +222,89 @@ def draw_grid(m, xdiv=10., ydiv=5., location=[1, 0, 0, 1],
     return m_p, m_m
 
 
-def get_base1(map_region='default', map_par=None, fig_par=None,
-              figname=None, fig=None, drawlsmask=False):
+def get_base_image(map_region='default', map_par=None, fig_par=None,
+                   image=None, figname=None, fig=None, drawlsmask=False):
     """
-    Primarily an internally used function, creates a
-    basemap for plotting. Returns a fig object and
-    a basemap instance.
+    Primarily an internally used function, creates a basemap for plotting.
+    Returns a fig object and a basemap instance.
 
-    Usage::
+    Examples::
 
-      > fig, m = get_base1(map_region="region_name")
+      > fig, m = get_base_image(map_region="region_name")
+      > fig, m = get_base_image(map_region="myregion", image=image)
     """
 
     # Use map_regions function to define input parameters for Basemap
-    map_par_sd, fig_par_sd = map_regions(map_region, map_par, fig_par)
+    map_par, fig_par = map_regions(map_region, map_par, fig_par)
 
     # create the figure
     if fig is None:
-        axlocs = fig_par_sd.pop('axlocs')
-        fig = plt.figure(**fig_par_sd)
+        axlocs = fig_par.pop('axlocs')
+        fig = plt.figure(**fig_par)
         ax = fig.add_axes(axlocs)
     else:
         ax = fig.gca()
 
-    m = basemap.Basemap(**map_par_sd)
-    plt.axes(ax)   # make sure axes ax are current
-    # draw coastlines and political boundaries.
-    m.drawcoastlines(linewidth=0.8)
-    m.drawcountries(linewidth=0.2)
-    m.drawstates(linewidth=0.2)
-    if drawlsmask:
-        m.drawlsmask(ocean_color='#008EBA', zorder=0)
-    # m.fillcontinents(zorder=0.)
-    # draw parallels and meridians
-    # use draw_grid function
-    m_p, m_m = draw_grid(m)
+    plt.axes(ax)  # make the original axes current again
+
+    m = basemap.Basemap(**map_par)
+
+    if image is None:
+        # draw coastlines and political boundaries.
+        m.drawcoastlines(linewidth=0.8)
+        m.drawcountries(linewidth=0.2)
+        m.drawstates(linewidth=0.2)
+        if drawlsmask:
+            m.drawlsmask(ocean_color='#008EBA', zorder=0)
+        # draw parallels and meridians
+        # use draw_grid function
+        draw_grid(m)
+    else:
+        # shows how to warp an image from one map projection to another.
+        # image from http://visibleearth.nasa.gov/
+
+        # need to change back to [0.1,0.1,0.7,0.7]
+        #ax = fig.add_axes([0.1, 0.1, 0.7, 0.7])
+
+        # read in jpeg image to rgba array of normalized floats.
+        pilImage = Image.open(image)
+        rgba = mpl.image.pil_to_array(pilImage)
+        rgba = rgba.astype(np.float32) / 255.  # convert to normalized floats.
+
+        # define lat/lon grid that image spans (projection='cyl').
+        nlons = rgba.shape[1]
+        #nlats = rgba.shape[0]
+        delta = 360. / float(nlons)
+        lons = np.arange(-180. + 0.5 * delta, 180., delta)
+        lats = np.arange(-90. + 0.5 * delta, 90., delta)
+
+        # transform to nx x ny regularly spaced native projection grid
+        # nx and ny chosen to have roughly the same horizontal res as original
+        # image.
+        dx = 2. * np.pi * m.rmajor / float(nlons)
+        nx = int((m.xmax - m.xmin) / dx) + 1
+        ny = int((m.ymax - m.ymin) / dx) + 1
+        rgba_warped = np.zeros((ny, nx, 4), np.float64)
+        # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
+        try:
+            for k in range(4):
+                rgba_warped[:, :, k] = m.transform_scalar(
+                    rgba[:, :, k], lons, lats, nx, ny)
+        except:
+            rgba_warped = rgba
+            print('problem with transform_scalar')
+        # plot warped rgba image.
+        m.imshow(rgba_warped)
+
+        # draw coastlines.
+        m.drawcoastlines(linewidth=0.5, color='0.5')
+        if drawlsmask:
+            m.drawlsmask(ocean_color='#008EBA', zorder=0)
+        # draw parallels and meridians.
+        draw_grid(m, linewidth=0.5, color='0.5')
 
     if figname is not None:
         plt.savefig(figname)
-    return fig, m
-
-
-def get_base_image(imagefile, map_region='default', map_par=None, fig_par=None,
-                   fig=None):
-    """Warps NASA Blue Marble Image version.
-
-    Create basemap figure for plotting on top of
-    returns a figure and a basemap instance.
-
-    Usage::
-
-        > fig, m = get_base_image(imagefile, map_region="myregion")
-
-    """
-
-    # define Lambert Conformal basemap for North America.
-    mp, fig_par = map_regions(map_region, map_par, fig_par)
-
-    # shows how to warp an image from one map projection to another.
-    # image from http://visibleearth.nasa.gov/
-
-    # read in jpeg image to rgba array of normalized floats.
-    pilImage = Image.open(imagefile)
-    rgba = mpl.image.pil_to_array(pilImage)
-    rgba = rgba.astype(np.float32) / 255.  # convert to normalized floats.
-
-    # define lat/lon grid that image spans (projection='cyl').
-    nlons = rgba.shape[1]
-    #nlats = rgba.shape[0]
-    delta = 360. / float(nlons)
-    lons = np.arange(-180. + 0.5 * delta, 180., delta)
-    lats = np.arange(-90. + 0.5 * delta, 90., delta)
-
-    # create new figure
-    fig = plt.figure(1, **fig_par)
-
-    m = basemap.Basemap(**mp)
-    ax = fig.add_axes(
-        [0.1, 0.1, 0.7, 0.7])  # need to change back to [0.1,0.1,0.7,0.7]
-    plt.axes(ax)  # make the original axes current again
-
-    # transform to nx x ny regularly spaced native projection grid
-    # nx and ny chosen to have roughly the same horizontal res as original
-    # image.
-    dx = 2. * np.pi * m.rmajor / float(nlons)
-    nx = int((m.xmax - m.xmin) / dx) + 1
-    ny = int((m.ymax - m.ymin) / dx) + 1
-    rgba_warped = np.zeros((ny, nx, 4), np.float64)
-    # interpolate rgba values from proj='cyl' (geographic coords) to 'lcc'
-    try:
-        for k in range(4):
-            rgba_warped[:, :, k] = m.transform_scalar(
-                rgba[:, :, k], lons, lats, nx, ny)
-    except:
-        rgba_warped = rgba
-        print('problem with transform_scalar')
-    # plot warped rgba image.
-    m.imshow(rgba_warped)
-    # draw coastlines.
-    m.drawcoastlines(linewidth=0.5, color='0.5')
-    # draw parallels and meridians.
-    draw_grid(m, linewidth=0.5, color='0.5')
-    # draw()
     return fig, m
 
 

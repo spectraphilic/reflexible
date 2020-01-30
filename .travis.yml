@@ -25,7 +25,7 @@ install:
   - sudo apt-get --assume-yes install gfortran
 
   # Install dependencies in conda
-  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION libgfortran
+  - conda create -n reflex_env python=$TRAVIS_PYTHON_VERSION
   - source activate reflex_env
   # Install the remaining requeriments
   - conda install --file requirements.txt -c conda-forge

@@ -7,7 +7,7 @@ Definition of the different data structures in reflexible.
 import os
 import datetime as dt
 import itertools
-from collections import Iterable
+from collections.abc import Iterable
 import glob
 
 from math import (pi, cos, sqrt)

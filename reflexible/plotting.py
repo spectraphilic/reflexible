@@ -173,12 +173,9 @@ def _get_figure(map_region='default', map_par=None, fig_par=None,
     figure = Structure()
 
     if m is None:
-        if image:
-            fig, m = mp.get_base_image(image, map_region, map_par, fig_par)
-        else:
-            fig, m = mp.get_base1(map_region, map_par, fig_par, fig=fig)
+        fig, m = mp.get_base_image(map_region, map_par, fig_par, image=image)
 
-    if fig is None:
+    elif fig is None:
         map_par, fig_par = mp.map_regions(map_region, map_par, fig_par)
         fig = plt.figure(**fig_par)
 
@@ -347,7 +344,7 @@ def plot_sensitivity(H, data, data_range=None,
 
         if m.projection != 'merc':
             if lons[-1] - lons[0] < 360.:
-                topodat, lons = basemap.addcyclic(data, lons)
+                topodat, lons = basemap.addcyclic(data.values, lons)
 
     # get min/max range
     if data_range is not None:
