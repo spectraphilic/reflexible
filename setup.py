@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from distutils.dep_util import newer
+from setuptools.modified import newer
 import os, os.path
 import setuptools
 import subprocess
